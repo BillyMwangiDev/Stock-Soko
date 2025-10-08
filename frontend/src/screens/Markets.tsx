@@ -195,51 +195,44 @@ export default function Markets() {
         </TouchableOpacity>
       </View>
 
-      {/* Market Summary Cards */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.summaryScroll}
-        contentContainerStyle={styles.summaryContent}
-      >
-        <View style={[styles.summaryCard, styles.summaryCardPrimary]}>
-          <Text style={styles.summaryLabel}>Market Trend</Text>
+      {/* Compact Market Summary */}
+      <View style={styles.compactSummary}>
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>Trend</Text>
           <Text style={[styles.summaryValue, marketSummary.avgChange >= 0 ? styles.positiveText : styles.negativeText]}>
-            {marketSummary.avgChange >= 0 ? '↗' : '↘'} {Math.abs(marketSummary.avgChange).toFixed(2)}%
-          </Text>
-          <Text style={styles.summarySubtext}>{marketSummary.avgChange >= 0 ? 'Bullish' : 'Bearish'}</Text>
-        </View>
-
-        <View style={[styles.summaryCard, styles.summaryCardSuccess]}>
-          <Text style={styles.summaryLabel}>Top Gainer</Text>
-          <Text style={styles.summaryValue}>
-            {marketSummary.topGainer ? marketSummary.topGainer.symbol : 'N/A'}
-          </Text>
-          <Text style={styles.summarySubtext}>
-            {marketSummary.topGainer ? `+${marketSummary.topGainer.change_pct.toFixed(2)}%` : '0.00%'}
+            {marketSummary.avgChange >= 0 ? '▲' : '▼'} {Math.abs(marketSummary.avgChange).toFixed(1)}%
           </Text>
         </View>
-
-        <View style={[styles.summaryCard, styles.summaryCardError]}>
-          <Text style={styles.summaryLabel}>Top Loser</Text>
-          <Text style={styles.summaryValue}>
-            {marketSummary.topLoser ? marketSummary.topLoser.symbol : 'N/A'}
-          </Text>
-          <Text style={styles.summarySubtext}>
-            {marketSummary.topLoser ? `${marketSummary.topLoser.change_pct.toFixed(2)}%` : '0.00%'}
+        
+        <View style={styles.summaryDivider} />
+        
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>Gainer</Text>
+          <Text style={[styles.summaryValue, styles.positiveText]}>
+            {marketSummary.topGainer ? `+${marketSummary.topGainer.change_pct.toFixed(1)}%` : 'N/A'}
           </Text>
         </View>
-
-        <View style={[styles.summaryCard, styles.summaryCardInfo]}>
-          <Text style={styles.summaryLabel}>Gainers/Losers</Text>
-          <Text style={styles.summaryValue}>{marketSummary.totalGainers}/{marketSummary.totalLosers}</Text>
-          <Text style={styles.summarySubtext}>{instruments.length} stocks</Text>
+        
+        <View style={styles.summaryDivider} />
+        
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>Loser</Text>
+          <Text style={[styles.summaryValue, styles.negativeText]}>
+            {marketSummary.topLoser ? `${marketSummary.topLoser.change_pct.toFixed(1)}%` : 'N/A'}
+          </Text>
         </View>
-      </ScrollView>
+        
+        <View style={styles.summaryDivider} />
+        
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>Total</Text>
+          <Text style={styles.summaryValue}>{instruments.length}</Text>
+        </View>
+      </View>
 
-      {/* Search and Filter Bar */}
-      <View style={styles.headerBar}>
-        <View style={styles.searchContainer}>
+      {/* Compact Search and Filter */}
+      <View style={styles.searchFilterBar}>
+        <View style={styles.searchBox}>
           <RNTextInput
             style={styles.searchInput}
             placeholder="Search stocks..."
@@ -249,34 +242,26 @@ export default function Markets() {
           />
         </View>
         
-        <View style={styles.filterContainer}>
-          <TouchableOpacity
-            style={[styles.filterChip, filterType === 'all' && styles.filterChipActive]}
-            onPress={() => setFilterType('all')}
-          >
-            <Text style={[styles.filterChipText, filterType === 'all' && styles.filterChipTextActive]}>
-              All
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.filterChip, filterType === 'gainers' && styles.filterChipActive]}
-            onPress={() => setFilterType('gainers')}
-          >
-            <Text style={[styles.filterChipText, filterType === 'gainers' && styles.filterChipTextActive]}>
-              Gainers
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.filterChip, filterType === 'losers' && styles.filterChipActive]}
-            onPress={() => setFilterType('losers')}
-          >
-            <Text style={[styles.filterChipText, filterType === 'losers' && styles.filterChipTextActive]}>
-              Losers
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={[styles.filterBtn, filterType === 'all' && styles.filterBtnActive]}
+          onPress={() => setFilterType('all')}
+        >
+          <Text style={[styles.filterBtnText, filterType === 'all' && styles.filterBtnTextActive]}>All</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.filterBtn, filterType === 'gainers' && styles.filterBtnActive]}
+          onPress={() => setFilterType('gainers')}
+        >
+          <Text style={[styles.filterBtnText, filterType === 'gainers' && styles.filterBtnTextActive]}>▲</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.filterBtn, filterType === 'losers' && styles.filterBtnActive]}
+          onPress={() => setFilterType('losers')}
+        >
+          <Text style={[styles.filterBtnText, filterType === 'losers' && styles.filterBtnTextActive]}>▼</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView 
@@ -454,56 +439,38 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: colors.text.primary,
   },
-  summaryScroll: {
-    backgroundColor: colors.background.secondary,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.main,
-  },
-  summaryContent: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    gap: spacing.md,
-  },
-  summaryCard: {
-    minWidth: 140,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
+  compactSummary: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  summaryCardPrimary: {
-    backgroundColor: colors.primary.main,
-  },
-  summaryCardSuccess: {
-    backgroundColor: colors.success + '20',
-    borderWidth: 1,
-    borderColor: colors.success,
-  },
-  summaryCardError: {
-    backgroundColor: colors.error + '20',
-    borderWidth: 1,
-    borderColor: colors.error,
-  },
-  summaryCardInfo: {
     backgroundColor: colors.background.card,
+    marginHorizontal: spacing.md,
+    marginVertical: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
     borderColor: colors.border.main,
+  },
+  summaryItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+  },
+  summaryDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: colors.border.light,
   },
   summaryLabel: {
     fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase',
-    fontWeight: typography.fontWeight.semibold,
+    marginBottom: 2,
+    fontWeight: typography.fontWeight.medium,
   },
   summaryValue: {
-    fontSize: typography.fontSize.xl,
+    fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: 2,
-  },
-  summarySubtext: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.secondary,
   },
   positiveText: {
     color: colors.success,
@@ -511,46 +478,52 @@ const styles = StyleSheet.create({
   negativeText: {
     color: colors.error,
   },
-  headerBar: {
-    padding: spacing.base,
+  searchFilterBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    gap: spacing.xs,
     backgroundColor: colors.background.primary,
     borderBottomWidth: 1,
     borderBottomColor: colors.border.main,
   },
-  searchContainer: {
-    marginBottom: spacing.sm,
+  searchBox: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border.light,
   },
   searchInput: {
-    backgroundColor: colors.background.tertiary,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
+    flex: 1,
+    paddingVertical: spacing.sm,
     color: colors.text.primary,
-    fontSize: typography.fontSize.base,
-    borderWidth: 1,
-    borderColor: colors.border.light,
+    fontSize: typography.fontSize.sm,
   },
-  filterContainer: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  filterChip: {
-    paddingVertical: spacing.xs,
+  filterBtn: {
+    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.background.tertiary,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.background.card,
     borderWidth: 1,
     borderColor: colors.border.light,
+    minWidth: 44,
+    alignItems: 'center',
   },
-  filterChipActive: {
+  filterBtnActive: {
     backgroundColor: colors.primary.main,
     borderColor: colors.primary.main,
   },
-  filterChipText: {
+  filterBtnText: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    fontWeight: typography.fontWeight.medium,
+    color: colors.text.secondary,
+    fontWeight: typography.fontWeight.semibold,
   },
-  filterChipTextActive: {
+  filterBtnTextActive: {
     color: colors.primary.contrast,
   },
   scrollView: {
