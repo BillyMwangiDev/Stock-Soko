@@ -1,0 +1,10 @@
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "1.0.0"
+version_files = ["pyproject.toml:version"]
