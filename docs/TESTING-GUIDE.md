@@ -18,7 +18,9 @@
 
 ## Sample Test Users
 
-### Valid Test Users (Should Pass Registration)
+**IMPORTANT**: Users are now stored in the SQLite database (`stocksoko.db`). You must register users through the app first before logging in.
+
+### Valid Test Users (Create via Registration)
 
 #### Test User 1
 ```
@@ -55,6 +57,11 @@ Full Name: Sample Investor
 Phone: +254722334455
 ```
 Expected: Phone normalizes to `254722334455`
+
+### Database Note
+- All users persist in `stocksoko.db` file
+- Users remain after server restart
+- To reset database: Delete `stocksoko.db` file and run `python scripts/init_database.py`
 
 ---
 
@@ -160,12 +167,13 @@ All Kenyan phone numbers are normalized to format: `254XXXXXXXXX`
 
 ### Workflow 4: Password Reset
 
-1. Go to "Forgot Password"
-2. Enter email: `john.doe@example.com`
-3. Expected: "Password reset link sent" message
-4. Note: In sandbox mode, reset token shown in response (development only)
-5. Use reset token to set new password
-6. New password must meet strength requirements
+1. On Login screen, click "Forgot Password?"
+2. Enter email: `john.doe@example.com` (must be registered)
+3. Expected: "If an account exists with this email, you will receive password reset instructions"
+4. For development: Check backend logs for reset token
+5. Note: Reset tokens are NOT exposed in API responses (security feature)
+6. In production, reset link would be sent via email
+7. Reset form requires new password meeting strength requirements
 
 ### Workflow 5: Markets & Trading
 
