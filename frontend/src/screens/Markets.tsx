@@ -163,7 +163,10 @@ export default function Markets() {
       <ScrollView 
         style={styles.scrollView} 
         contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={true}
+        keyboardShouldPersistTaps="handled"
+        bounces={true}
+        scrollEventThrottle={16}
       >
         <Text style={styles.resultsText}>
           {filteredInstruments.length} {filteredInstruments.length === 1 ? 'result' : 'results'}
@@ -317,6 +320,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.base,
+    paddingBottom: 100,
   },
   resultsText: {
     fontSize: typography.fontSize.sm,

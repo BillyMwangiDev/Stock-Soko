@@ -77,6 +77,9 @@ export default function Portfolio() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={true}
+      bounces={true}
+      scrollEventThrottle={16}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary.main} />
       }
@@ -229,6 +232,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.base,
+    paddingBottom: 100,
   },
   summaryCard: {
     marginBottom: spacing.lg,

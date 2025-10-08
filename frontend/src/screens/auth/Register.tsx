@@ -3,7 +3,7 @@
  * New user registration
  */
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/types';
 import { Button, Input } from '../../components';
@@ -69,11 +69,22 @@ export default function Register({ navigation }: Props) {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Join Stock Soko and start trading</Text>
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}
+    >
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={true}
+        keyboardShouldPersistTaps="handled"
+        bounces={true}
+      >
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Join Stock Soko and start trading</Text>
 
-      <View style={styles.form}>
+        <View style={styles.form}>
         <Input
           label="Full Name"
           placeholder="Enter your full name"
@@ -129,8 +140,9 @@ export default function Register({ navigation }: Props) {
             <Text style={styles.loginLink}>Sign In</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -139,10 +151,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
+  scrollView: {
+    flex: 1,
+  },
   content: {
+    flexGrow: 1,
     padding: spacing.xl,
-    paddingBottom: 100,
-    minHeight: '100%',
+    paddingBottom: 120,
   },
   title: {
     fontSize: typography.fontSize['2xl'],

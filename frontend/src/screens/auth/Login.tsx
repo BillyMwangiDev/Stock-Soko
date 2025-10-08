@@ -3,7 +3,7 @@
  * Email/password authentication
  */
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/types';
 import { Button, Input } from '../../components';
@@ -56,8 +56,17 @@ export default function Login({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={true}
+        keyboardShouldPersistTaps="handled"
+        bounces={true}
+      >
         <Text style={styles.title}>Welcome Back</Text>
         <Text style={styles.subtitle}>Sign in to continue trading</Text>
 
@@ -102,8 +111,8 @@ export default function Login({ navigation }: Props) {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -112,9 +121,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     padding: spacing.xl,
+    paddingBottom: 80,
     justifyContent: 'center',
   },
   title: {
