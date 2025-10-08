@@ -290,7 +290,7 @@ export default function StockDetail({ symbol, onBack, onTrade }: StockDetailProp
               <Text style={styles.aiSubtitle}>Key Reasons</Text>
               {aiRecommendation.reasoning.map((reason: string, idx: number) => (
                 <View key={idx} style={styles.reasonItem}>
-                  <Text style={styles.reasonBullet}>•</Text>
+                  <Text style={styles.reasonBullet}>-</Text>
                   <Text style={styles.reasonText}>{reason}</Text>
                 </View>
               ))}
@@ -315,7 +315,7 @@ export default function StockDetail({ symbol, onBack, onTrade }: StockDetailProp
               <Text style={styles.aiSubtitle}>Fundamental Factors</Text>
               {aiRecommendation.fundamentalFactors.map((factor: string, idx: number) => (
                 <View key={idx} style={styles.factorItem}>
-                  <Text style={styles.factorBullet}>✓</Text>
+                  <Text style={styles.factorBullet}>+</Text>
                   <Text style={styles.factorText}>{factor}</Text>
                 </View>
               ))}
