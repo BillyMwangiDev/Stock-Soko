@@ -35,31 +35,29 @@ export default function Wallet() {
 
   const loadWalletData = async () => {
     try {
-      const [balanceRes] = await Promise.all([
+      const [balanceRes, transactionsRes] = await Promise.all([
         api.get('/ledger/balance'),
+        api.get('/ledger/transactions').catch(() => ({ data: { transactions: [] } })),
       ]);
       
-      setBalance(balanceRes.data);
+      setBalance({
+        available: balanceRes.data.available_balance || 0,
+        pending: balanceRes.data.pending_balance || 0,
+      });
       
-      // Mock transactions
-      setTransactions([
-        {
-          id: '1',
-          date: new Date().toISOString(),
-          type: 'deposit',
-          status: 'completed',
-          amount: 5000,
-          description: 'M-Pesa Deposit',
-        },
-        {
-          id: '2',
-          date: new Date(Date.now() - 86400000).toISOString(),
-          type: 'trade',
-          status: 'completed',
-          amount: -1500,
-          description: 'Buy SCOM (10 shares)',
-        },
-      ]);
+      // Process transaction history
+      const txns = transactionsRes.data.transactions || [];
+      const processedTxns: Transaction[] = txns.map((tx: any) => ({
+        id: tx.id || tx.transaction_id || Math.random().toString(),
+        date: tx.created_at || tx.date || new Date().toISOString(),
+        type: tx.transaction_type === 'DEPOSIT' ? 'deposit' : 
+              tx.transaction_type === 'WITHDRAWAL' ? 'withdrawal' : 'trade',
+        status: (tx.status || 'completed').toLowerCase() as 'pending' | 'completed' | 'failed',
+        amount: tx.amount || 0,
+        description: tx.description || tx.notes || `${tx.transaction_type}`,
+      }));
+      
+      setTransactions(processedTxns);
     } catch (error) {
       console.error('Failed to load wallet:', error);
     } finally {
@@ -136,16 +134,19 @@ export default function Wallet() {
           onPress: async () => {
             try {
               setProcessing(true);
-              // In production, call withdrawal API
-              await new Promise(resolve => setTimeout(resolve, 1500));
+              const res = await api.post('/payments/mpesa/withdraw', {
+                amount,
+                destination: withdrawDestination,
+              });
               hapticFeedback.success();
-              Alert.alert('Success', 'Withdrawal request submitted. Funds will be transferred within 1-3 business days.');
+              Alert.alert('Success', res.data.message || 'Withdrawal request submitted. Funds will be transferred within 1-3 business days.');
               setWithdrawAmount('');
               setActiveTab('overview');
               loadWalletData(); // Refresh balance
-            } catch (error) {
+            } catch (error: any) {
               hapticFeedback.error();
-              Alert.alert('Error', 'Failed to process withdrawal');
+              const errorMsg = error?.response?.data?.detail || 'Failed to process withdrawal';
+              Alert.alert('Error', errorMsg);
             } finally {
               setProcessing(false);
             }
