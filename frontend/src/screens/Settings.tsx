@@ -79,8 +79,13 @@ export default function Settings() {
   );
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Profile Section */}
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={true}
+      bounces={true}
+      scrollEventThrottle={16}
+    >
       <Card variant="elevated" style={styles.profileCard}>
         <View style={styles.profileHeader}>
           <View style={styles.avatar}>
@@ -211,6 +216,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.base,
+    paddingBottom: 120,
   },
   profileCard: {
     marginBottom: spacing.lg,

@@ -127,7 +127,7 @@ export default function News() {
             onPress={() => setFilter('positive')}
           >
             <Text style={[styles.filterChipText, filter === 'positive' && styles.filterChipTextActive]}>
-              Positive 📈
+              Positive
             </Text>
           </TouchableOpacity>
 
@@ -136,7 +136,7 @@ export default function News() {
             onPress={() => setFilter('negative')}
           >
             <Text style={[styles.filterChipText, filter === 'negative' && styles.filterChipTextActive]}>
-              Negative 📉
+              Negative
             </Text>
           </TouchableOpacity>
 
@@ -154,6 +154,9 @@ export default function News() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary.main} />
         }
@@ -216,7 +219,7 @@ export default function News() {
 
         <View style={styles.disclaimerCard}>
           <Text style={styles.disclaimerText}>
-            📰 News articles are sourced from various publishers. Stock Soko does not guarantee the accuracy of third-party content.
+            News articles are sourced from various publishers. Stock Soko does not guarantee the accuracy of third-party content.
           </Text>
         </View>
       </ScrollView>
@@ -262,6 +265,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.base,
+    paddingBottom: 120,
   },
   articleCard: {
     marginBottom: spacing.md,

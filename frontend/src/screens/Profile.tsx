@@ -121,7 +121,13 @@ export default function Profile() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={true}
+      bounces={true}
+      scrollEventThrottle={16}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>Profile & Account</Text>
       </View>
@@ -175,7 +181,7 @@ export default function Profile() {
                 fullWidth
               />
               <Text style={styles.helperText}>
-                💡 Sandbox test number: 254708374149
+                Sandbox test number: 254708374149
               </Text>
             </Card>
           </View>
@@ -200,19 +206,19 @@ export default function Profile() {
             <Text style={styles.sectionTitle}>Settings</Text>
             <Card padding="sm">
               <TouchableOpacity style={styles.settingItem}>
-                <Text style={styles.settingText}>🔔 Notifications</Text>
+                <Text style={styles.settingText}>Notifications</Text>
                 <Text style={styles.settingChevron}>›</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.settingItem}>
-                <Text style={styles.settingText}>🔒 Security</Text>
+                <Text style={styles.settingText}>Security</Text>
                 <Text style={styles.settingChevron}>›</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.settingItem}>
-                <Text style={styles.settingText}>📄 Documents</Text>
+                <Text style={styles.settingText}>Documents</Text>
                 <Text style={styles.settingChevron}>›</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.settingItem}>
-                <Text style={styles.settingText}>ℹ️ Help & Support</Text>
+                <Text style={styles.settingText}>Help & Support</Text>
                 <Text style={styles.settingChevron}>›</Text>
               </TouchableOpacity>
             </Card>
@@ -272,11 +278,11 @@ export default function Profile() {
           <Card variant="outlined" style={styles.infoCard}>
             <Text style={styles.infoCardTitle}>Why Create an Account?</Text>
             <Text style={styles.infoCardText}>
-              • Access AI-powered stock recommendations{'\n'}
-              • Trade stocks with low fees{'\n'}
-              • Track your portfolio in real-time{'\n'}
-              • Get personalized market insights{'\n'}
-              • Secure M-Pesa deposit & withdrawal
+              Access AI-powered stock recommendations{'\n'}
+              Trade stocks with low fees{'\n'}
+              Track your portfolio in real-time{'\n'}
+              Get personalized market insights{'\n'}
+              Secure M-Pesa deposit & withdrawal
             </Text>
           </Card>
         </>
@@ -292,6 +298,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.base,
+    paddingBottom: 120,
   },
   header: {
     marginBottom: spacing.lg,

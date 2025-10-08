@@ -79,8 +79,13 @@ export default function Home() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={true}
+      bounces={true}
+      scrollEventThrottle={16}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>Market Overview</Text>
         <Text style={styles.subtitle}>Nairobi Securities Exchange</Text>
@@ -109,9 +114,8 @@ export default function Home() {
         </Card>
       </View>
 
-      {/* Top Gainers */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Top Gainers 🚀</Text>
+        <Text style={styles.sectionTitle}>Top Gainers</Text>
         <Card variant="default" padding="sm">
           {topGainers.length === 0 ? (
             <Text style={styles.emptyText}>No gainers today</Text>
@@ -138,9 +142,8 @@ export default function Home() {
         </Card>
       </View>
 
-      {/* Top Losers */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Top Losers 📉</Text>
+        <Text style={styles.sectionTitle}>Top Losers</Text>
         <Card variant="default" padding="sm">
           {topLosers.length === 0 ? (
             <Text style={styles.emptyText}>No losers today</Text>
@@ -167,14 +170,13 @@ export default function Home() {
         </Card>
       </View>
 
-      {/* Quick Actions */}
       <Card variant="outlined" style={styles.actionCard}>
         <Text style={styles.actionTitle}>Quick Access</Text>
         <Text style={styles.actionText}>
-          • View all markets in the Markets tab{'\n'}
-          • Track your investments in Portfolio{'\n'}
-          • Stay updated with latest News{'\n'}
-          • Manage account in Profile
+          View all markets in the Markets tab{'\n'}
+          Track your investments in Portfolio{'\n'}
+          Stay updated with latest News{'\n'}
+          Manage account in Profile
         </Text>
       </Card>
     </ScrollView>
@@ -188,6 +190,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.base,
+    paddingBottom: 120,
   },
   header: {
     marginBottom: spacing.lg,

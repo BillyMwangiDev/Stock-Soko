@@ -125,10 +125,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flexGrow: 1,
     padding: spacing.xl,
-    paddingBottom: 80,
-    justifyContent: 'center',
+    paddingTop: spacing['3xl'],
+    paddingBottom: 100,
   },
   title: {
     fontSize: typography.fontSize['2xl'],
