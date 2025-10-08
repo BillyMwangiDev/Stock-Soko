@@ -1,20 +1,19 @@
 # Stock Soko - Developer Quick Start Guide
 
-**Last Updated**: October 7, 2025  
-**Status**: ✅ Production Ready
+**Last Updated**: October 8, 2025
+**Status**: Production Ready
 
----
-
-## 🚀 Quick Start (5 Minutes)
+## Quick Start (5 Minutes)
 
 ### Prerequisites
+
 ```bash
-✅ Python 3.11+
-✅ Node.js 18+
-✅ Git
+Python 3.11+
+Node.js 18+
+Git
 ```
 
-### 1. Clone & Setup
+### 1. Clone and Setup
 
 ```bash
 # Clone repository
@@ -59,13 +58,10 @@ curl http://localhost:8000/health
 # Open: http://localhost:8000/docs
 ```
 
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 STOCK SOKO/
-│
 ├── backend/
 │   ├── app/
 │   │   ├── routers/       # 15 API endpoint modules
@@ -96,9 +92,7 @@ STOCK SOKO/
 └── README.md
 ```
 
----
-
-## 🔧 Common Commands
+## Common Commands
 
 ### Backend
 
@@ -143,11 +137,10 @@ npm install package-name
 npx expo start -c
 ```
 
----
-
-## 🎯 API Endpoints
+## API Endpoints
 
 ### Authentication
+
 ```
 POST   /auth/register       # Create account
 POST   /auth/login          # Login
@@ -156,6 +149,7 @@ GET    /auth/me             # Get current user
 ```
 
 ### Markets
+
 ```
 GET    /markets             # List all stocks
 GET    /markets/{symbol}    # Get stock details
@@ -163,6 +157,7 @@ GET    /markets/movers      # Top gainers/losers
 ```
 
 ### Trading
+
 ```
 POST   /trades              # Place order
 GET    /trades              # Order history
@@ -170,6 +165,7 @@ GET    /trades/{id}         # Order details
 ```
 
 ### Portfolio
+
 ```
 GET    /ledger/positions    # Get positions
 GET    /ledger/balance      # Get balance
@@ -177,6 +173,7 @@ GET    /dashboard           # Dashboard summary
 ```
 
 ### Payments
+
 ```
 POST   /payments/deposit    # M-Pesa deposit
 POST   /payments/withdraw   # Withdrawal request
@@ -184,6 +181,7 @@ GET    /payments/history    # Transaction history
 ```
 
 ### Other
+
 ```
 GET    /watchlist           # User watchlist
 POST   /watchlist           # Add to watchlist
@@ -194,11 +192,10 @@ GET    /alerts              # Price alerts
 
 **Full Documentation**: http://localhost:8000/docs
 
----
-
-## 🎨 Frontend Component Usage
+## Frontend Component Usage
 
 ### Button
+
 ```tsx
 import { Button } from '../components';
 
@@ -212,6 +209,7 @@ import { Button } from '../components';
 ```
 
 ### Card
+
 ```tsx
 import { Card } from '../components';
 
@@ -221,6 +219,7 @@ import { Card } from '../components';
 ```
 
 ### Input
+
 ```tsx
 import { Input } from '../components';
 
@@ -234,6 +233,7 @@ import { Input } from '../components';
 ```
 
 ### Loading State
+
 ```tsx
 import { LoadingState } from '../components';
 
@@ -241,19 +241,17 @@ import { LoadingState } from '../components';
 ```
 
 ### Empty State
+
 ```tsx
 import { EmptyState } from '../components';
 
 <EmptyState
-  icon="📊"
   title="No stocks found"
   message="Try adjusting your search"
 />
 ```
 
----
-
-## 🎨 Theme Usage
+## Theme Usage
 
 ```tsx
 import { colors, spacing, typography } from '../theme';
@@ -271,6 +269,7 @@ const styles = StyleSheet.create({
 ```
 
 ### Color Tokens
+
 ```tsx
 colors.primary.main       // Primary green
 colors.status.error       // Error red
@@ -281,6 +280,7 @@ colors.background.primary // Dark background
 ```
 
 ### Spacing Scale
+
 ```tsx
 spacing.xs   // 4px
 spacing.sm   // 8px
@@ -290,11 +290,10 @@ spacing.xl   // 32px
 spacing.xxl  // 48px
 ```
 
----
-
-## 🔐 Authentication Flow
+## Authentication Flow
 
 ### Frontend
+
 ```tsx
 import { login, getAccessToken } from '../store/auth';
 
@@ -309,6 +308,7 @@ if (token) {
 ```
 
 ### Backend
+
 ```python
 from backend.app.utils.jwt import get_current_user
 
@@ -317,11 +317,10 @@ async def protected_route(user: dict = Depends(get_current_user)):
     return {"user_email": user["email"]}
 ```
 
----
-
-## 🧪 Testing Examples
+## Testing Examples
 
 ### Backend Test
+
 ```python
 # tests/test_markets.py
 def test_get_markets(client):
@@ -331,6 +330,7 @@ def test_get_markets(client):
 ```
 
 ### Running Tests
+
 ```bash
 # All tests
 pytest
@@ -345,11 +345,10 @@ pytest tests/test_auth.py -v
 pytest -x
 ```
 
----
-
-## 🐛 Debugging
+## Debugging
 
 ### Backend Debugging
+
 ```python
 # Add breakpoint
 import pdb; pdb.set_trace()
@@ -361,6 +360,7 @@ logger.info(f"Debug info: {variable}")
 ```
 
 ### Frontend Debugging
+
 ```tsx
 // Console log
 console.log('Debug:', data);
@@ -403,11 +403,10 @@ pip install -r requirements.txt
 npm install
 ```
 
----
+## Environment Variables
 
-## 🌍 Environment Variables
+### Backend .env
 
-### Backend `.env`
 ```env
 # Required for development
 JWT_SECRET=dev-secret-change-in-production
@@ -418,17 +417,17 @@ REDIS_URL=redis://localhost:6379/0
 MPESA_ENV=sandbox
 ```
 
-### Frontend `.env`
+### Frontend .env
+
 ```env
 EXPO_PUBLIC_API_URL=http://localhost:8000
 EXPO_PUBLIC_ENVIRONMENT=development
 ```
 
----
-
-## 📱 Mobile Testing
+## Mobile Testing
 
 ### Using Expo Go
+
 ```bash
 # Start server
 npm start
@@ -439,20 +438,21 @@ npm start
 ```
 
 ### Using iOS Simulator
+
 ```bash
 npm run ios
 ```
 
 ### Using Android Emulator
+
 ```bash
 npm run android
 ```
 
----
-
-## 🚢 Deployment
+## Deployment
 
 ### Backend (Production)
+
 ```bash
 # Using Docker
 docker-compose up -d
@@ -462,6 +462,7 @@ gunicorn backend.app.main:app -w 4 -k uvicorn.workers.UvicornWorker
 ```
 
 ### Frontend (Production)
+
 ```bash
 # Build for web
 npm run web
@@ -473,29 +474,28 @@ eas build --platform ios
 eas build --platform android
 ```
 
----
-
-## 📊 Monitoring
+## Monitoring
 
 ### Health Check
+
 ```bash
 curl http://localhost:8000/health
 ```
 
 ### Metrics
+
 ```bash
 curl http://localhost:8000/metrics
 ```
 
 ### Logs
+
 ```bash
 # Backend logs in console
 # Frontend logs in Metro bundler
 ```
 
----
-
-## 🔄 Git Workflow
+## Git Workflow
 
 ```bash
 # Create feature branch
@@ -512,6 +512,7 @@ git push origin feature/your-feature
 ```
 
 ### Commit Message Convention
+
 ```
 feat: Add new feature
 fix: Fix bug
@@ -522,39 +523,32 @@ test: Add tests
 chore: Update dependencies
 ```
 
----
+## Tips and Tricks
 
-## 💡 Tips & Tricks
-
-1. **Fast Backend Reload**: `--reload` flag watches for file changes
+1. **Fast Backend Reload**: --reload flag watches for file changes
 2. **Frontend Hot Reload**: Save files to see instant updates
 3. **API Testing**: Use http://localhost:8000/docs for interactive testing
-4. **TypeScript**: Run `npx tsc --noEmit` to check types without building
+4. **TypeScript**: Run npx tsc --noEmit to check types without building
 5. **Code Formatting**: Use Black for Python, Prettier for TypeScript
 6. **Keep Servers Running**: Use separate terminal windows for each server
 
----
-
-## 📚 Resources
+## Resources
 
 - **FastAPI Docs**: https://fastapi.tiangolo.com/
 - **React Navigation**: https://reactnavigation.org/
 - **Expo Docs**: https://docs.expo.dev/
 - **TypeScript**: https://www.typescriptlang.org/docs/
 
----
-
-## 🆘 Getting Help
+## Getting Help
 
 1. Check API docs: http://localhost:8000/docs
 2. Read error messages carefully
 3. Check console/terminal logs
 4. Review this guide
-5. Check project documentation in `/docs`
+5. Check project documentation in /docs
 
 ---
 
-**Happy Coding! 🚀**
+**Happy Coding!**
 
 *Stock Soko Development Team*
-

@@ -191,12 +191,12 @@ Once the backend is running, visit:
 
 ## Key Features
 
-- 📱 **Mobile-First Design** - Built with React Native & Expo
-- 🔐 **Secure Authentication** - JWT-based auth with 2FA support
-- 📊 **Real-time Market Data** - Live stock prices and charts
-- 💰 **M-Pesa Integration** - Seamless payments
-- 🤖 **AI Assistant** - Intelligent trading recommendations
-- 📈 **Portfolio Management** - Track holdings and performance
+- **Mobile-First Design** - Built with React Native & Expo
+- **Secure Authentication** - JWT-based auth with 2FA support
+- **Real-time Market Data** - Live stock prices and charts
+- **M-Pesa Integration** - Seamless payments
+- **AI Assistant** - Intelligent trading recommendations
+- **Portfolio Management** - Track holdings and performance
 
 ## Tech Stack
 
@@ -227,5 +227,5 @@ This project is proprietary. All rights reserved.
 
 ---
 
-Happy coding! 🚀
+Happy coding!
 

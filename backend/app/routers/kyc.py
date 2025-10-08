@@ -6,6 +6,5 @@ router = APIRouter(prefix="/kyc", tags=["kyc"])
 
 
 @router.post("/submit", response_model=KycStatus)
-
 def submit(sub: KycSubmission) -> KycStatus:
-	return submit_kyc(sub)
+    return submit_kyc(sub)
