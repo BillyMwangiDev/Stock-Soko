@@ -3,10 +3,11 @@
  * Chat interface for AI-powered stock insights
  */
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ProfileStackParamList } from '../navigation/types';
 import { colors, typography, spacing, borderRadius } from '../theme';
+import { api } from '../api/client';
 
 type AIAssistantScreenProp = StackNavigationProp<ProfileStackParamList, 'AIAssistant'>;
 
@@ -26,68 +27,62 @@ export default function AIAssistant({ navigation }: Props) {
     {
       id: '1',
       type: 'ai',
-      text: "Hi there! I'm here to help you navigate the stock market. What can I assist you with today?",
-    },
-    {
-      id: '2',
-      type: 'user',
-      text: "I'd like to research a specific stock.",
-    },
-    {
-      id: '3',
-      type: 'ai',
-      text: "Sure, which stock are you interested in?",
-    },
-    {
-      id: '4',
-      type: 'user',
-      text: "I'm looking at MTN Group.",
-    },
-    {
-      id: '5',
-      type: 'ai',
-      text: "MTN Group is a leading telecommunications provider in Africa. Their stock has been performing well recently. Here's a chart showing its performance over the past year.",
-      hasChart: true,
-    },
-    {
-      id: '6',
-      type: 'user',
-      text: "Can you explain the recent dip in the chart?",
-    },
-    {
-      id: '7',
-      type: 'ai',
-      text: "The recent dip can be attributed to market volatility due to global economic uncertainty. However, analysts predict a recovery in the coming months.",
+      text: "Hi! I'm your Stock Soko AI assistant. I can help you with stock analysis, market insights, trading strategies, and investment decisions. What would you like to know?",
     },
   ]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || loading) return;
 
-    const newMessage: Message = {
+    const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
       text: input,
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    const userInput = input;
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Call AI chat API
+      const response = await api.post('/ai/chat', {
+        message: userInput,
+        conversation_history: messages.map(m => ({
+          role: m.type === 'user' ? 'user' : 'assistant',
+          content: m.text
+        }))
+      });
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
-        text: `Based on current market analysis, I can help you with "${input}". This is a demo response showing how the AI assistant will work.`,
+        text: response.data.response || response.data.message || 'I apologize, but I could not generate a response.',
       };
+      
       setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
+    } catch (error: any) {
+      console.error('AI chat error:', error);
+      
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'ai',
+        text: error?.response?.data?.detail || 
+              'Sorry, I encountered an error. Please try again or rephrase your question.',
+      };
+      
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -177,6 +172,22 @@ export default function AIAssistant({ navigation }: Props) {
           </View>
         ))}
 
+        {/* Typing Indicator */}
+        {loading && (
+          <View style={[styles.messageRow, styles.messageRowAI]}>
+            <View style={styles.aiAvatar}>
+              <Text style={styles.avatarText}>AI</Text>
+            </View>
+            <View style={[styles.messageContainer, styles.messageContainerAI]}>
+              <Text style={styles.messageLabel}>Stock Soko AI</Text>
+              <View style={[styles.messageBubble, styles.messageBubbleAI, styles.typingIndicator]}>
+                <Text style={styles.typingText}>Thinking...</Text>
+                <ActivityIndicator size="small" color={colors.primary.main} style={{ marginLeft: 8 }} />
+              </View>
+            </View>
+          </View>
+        )}
+
         <View style={{ height: 20 }} />
       </ScrollView>
 
@@ -191,13 +202,18 @@ export default function AIAssistant({ navigation }: Props) {
             onChangeText={setInput}
             onSubmitEditing={handleSend}
             returnKeyType="send"
+            editable={!loading}
           />
           <TouchableOpacity
-            style={styles.sendButton}
+            style={[styles.sendButton, (!input.trim() || loading) && styles.sendButtonDisabled]}
             onPress={handleSend}
-            disabled={!input.trim()}
+            disabled={!input.trim() || loading}
           >
-            <Text style={styles.sendIcon}>></Text>
+            {loading ? (
+              <ActivityIndicator size="small" color={colors.primary.contrast} />
+            ) : (
+              <Text style={styles.sendIcon}>></Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -380,5 +396,18 @@ const styles = StyleSheet.create({
   sendIcon: {
     fontSize: 20,
     color: colors.primary.contrast,
+  },
+  sendButtonDisabled: {
+    backgroundColor: colors.background.secondary,
+    opacity: 0.5,
+  },
+  typingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  typingText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    fontStyle: 'italic',
   },
 });
