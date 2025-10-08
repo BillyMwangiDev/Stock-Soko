@@ -13,6 +13,7 @@ import StockDetail from '../screens/StockDetail';
 import TradeOrder from '../screens/TradeOrder';
 import ReviewOrder from '../screens/ReviewOrder';
 import OrderStatus from '../screens/OrderStatus';
+import Watchlist from '../screens/Watchlist';
 
 const Stack = createStackNavigator<TradeStackParamList>();
 
@@ -74,6 +75,14 @@ export default function TradeStack() {
           title: 'Order Status',
           headerShown: true,
           headerLeft: () => null, // Prevent going back
+        }}
+      />
+      <Stack.Screen 
+        name="Watchlist" 
+        component={Watchlist}
+        options={{ 
+          title: 'Watchlist',
+          headerShown: true,
         }}
       />
     </Stack.Navigator>

@@ -1,338 +1,446 @@
+/**
+ * Trade Order Screen (Bottom Sheet)
+ * Place buy/sell orders with quantity and order type
+ */
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { colors, typography, spacing } from '../theme';
-import { Card, Input, Button } from '../components';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { colors, typography, spacing, borderRadius } from '../theme';
+import { Button } from '../components';
 
 interface TradeOrderProps {
   symbol: string;
   side: 'buy' | 'sell';
   onBack: () => void;
-  onReview: (order: OrderData) => void;
-}
-
-export interface OrderData {
-  symbol: string;
-  side: 'buy' | 'sell';
-  orderType: 'market' | 'limit';
-  quantity: number;
-  limitPrice?: number;
-  estimatedCost: number;
-  fees: number;
-  total: number;
+  onReview?: (orderData: any) => void;
 }
 
 export default function TradeOrder({ symbol, side, onBack, onReview }: TradeOrderProps) {
-  const [orderType, setOrderType] = useState<'market' | 'limit'>('market');
+  const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [limitPrice, setLimitPrice] = useState('');
+  const [orderType, setOrderType] = useState<'market' | 'limit' | 'stop'>('market');
+  const [allowFractional, setAllowFractional] = useState(false);
 
-  // Mock current price
-  const currentPrice = 150.50;
-  const feeRate = 0.015; // 1.5%
+  const availableBalance = 3456.78;
+  const currentPrice = 18.25; // Mock current price, should come from props
+  const totalCost = (parseFloat(price) || currentPrice) * (parseFloat(quantity) || 0);
+  const estimatedFee = totalCost * 0.0012; // 0.12% brokerage fee
 
-  const calculateCost = () => {
-    const qty = parseFloat(quantity) || 0;
-    const price = orderType === 'limit' ? (parseFloat(limitPrice) || 0) : currentPrice;
-    const cost = qty * price;
-    const fees = cost * feeRate;
-    return { cost, fees, total: cost + fees };
-  };
-
-  const { cost, fees, total } = calculateCost();
-
-  const handleReview = () => {
-    const qty = parseFloat(quantity);
-    if (!qty || qty <= 0) {
+  const handleReviewOrder = () => {
+    if (!quantity || parseFloat(quantity) <= 0) {
       Alert.alert('Invalid Quantity', 'Please enter a valid quantity');
       return;
     }
 
-    if (orderType === 'limit') {
-      const price = parseFloat(limitPrice);
-      if (!price || price <= 0) {
-        Alert.alert('Invalid Price', 'Please enter a valid limit price');
-        return;
-      }
+    if (orderType !== 'market' && (!price || parseFloat(price) <= 0)) {
+      Alert.alert('Invalid Price', 'Please enter a valid price for limit/stop orders');
+      return;
     }
 
-    const orderData: OrderData = {
+    // Prepare order data for review
+    const orderData = {
       symbol,
       side,
       orderType,
-      quantity: qty,
-      limitPrice: orderType === 'limit' ? parseFloat(limitPrice) : undefined,
-      estimatedCost: cost,
-      fees,
-      total,
+      quantity: parseFloat(quantity),
+      price: orderType === 'market' ? currentPrice : parseFloat(price),
+      totalCost,
+      estimatedFee,
+      totalAmount: totalCost + estimatedFee,
+      allowFractional,
     };
 
-    onReview(orderData);
+    // Navigate to ReviewOrder if callback provided
+    if (onReview) {
+      onReview(orderData);
+    } else {
+      // Fallback to alert if no navigation
+      Alert.alert(
+        'Review Order',
+        `${side === 'buy' ? 'Buy' : 'Sell'} ${quantity} shares of ${symbol}\nTotal: KES ${(totalCost + estimatedFee).toFixed(2)}`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Confirm', onPress: () => onBack() },
+        ]
+      );
+    }
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {side === 'buy' ? 'Buy' : 'Sell'} {symbol}
-        </Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <View style={styles.overlay}>
+      <View style={styles.bottomSheet}>
+        {/* Handle Bar */}
+        <View style={styles.handleContainer}>
+          <View style={styles.handle} />
+        </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Current Price Info */}
-        <Card variant="outlined" style={styles.priceCard}>
-          <Text style={styles.priceLabel}>Current Market Price</Text>
-          <Text style={styles.priceValue}>KES {currentPrice.toFixed(2)}</Text>
-        </Card>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Place Order</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={onBack}>
+            <Text style={styles.closeIcon}>✕</Text>
+          </TouchableOpacity>
+        </View>
 
-        {/* Order Type Selector */}
-        <Card>
-          <Text style={styles.sectionTitle}>Order Type</Text>
-          <View style={styles.orderTypeContainer}>
-            <TouchableOpacity
-              style={[
-                styles.orderTypeButton,
-                orderType === 'market' && styles.orderTypeButtonActive,
-              ]}
-              onPress={() => setOrderType('market')}
-            >
-              <Text
-                style={[
-                  styles.orderTypeText,
-                  orderType === 'market' && styles.orderTypeTextActive,
-                ]}
-              >
-                Market Order
-              </Text>
-              <Text style={styles.orderTypeDescription}>Execute immediately at market price</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.orderTypeButton,
-                orderType === 'limit' && styles.orderTypeButtonActive,
-              ]}
-              onPress={() => setOrderType('limit')}
-            >
-              <Text
-                style={[
-                  styles.orderTypeText,
-                  orderType === 'limit' && styles.orderTypeTextActive,
-                ]}
-              >
-                Limit Order
-              </Text>
-              <Text style={styles.orderTypeDescription}>
-                Execute only at specified price or better
-              </Text>
-            </TouchableOpacity>
+        {/* Form */}
+        <View style={styles.form}>
+          {/* Price Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Price</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.currencySymbol}>$</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="0.00"
+                placeholderTextColor={colors.text.disabled}
+                value={price}
+                onChangeText={setPrice}
+                keyboardType="decimal-pad"
+              />
+            </View>
           </View>
-        </Card>
 
-        {/* Order Details */}
-        <Card>
-          <Text style={styles.sectionTitle}>Order Details</Text>
-          
-          <Input
-            label="Quantity (Shares)"
-            placeholder="Enter number of shares"
-            value={quantity}
-            onChangeText={setQuantity}
-            keyboardType="numeric"
-          />
-
-          {orderType === 'limit' && (
-            <Input
-              label="Limit Price (KES)"
-              placeholder="Enter limit price"
-              value={limitPrice}
-              onChangeText={setLimitPrice}
-              keyboardType="numeric"
+          {/* Quantity Input */}
+          <View style={styles.inputGroup}>
+            <View style={styles.labelRow}>
+              <Text style={styles.inputLabel}>Quantity</Text>
+              <TouchableOpacity 
+                style={styles.fractionalToggle}
+                onPress={() => setAllowFractional(!allowFractional)}
+              >
+                <View style={[styles.checkbox, allowFractional && styles.checkboxActive]}>
+                  {allowFractional && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.fractionalText}>Allow Fractional</Text>
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.inputFull}
+              placeholder={allowFractional ? "0.00" : "Enter whole number"}
+              placeholderTextColor={colors.text.disabled}
+              value={quantity}
+              onChangeText={setQuantity}
+              keyboardType={allowFractional ? "decimal-pad" : "number-pad"}
             />
-          )}
-        </Card>
+          </View>
 
-        {/* Cost Breakdown */}
-        {quantity && (
-          <Card variant="elevated" style={styles.costCard}>
-            <Text style={styles.sectionTitle}>Cost Breakdown</Text>
-            
-            <View style={styles.costRow}>
-              <Text style={styles.costLabel}>Estimated Cost</Text>
-              <Text style={styles.costValue}>KES {cost.toFixed(2)}</Text>
+          {/* Order Type */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Order Type</Text>
+            <View style={styles.orderTypeRow}>
+              <TouchableOpacity
+                style={[
+                  styles.orderTypeButton,
+                  orderType === 'market' && styles.orderTypeButtonActive,
+                ]}
+                onPress={() => setOrderType('market')}
+              >
+                <Text
+                  style={[
+                    styles.orderTypeText,
+                    orderType === 'market' && styles.orderTypeTextActive,
+                  ]}
+                >
+                  Market
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.orderTypeButton,
+                  orderType === 'limit' && styles.orderTypeButtonActive,
+                ]}
+                onPress={() => setOrderType('limit')}
+              >
+                <Text
+                  style={[
+                    styles.orderTypeText,
+                    orderType === 'limit' && styles.orderTypeTextActive,
+                  ]}
+                >
+                  Limit
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.orderTypeButton,
+                  orderType === 'stop' && styles.orderTypeButtonActive,
+                ]}
+                onPress={() => setOrderType('stop')}
+              >
+                <Text
+                  style={[
+                    styles.orderTypeText,
+                    orderType === 'stop' && styles.orderTypeTextActive,
+                  ]}
+                >
+                  Stop
+                </Text>
+              </TouchableOpacity>
             </View>
+          </View>
+        </View>
 
-            <View style={styles.costRow}>
-              <Text style={styles.costLabel}>Fees (1.5%)</Text>
-              <Text style={styles.costValue}>KES {fees.toFixed(2)}</Text>
-            </View>
+        {/* Summary */}
+        <View style={styles.summary}>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Subtotal</Text>
+            <Text style={styles.summaryValue}>KES {totalCost.toFixed(2)}</Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Est. Fee (0.12%)</Text>
+            <Text style={styles.summaryValue}>KES {estimatedFee.toFixed(2)}</Text>
+          </View>
+          <View style={[styles.summaryRow, styles.summaryDivider]}>
+            <Text style={styles.summaryLabelBold}>Total {side === 'buy' ? 'Cost' : 'Proceeds'}</Text>
+            <Text style={styles.summaryValueBold}>KES {(totalCost + estimatedFee).toFixed(2)}</Text>
+          </View>
+          <View style={[styles.summaryRow, styles.summaryRowMuted]}>
+            <Text style={styles.summaryLabelMuted}>Available Balance</Text>
+            <Text style={styles.summaryValueMuted}>KES {availableBalance.toFixed(2)}</Text>
+          </View>
+        </View>
 
-            <View style={[styles.costRow, styles.costRowTotal]}>
-              <Text style={styles.costTotalLabel}>Total Amount</Text>
-              <Text style={styles.costTotalValue}>KES {total.toFixed(2)}</Text>
-            </View>
-          </Card>
-        )}
+        {/* Action Buttons */}
+        <View style={styles.actions}>
+          <TouchableOpacity style={styles.cancelButton} onPress={onBack}>
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.placeOrderButton} onPress={handleReviewOrder}>
+            <Text style={styles.placeOrderText}>Review Order</Text>
+          </TouchableOpacity>
+        </View>
 
-        {/* Info Card */}
-        <Card variant="outlined">
-          <Text style={styles.infoText}>
-            💡 <Text style={styles.infoTextBold}>Tip:</Text> {side === 'buy' ? 
-              'Market orders are executed immediately but may have price variations. Limit orders give you price control but may not execute immediately.' :
-              'Ensure you have sufficient shares in your portfolio to place this sell order.'}
-          </Text>
-        </Card>
-      </ScrollView>
-
-      {/* Bottom Buttons */}
-      <View style={styles.footer}>
-        <Button
-          title="Cancel"
-          onPress={onBack}
-          variant="outline"
-          style={styles.footerButton}
-        />
-        <Button
-          title="Review Order"
-          onPress={handleReview}
-          variant={side === 'buy' ? 'success' : 'error'}
-          style={styles.footerButton}
-        />
+        <View style={{ height: 32 }} />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  overlay: {
     flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  bottomSheet: {
     backgroundColor: colors.background.primary,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  handleContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+  },
+  handle: {
+    width: 40,
+    height: 6,
+    backgroundColor: colors.background.secondary,
+    borderRadius: borderRadius.full,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: spacing.base,
-    backgroundColor: colors.background.secondary,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.main,
-  },
-  backButton: {
-    padding: spacing.xs,
+    position: 'relative',
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
   },
   headerTitle: {
-    fontSize: typography.fontSize.xl,
+    fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
+    textAlign: 'center',
   },
-  content: {
-    flex: 1,
-    padding: spacing.base,
-  },
-  priceCard: {
-    marginBottom: spacing.md,
+  closeButton: {
+    position: 'absolute',
+    left: spacing.md,
+    top: 0,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  priceLabel: {
+  closeIcon: {
+    fontSize: 24,
+    color: colors.text.primary,
+  },
+  form: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.lg,
+    gap: spacing.lg,
+  },
+  inputGroup: {
+    gap: spacing.sm,
+  },
+  inputLabel: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    marginBottom: spacing.xs,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.text.secondary,
   },
-  priceValue: {
-    fontSize: typography.fontSize['2xl'],
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  fractionalToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: colors.border.main,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxActive: {
+    borderColor: colors.primary.main,
+    backgroundColor: colors.primary.main,
+  },
+  checkmark: {
+    fontSize: 12,
+    color: colors.primary.contrast,
     fontWeight: typography.fontWeight.bold,
+  },
+  fractionalText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+    paddingHorizontal: spacing.md,
+  },
+  currencySymbol: {
+    fontSize: typography.fontSize.base,
+    color: colors.text.secondary,
+    marginRight: spacing.xs,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    fontSize: typography.fontSize.base,
     color: colors.text.primary,
   },
-  sectionTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
+  inputFull: {
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    fontSize: typography.fontSize.base,
     color: colors.text.primary,
-    marginBottom: spacing.md,
   },
-  orderTypeContainer: {
+  orderTypeRow: {
+    flexDirection: 'row',
     gap: spacing.sm,
   },
   orderTypeButton: {
-    padding: spacing.md,
-    borderRadius: spacing.sm,
-    backgroundColor: colors.background.tertiary,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+    backgroundColor: colors.background.card,
+    alignItems: 'center',
   },
   orderTypeButtonActive: {
     borderColor: colors.primary.main,
     backgroundColor: colors.primary.main + '20',
   },
   orderTypeText: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold,
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
     color: colors.text.secondary,
-    marginBottom: spacing.xs,
   },
   orderTypeTextActive: {
     color: colors.primary.main,
+    fontWeight: typography.fontWeight.bold,
   },
-  orderTypeDescription: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
+  summary: {
+    marginHorizontal: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    gap: spacing.sm,
   },
-  costCard: {
-    marginVertical: spacing.md,
-  },
-  costRow: {
+  summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.main,
   },
-  costLabel: {
+  summaryRowBold: {
+    marginTop: spacing.xs,
+  },
+  summaryDivider: {
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.main,
+  },
+  summaryRowMuted: {
+    marginTop: spacing.xs,
+  },
+  summaryLabel: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+  },
+  summaryValue: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+  },
+  summaryLabelBold: {
     fontSize: typography.fontSize.base,
-    color: colors.text.tertiary,
-  },
-  costValue: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.text.primary,
-  },
-  costRowTotal: {
-    paddingTop: spacing.md,
-    borderBottomWidth: 0,
-  },
-  costTotalLabel: {
-    fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
   },
-  costTotalValue: {
-    fontSize: typography.fontSize.lg,
+  summaryValueBold: {
+    fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.bold,
     color: colors.primary.main,
   },
-  infoText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    lineHeight: 20,
+  summaryLabelMuted: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.disabled,
   },
-  infoTextBold: {
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.secondary,
+  summaryValueMuted: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.disabled,
   },
-  footer: {
+  actions: {
     flexDirection: 'row',
-    padding: spacing.base,
-    backgroundColor: colors.background.secondary,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.main,
     gap: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
   },
-  footerButton: {
+  cancelButton: {
     flex: 1,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.background.secondary,
+    alignItems: 'center',
+  },
+  cancelText: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  placeOrderButton: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primary.main,
+    alignItems: 'center',
+  },
+  placeOrderText: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.primary.contrast,
   },
 });
-

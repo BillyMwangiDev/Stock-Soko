@@ -10,6 +10,7 @@ import { Button, Input } from '../../components';
 import { colors, typography, spacing } from '../../theme';
 import { api } from '../../api/client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setAccessToken } from '../../store/auth';
 
 type LoginScreenProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -23,6 +24,8 @@ export default function Login({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    console.log('Login button clicked', { email, password: '***' });
+    
     if (!email || !password) {
       Alert.alert('Error', 'Please enter email and password');
       return;
@@ -30,26 +33,34 @@ export default function Login({ navigation }: Props) {
 
     try {
       setLoading(true);
-      const form = new FormData();
-      form.append('username', email);
-      form.append('password', password);
+      console.log('Sending login request...');
       
-      const res = await api.post('/auth/login', form, {
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      const formBody = new URLSearchParams();
+      formBody.append('username', email);
+      formBody.append('password', password);
+      
+      console.log('Form body:', formBody.toString());
+      
+      const res = await api.post('/auth/login', formBody.toString(), {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
       
-      // Save token
-      await AsyncStorage.setItem('accessToken', res.data.access_token);
+      console.log('Login successful, token received');
+      
+      // Save token using auth store (updates both AsyncStorage and memory)
+      await setAccessToken(res.data.access_token);
       await AsyncStorage.setItem('userEmail', email);
       
-      // Navigate to main app
-      Alert.alert('Success', 'Logged in successfully!', [
-        { text: 'OK', onPress: () => {
-          // App.tsx will handle navigation to Main stack
-        }}
-      ]);
+      console.log('Token saved, reloading to trigger navigation');
+      
+      // Reload immediately to trigger RootNavigator re-check
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     } catch (error: any) {
-      Alert.alert('Login Failed', error?.response?.data?.detail || 'Invalid credentials');
+      console.error('Login error:', error);
+      console.error('Error response:', error?.response?.data);
+      Alert.alert('Login Failed', error?.response?.data?.detail || error?.message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }

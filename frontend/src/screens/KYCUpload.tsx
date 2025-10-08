@@ -3,164 +3,179 @@
  * Upload ID documents for verification
  */
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Button, Card } from '../components';
-import { colors, typography, spacing } from '../theme';
+import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ProfileStackParamList } from '../navigation/types';
+import { Button } from '../components';
+import { colors, typography, spacing, borderRadius } from '../theme';
 
-export default function KYCUpload() {
-  const [idFront, setIdFront] = useState<string | null>(null);
-  const [idBack, setIdBack] = useState<string | null>(null);
-  const [selfie, setSelfie] = useState<string | null>(null);
-  const [addressProof, setAddressProof] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+type KYCUploadScreenProp = StackNavigationProp<ProfileStackParamList, 'KYCUpload'>;
 
-  const pickImage = (type: 'idFront' | 'idBack' | 'selfie' | 'addressProof') => {
-    // In production, use expo-image-picker
-    Alert.alert('Pick Image', `Select ${type} image (Image picker integration required)`);
+interface Props {
+  navigation: KYCUploadScreenProp;
+}
+
+interface Document {
+  id: string;
+  title: string;
+  description: string;
+  emoji: string;
+  uploaded: boolean;
+}
+
+export default function KYCUpload({ navigation }: Props) {
+  const [documents, setDocuments] = useState<Document[]>([
+    {
+      id: 'national_id',
+      title: 'National ID',
+      description: 'Upload a clear photo of your National ID card or document.',
+      emoji: 'ID',
+      uploaded: false,
+    },
+    {
+      id: 'proof_address',
+      title: 'Proof of Address',
+      description: 'Upload a recent utility bill or bank statement.',
+      emoji: 'DOC',
+      uploaded: false,
+    },
+    {
+      id: 'selfie',
+      title: 'Selfie',
+      description: 'Take a clear selfie to verify your identity.',
+      emoji: 'PIC',
+      uploaded: false,
+    },
+  ]);
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
+  const progress = (currentStep / totalSteps) * 100;
+
+  const handleClose = () => {
+    navigation.goBack();
+  };
+
+  const handleUpload = (docId: string) => {
+    Alert.alert(
+      'Upload Document',
+      'This will open your camera or gallery to upload the document.',
+      [
+        {
+          text: 'Camera',
+          onPress: () => mockUpload(docId),
+        },
+        {
+          text: 'Gallery',
+          onPress: () => mockUpload(docId),
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
+  const mockUpload = (docId: string) => {
+    setDocuments(prev =>
+      prev.map(doc => (doc.id === docId ? { ...doc, uploaded: true } : doc))
+    );
     
-    // Mock image selection
-    const mockImageUri = 'https://via.placeholder.com/300';
-    switch (type) {
-      case 'idFront':
-        setIdFront(mockImageUri);
-        break;
-      case 'idBack':
-        setIdBack(mockImageUri);
-        break;
-      case 'selfie':
-        setSelfie(mockImageUri);
-        break;
-      case 'addressProof':
-        setAddressProof(mockImageUri);
-        break;
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
-  const handleSubmit = async () => {
-    if (!idFront || !idBack || !selfie) {
-      Alert.alert('Error', 'Please upload all required documents');
+  const handleContinue = () => {
+    const allUploaded = documents.every(doc => doc.uploaded);
+    
+    if (!allUploaded) {
+      Alert.alert('Incomplete', 'Please upload all required documents');
       return;
     }
 
-    try {
-      setLoading(true);
-      
-      // In production, upload to S3 and call KYC API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      Alert.alert(
-        'Success',
-        'Documents uploaded successfully! Your KYC application is under review.',
-        [{ text: 'OK' }]
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to upload documents');
-    } finally {
-      setLoading(false);
-    }
+    Alert.alert(
+      'Documents Submitted',
+      'Your KYC verification is under review. We will notify you once approved.',
+      [
+        {
+          text: 'OK',
+          onPress: () => navigation.goBack(),
+        },
+      ]
+    );
   };
 
-  const renderUploadSection = (
-    title: string,
-    description: string,
-    imageUri: string | null,
-    onPress: () => void,
-    required: boolean = true
-  ) => (
-    <Card>
-      <View style={styles.uploadHeader}>
-        <View style={styles.uploadTitleContainer}>
-          <Text style={styles.uploadTitle}>{title}</Text>
-          {required && <Text style={styles.requiredBadge}>Required</Text>}
-        </View>
-        <Text style={styles.uploadDescription}>{description}</Text>
+  return (
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+          <Text style={styles.closeIcon}>✕</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Verify your identity</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
-      <TouchableOpacity 
-        style={styles.uploadBox}
-        onPress={onPress}
-        activeOpacity={0.7}
-      >
-        {imageUri ? (
-          <View style={styles.imageContainer}>
-            <Image source={{ uri: imageUri }} style={styles.uploadedImage} />
-            <View style={styles.imageOverlay}>
-              <Ionicons name="checkmark-circle" size={40} color={colors.success} />
-            </View>
-          </View>
-        ) : (
-          <View style={styles.uploadPlaceholder}>
-            <Ionicons name="cloud-upload-outline" size={48} color={colors.text.tertiary} />
-            <Text style={styles.uploadText}>Tap to upload</Text>
-            <Text style={styles.uploadSubtext}>JPG, PNG • Max 10MB</Text>
-          </View>
-        )}
-      </TouchableOpacity>
-    </Card>
-  );
-
-  return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <Card variant="elevated">
-          <View style={styles.infoBox}>
-            <Ionicons name="information-circle" size={24} color={colors.info} />
-            <View style={styles.infoTextContainer}>
-              <Text style={styles.infoTitle}>KYC Verification Required</Text>
-              <Text style={styles.infoText}>
-                To comply with regulations, we need to verify your identity before you can start trading.
-              </Text>
-            </View>
-          </View>
-        </Card>
-
-        {renderUploadSection(
-          'National ID - Front',
-          'Upload the front side of your national ID or passport',
-          idFront,
-          () => pickImage('idFront')
-        )}
-
-        {renderUploadSection(
-          'National ID - Back',
-          'Upload the back side of your national ID',
-          idBack,
-          () => pickImage('idBack')
-        )}
-
-        {renderUploadSection(
-          'Selfie Photo',
-          'Take a clear photo of yourself holding your ID',
-          selfie,
-          () => pickImage('selfie')
-        )}
-
-        {renderUploadSection(
-          'Proof of Address',
-          'Recent utility bill or bank statement (Optional)',
-          addressProof,
-          () => pickImage('addressProof'),
-          false
-        )}
-
-        <View style={styles.termsContainer}>
-          <Ionicons name="shield-checkmark-outline" size={20} color={colors.text.tertiary} />
-          <Text style={styles.termsText}>
-            Your documents are encrypted and stored securely. We'll only use them for verification purposes.
-          </Text>
+      {/* Progress Section */}
+      <View style={styles.progressSection}>
+        <View style={styles.progressHeader}>
+          <Text style={styles.progressLabel}>Step {currentStep} of {totalSteps}</Text>
+          <Text style={styles.progressPercent}>{Math.round(progress)}%</Text>
         </View>
+        <View style={styles.progressBar}>
+          <View style={[styles.progressFill, { width: `${progress}%` }]} />
+        </View>
+      </View>
 
+      {/* Document Upload List */}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.documentsContainer}>
+          {documents.map((doc) => (
+            <TouchableOpacity
+              key={doc.id}
+              style={[
+                styles.documentCard,
+                doc.uploaded && styles.documentCardUploaded,
+              ]}
+              onPress={() => handleUpload(doc.id)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.documentIcon}>
+                <Text style={styles.documentEmoji}>{doc.emoji}</Text>
+              </View>
+              
+              <View style={styles.documentInfo}>
+                <Text style={styles.documentTitle}>{doc.title}</Text>
+                <Text style={styles.documentDescription}>{doc.description}</Text>
+              </View>
+
+              {doc.uploaded && (
+                <View style={styles.uploadedBadge}>
+                  <Text style={styles.checkmark}>✓</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+
+      {/* Footer */}
+      <View style={styles.footer}>
         <Button
-          title="Submit for Verification"
-          onPress={handleSubmit}
-          loading={loading}
+          title="Continue"
+          onPress={handleContinue}
           variant="primary"
           size="lg"
-          disabled={!idFront || !idBack || !selfie}
+          fullWidth
         />
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -169,107 +184,133 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
-  content: {
-    padding: spacing.lg,
-    gap: spacing.lg,
-    paddingBottom: spacing['3xl'],
-  },
-  infoBox: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  infoTextContainer: {
-    flex: 1,
-  },
-  infoTitle: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.info,
-    marginBottom: spacing.xs,
-  },
-  infoText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.secondary,
-    lineHeight: 20,
-  },
-  uploadHeader: {
-    marginBottom: spacing.md,
-  },
-  uploadTitleContainer: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.xs,
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
   },
-  uploadTitle: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold,
+  closeButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: borderRadius.full,
+  },
+  closeIcon: {
+    fontSize: 24,
     color: colors.text.primary,
   },
-  requiredBadge: {
-    fontSize: typography.fontSize.xs,
-    color: colors.error,
-    backgroundColor: colors.error + '20',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: 4,
+  headerTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    flex: 1,
+    textAlign: 'center',
   },
-  uploadDescription: {
+  headerSpacer: {
+    width: 40,
+  },
+  progressSection: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.lg,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
+  progressLabel: {
     fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.text.primary,
+  },
+  progressPercent: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
     color: colors.text.secondary,
   },
-  uploadBox: {
-    borderRadius: spacing.sm,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: colors.border.main,
+  progressBar: {
+    height: 8,
+    width: '100%',
+    backgroundColor: colors.background.secondary,
+    borderRadius: borderRadius.full,
     overflow: 'hidden',
   },
-  uploadPlaceholder: {
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing.sm,
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.primary.main,
+    borderRadius: borderRadius.full,
   },
-  uploadText: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.secondary,
-  },
-  uploadSubtext: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-  },
-  imageContainer: {
-    position: 'relative',
-  },
-  uploadedImage: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'cover',
-  },
-  imageOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  termsContainer: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    padding: spacing.md,
-    backgroundColor: colors.background.secondary,
-    borderRadius: spacing.sm,
-  },
-  termsText: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.xl,
+  },
+  documentsContainer: {
+    gap: spacing.md,
+  },
+  documentCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    gap: spacing.md,
+  },
+  documentCardUploaded: {
+    backgroundColor: colors.success + '10',
+    borderWidth: 1,
+    borderColor: colors.success + '40',
+  },
+  documentIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  documentEmoji: {
+    fontSize: 24,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.primary.main,
+  },
+  documentInfo: {
+    flex: 1,
+  },
+  documentTitle: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
+  },
+  documentDescription: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
+    color: colors.text.secondary,
     lineHeight: 20,
   },
+  uploadedBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.success,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkmark: {
+    fontSize: 20,
+    color: colors.primary.contrast,
+    fontWeight: typography.fontWeight.bold,
+  },
+  footer: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.main + '20',
+    backgroundColor: colors.background.primary,
+  },
 });
-

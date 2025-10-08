@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { Card, Button, Input, Badge, LoadingState } from '../components';
 import { api } from '../api/client';
+import { hapticFeedback } from '../utils/haptics';
 
 interface Transaction {
   id: string;
@@ -69,12 +70,14 @@ export default function Wallet() {
 
   const handleDeposit = async () => {
     if (!depositAmount || !depositPhone) {
+      hapticFeedback.error();
       Alert.alert('Error', 'Please enter amount and phone number');
       return;
     }
 
     const amount = parseFloat(depositAmount);
     if (isNaN(amount) || amount <= 0) {
+      hapticFeedback.error();
       Alert.alert('Error', 'Please enter a valid amount');
       return;
     }
@@ -85,11 +88,14 @@ export default function Wallet() {
         phone_number: depositPhone,
         amount,
       });
+      hapticFeedback.success();
       Alert.alert('Success', res.data.message || 'Deposit initiated. Check your phone for STK push.');
       setDepositAmount('');
       setDepositPhone('');
       setActiveTab('overview');
+      loadWalletData(); // Refresh balance
     } catch (error: any) {
+      hapticFeedback.error();
       Alert.alert('Error', error?.response?.data?.detail || 'Failed to initiate deposit');
     } finally {
       setProcessing(false);
@@ -98,17 +104,20 @@ export default function Wallet() {
 
   const handleWithdraw = async () => {
     if (!withdrawAmount) {
+      hapticFeedback.error();
       Alert.alert('Error', 'Please enter withdrawal amount');
       return;
     }
 
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount <= 0) {
+      hapticFeedback.error();
       Alert.alert('Error', 'Please enter a valid amount');
       return;
     }
 
     if (amount > balance.available) {
+      hapticFeedback.warning();
       Alert.alert('Error', 'Insufficient balance');
       return;
     }
@@ -117,7 +126,11 @@ export default function Wallet() {
       'Confirm Withdrawal',
       `Withdraw KES ${amount.toFixed(2)} to ${withdrawDestination === 'mpesa' ? 'M-Pesa' : 'Bank Account'}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Cancel', 
+          style: 'cancel',
+          onPress: () => hapticFeedback.light()
+        },
         {
           text: 'Confirm',
           onPress: async () => {
@@ -125,10 +138,13 @@ export default function Wallet() {
               setProcessing(true);
               // In production, call withdrawal API
               await new Promise(resolve => setTimeout(resolve, 1500));
-              Alert.alert('Success', 'Withdrawal request submitted');
+              hapticFeedback.success();
+              Alert.alert('Success', 'Withdrawal request submitted. Funds will be transferred within 1-3 business days.');
               setWithdrawAmount('');
               setActiveTab('overview');
+              loadWalletData(); // Refresh balance
             } catch (error) {
+              hapticFeedback.error();
               Alert.alert('Error', 'Failed to process withdrawal');
             } finally {
               setProcessing(false);
@@ -156,7 +172,10 @@ export default function Wallet() {
           <TouchableOpacity
             key={tab}
             style={[styles.tab, activeTab === tab && styles.tabActive]}
-            onPress={() => setActiveTab(tab)}
+            onPress={() => {
+              hapticFeedback.selection();
+              setActiveTab(tab);
+            }}
           >
             <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
               {tab.charAt(0).toUpperCase() + tab.slice(1)}

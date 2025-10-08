@@ -1,7 +1,3 @@
-// Stock Soko - Dark Theme (OKX-inspired)
-// Professional dark theme for trading platform
-
-// Color type definitions for better type safety
 export type ColorValue = string;
 export type ColorOpacity = number;
 
@@ -88,107 +84,77 @@ export interface ColorTheme {
 }
 
 export const colors: ColorTheme = {
-  // Background layers (darkest to lighter)
   background: {
-    primary: '#0B0E11',      // Main app background - very dark (OKX-style)
-    secondary: '#161A1E',    // Secondary sections/cards
-    tertiary: '#1E2329',     // Elevated surfaces (OKX card color)
-    elevated: '#2B3139',     // Hover/active states
-    surface: '#1E2329',      // Surface color for cards
+    primary: '#0D1117',
+    secondary: '#161B22',
+    tertiary: '#1E2329',
+    elevated: '#2B3139',
+    surface: '#1E2329',
   },
-  
-  // Text colors (light on dark)
   text: {
-    primary: '#EAECEF',      // Main text - off white
-    secondary: '#B7BDC6',    // Secondary text
-    tertiary: '#848E9C',     // Muted text
-    disabled: '#5E6673',     // Disabled text
-    inverse: '#0B0E11',      // Inverse text (dark on light)
+    primary: '#EAECEF',
+    secondary: '#B7BDC6',
+    tertiary: '#848E9C',
+    disabled: '#5E6673',
+    inverse: '#0D1117',
   },
-  
-  // Brand colors (OKX-inspired)
   primary: {
-    main: '#2EBD85',         // Green accent (OKX green)
-    light: '#3DD598',
-    dark: '#1F9E6D',
-    contrast: '#0B0E11',     // Dark text on green
+    main: '#16A34A',
+    light: '#22C55E',
+    dark: '#15803D',
+    contrast: '#0D1117',
   },
-  
-  // Semantic colors
-  success: '#2EBD85',        // Green for buy/confirm (OKX green)
-  error: '#F6465D',          // Red for sell/error (OKX red)
-  warning: '#F0B90B',        // Yellow for alerts (OKX yellow)
-  info: '#3861FB',           // Blue
-  
-  // Status colors (for components)
+  success: '#16A34A',
+  error: '#F6465D',
+  warning: '#FBBF24',
+  info: '#0B3D91',
   status: {
-    success: '#2EBD85',
+    success: '#16A34A',
     error: '#F6465D',
-    warning: '#F0B90B',
-    info: '#3861FB',
+    warning: '#FBBF24',
+    info: '#0B3D91',
   },
-  
-  // Market colors
-  gain: '#2EBD85',           // Positive changes
-  loss: '#F6465D',           // Negative changes
+  gain: '#16A34A',
+  loss: '#F6465D',
   neutral: '#848E9C',
-  
-  // Border colors
   border: {
     light: '#2B3139',
     main: '#1E2329',
-    dark: '#161A1E',
+    dark: '#161B22',
   },
-  
-  // Overlay
   overlay: 'rgba(0, 0, 0, 0.6)',
-  
-  // Special UI states (OKX-style)
   hover: {
-    primary: '#26A372',      // Darker green on hover
-    secondary: '#2B3139',    // Lighter grey on hover
-    destructive: '#E03D51',  // Darker red on hover
+    primary: '#15803D',
+    secondary: '#2B3139',
+    destructive: '#E03D51',
   },
-  
-  // Input specific
   input: {
     background: '#1E2329',
     border: '#2B3139',
-    focus: '#2EBD85',
+    focus: '#16A34A',
     placeholder: '#5E6673',
   },
-  
-  // Tab bar
   tabBar: {
-    background: '#161A1E',
-    active: '#2EBD85',
+    background: '#161B22',
+    active: '#16A34A',
     inactive: '#848E9C',
   },
-  
-  // Chart colors (OKX-style)
   chart: {
     grid: '#2B3139',
-    up: '#2EBD85',
+    up: '#16A34A',
     down: '#F6465D',
     volume: '#474D57',
   },
 };
 
 export const gradients = {
-  card: ['#1E2329', '#161A1E'],
-  primary: ['#2EBD85', '#1F9E6D'],
-  gain: ['#2EBD85', '#1F9E6D'],
+  card: ['#1E2329', '#161B22'],
+  primary: ['#16A34A', '#15803D'],
+  gain: ['#16A34A', '#15803D'],
   loss: ['#F6465D', '#E03D51'],
-  background: ['#0B0E11', '#161A1E'],
+  background: ['#0D1117', '#161B22'],
 };
 
-/**
- * Color utility functions
- */
-
-/**
- * Convert hex color to rgba with opacity
- */
 export function hexToRgba(hex: string, opacity: number): string {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -196,11 +162,7 @@ export function hexToRgba(hex: string, opacity: number): string {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
-/**
- * Lighten a color by a percentage
- */
 export function lightenColor(color: string, percent: number): string {
-  // This is a simplified version - in a real app you might want a more sophisticated color library
   if (color.startsWith('#')) {
     const num = parseInt(color.slice(1), 16);
     const amt = Math.round(2.55 * percent);
@@ -214,16 +176,10 @@ export function lightenColor(color: string, percent: number): string {
   return color;
 }
 
-/**
- * Darken a color by a percentage
- */
 export function darkenColor(color: string, percent: number): string {
   return lightenColor(color, -percent);
 }
 
-/**
- * Get contrast color (black or white) for better readability
- */
 export function getContrastColor(backgroundColor: string): string {
   if (backgroundColor.startsWith('#')) {
     const hex = backgroundColor.slice(1);

@@ -23,23 +23,48 @@ export default function Register({ navigation }: Props) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ fullName?: string; email?: string; phone?: string; password?: string; confirmPassword?: string }>({});
+
+  const validate = (): boolean => {
+    const nextErrors: typeof errors = {};
+
+    if (!fullName.trim()) {
+      nextErrors.fullName = 'Full name is required';
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      nextErrors.email = 'Enter a valid email address';
+    }
+
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length < 9) {
+      nextErrors.phone = 'Enter a valid phone number';
+    }
+
+    const hasMinLen = password.length >= 8;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    const withinBcrypt = new TextEncoder().encode(password).length <= 72;
+
+    if (!hasMinLen || !hasUpper || !hasLower || !hasDigit || !hasSpecial) {
+      nextErrors.password = 'Use 8+ chars with upper, lower, number and special';
+    } else if (!withinBcrypt) {
+      nextErrors.password = 'Password must be 72 bytes or less';
+    }
+
+    if (confirmPassword !== password) {
+      nextErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
 
   const handleRegister = async () => {
-    // Validation
-    if (!fullName || !email || !phone || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-
-    if (password.length < 8) {
-      Alert.alert('Error', 'Password must be at least 8 characters');
-      return;
-    }
+    if (!validate()) return;
 
     try {
       setLoading(true);
@@ -62,7 +87,23 @@ export default function Register({ navigation }: Props) {
         ]
       );
     } catch (error: any) {
-      Alert.alert('Registration Failed', error?.response?.data?.detail || 'Failed to create account');
+      console.error('Registration error:', error);
+      const detail: string | undefined = error?.response?.data?.detail;
+      if (typeof detail === 'string') {
+        if (/exists/i.test(detail) && /email/i.test(detail)) {
+          setErrors((e) => ({ ...e, email: 'Email already registered' }));
+        } else if (/password/i.test(detail)) {
+          setErrors((e) => ({ ...e, password: detail }));
+        } else if (/email/i.test(detail)) {
+          setErrors((e) => ({ ...e, email: detail }));
+        } else if (/phone/i.test(detail)) {
+          setErrors((e) => ({ ...e, phone: detail }));
+        } else {
+          Alert.alert('Registration Failed', detail);
+        }
+      } else {
+        Alert.alert('Registration Failed', 'Unable to create account. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -82,43 +123,58 @@ export default function Register({ navigation }: Props) {
 
         <View style={styles.form}>
         <Input
+          id="fullName"
+          name="fullName"
           label="Full Name"
           placeholder="Enter your full name"
           value={fullName}
           onChangeText={setFullName}
+          error={errors.fullName}
         />
         
         <Input
+          id="email"
+          name="email"
           label="Email"
           placeholder="Enter your email"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          error={errors.email}
         />
 
         <Input
+          id="phone"
+          name="phone"
           label="Phone Number"
           placeholder="+254..."
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"
+          error={errors.phone}
         />
         
         <Input
+          id="password"
+          name="password"
           label="Password"
           placeholder="Minimum 8 characters"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          error={errors.password}
         />
 
         <Input
+          id="confirmPassword"
+          name="confirmPassword"
           label="Confirm Password"
           placeholder="Re-enter password"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
+          error={errors.confirmPassword}
         />
 
         <Button

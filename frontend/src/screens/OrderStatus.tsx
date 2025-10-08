@@ -22,6 +22,7 @@ export default function OrderStatus({
   onBackToPortfolio,
   onRetry,
 }: OrderStatusProps) {
+
   const getStatusConfig = () => {
     switch (status) {
       case 'executed':
@@ -55,16 +56,19 @@ export default function OrderStatus({
     <View style={styles.container}>
       <View style={styles.content}>
         {/* Status Icon */}
-        <View style={[styles.iconContainer, { backgroundColor: config.color + '20' }]}>
-          <Ionicons name={config.icon as any} size={80} color={config.color} />
+        <View>
+          <View style={[styles.iconContainer, { backgroundColor: config.color + '20' }]}>
+            <Ionicons name={config.icon as any} size={80} color={config.color} />
+          </View>
         </View>
 
-        {/* Status Text */}
-        <Text style={styles.title}>{config.title}</Text>
-        <Text style={styles.subtitle}>{config.subtitle}</Text>
+        {/* Status Text & Content */}
+        <View style={[styles.contentWrapper]}>
+          <Text style={styles.title}>{config.title}</Text>
+          <Text style={styles.subtitle}>{config.subtitle}</Text>
 
-        {/* Order Summary */}
-        <Card variant="elevated" style={styles.summaryCard}>
+          {/* Order Summary */}
+          <Card variant="elevated" style={styles.summaryCard}>
           <Text style={styles.summaryTitle}>Order Details</Text>
           
           <View style={styles.summaryRow}>
@@ -142,6 +146,7 @@ export default function OrderStatus({
             />
           )}
         </View>
+        </View>
       </View>
     </View>
   );
@@ -165,6 +170,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.xl,
+  },
+  contentWrapper: {
+    width: '100%',
+    alignItems: 'center',
   },
   title: {
     fontSize: typography.fontSize['2xl'],

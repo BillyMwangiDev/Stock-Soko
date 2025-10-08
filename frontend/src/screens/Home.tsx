@@ -1,185 +1,202 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, RefreshControl } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { Card, Badge, LoadingState, EmptyState } from '../components';
+import { LoadingState, FloatingAIButton } from '../components';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface MarketStats {
-  total_instruments: number;
-  gainers: number;
-  losers: number;
-  unchanged: number;
-  total_volume: number;
-  total_value: number;
-}
-
-interface Instrument {
-  symbol: string;
-  name: string;
-  last_price: number;
-  change_pct: number;
-  volume?: number;
+interface PortfolioData {
+  value: number;
+  change: number;
+  changePercent: number;
 }
 
 const { width } = Dimensions.get('window');
 
 export default function Home() {
-  const [stats, setStats] = useState<MarketStats | null>(null);
-  const [topGainers, setTopGainers] = useState<Instrument[]>([]);
-  const [topLosers, setTopLosers] = useState<Instrument[]>([]);
+  const navigation = useNavigation();
+  const [userName, setUserName] = useState('Trader');
+  const [portfolio, setPortfolio] = useState<PortfolioData>({
+    value: 12345.67,
+    change: 276.45,
+    changePercent: 2.3,
+  });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async () => {
+  const loadData = async (isRefreshing = false) => {
+    if (isRefreshing) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
-      const res = await api.get('/markets');
-      const instruments: Instrument[] = res.data.instruments || [];
-      
-      // Calculate stats
-      const gainers = instruments.filter(i => i.change_pct > 0);
-      const losers = instruments.filter(i => i.change_pct < 0);
-      const unchanged = instruments.filter(i => i.change_pct === 0);
-      
-      setStats({
-        total_instruments: instruments.length,
-        gainers: gainers.length,
-        losers: losers.length,
-        unchanged: unchanged.length,
-        total_volume: instruments.reduce((sum, i) => sum + (i.volume || 0), 0),
-        total_value: 0,
-      });
+      const email = await AsyncStorage.getItem('userEmail');
+      if (email) {
+        const name = email.split('@')[0];
+        setUserName(name.charAt(0).toUpperCase() + name.slice(1));
+      }
 
-      // Get top movers
-      const sortedByGain = [...instruments].sort((a, b) => b.change_pct - a.change_pct);
-      setTopGainers(sortedByGain.slice(0, 5));
-      setTopLosers(sortedByGain.slice(-5).reverse());
+      const balanceRes = await api.get('/ledger/balance');
+      const positionsRes = await api.get('/ledger/positions');
+      
+      const balance = balanceRes.data.total || 0;
+      const positions = positionsRes.data.positions || [];
+      
+      const totalValue = balance + positions.reduce((sum: number, p: any) => sum + (p.market_value || 0), 0);
+      const totalGain = positions.reduce((sum: number, p: any) => sum + (p.unrealized_pl || 0), 0);
+      const changePercent = totalValue > 0 ? (totalGain / totalValue) * 100 : 0;
+
+      setPortfolio({
+        value: totalValue,
+        change: totalGain,
+        changePercent,
+      });
     } catch (error) {
-      console.error('Failed to load market data:', error);
+      console.error('Failed to load data:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  if (loading) {
-    return <LoadingState message="Loading market overview..." />;
-  }
+  const onRefresh = () => {
+    loadData(true);
+  };
 
-  if (!stats) {
-    return (
-      <EmptyState
-        title="No Market Data"
-        message="Unable to load market data at this time"
-        actionLabel="Retry"
-        onAction={loadData}
-      />
-    );
+  if (loading) {
+    return <LoadingState message="Loading dashboard..." />;
   }
 
   return (
-    <ScrollView 
-      style={styles.container} 
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={true}
-      bounces={true}
-      scrollEventThrottle={16}
-    >
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Market Overview</Text>
-        <Text style={styles.subtitle}>Nairobi Securities Exchange</Text>
+        <Text style={styles.headerTitle}>Stock Soko</Text>
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => navigation.navigate('Profile', { screen: 'NotificationCenter' })}
+        >
+          <Text style={styles.bellIcon}>○</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Market Stats Grid */}
-      <View style={styles.statsGrid}>
-        <Card style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.total_instruments}</Text>
-          <Text style={styles.statLabel}>Instruments</Text>
-        </Card>
-        
-        <Card style={styles.statCard}>
-          <Text style={[styles.statValue, { color: colors.gain }]}>{stats.gainers}</Text>
-          <Text style={styles.statLabel}>Gainers</Text>
-        </Card>
-        
-        <Card style={styles.statCard}>
-          <Text style={[styles.statValue, { color: colors.loss }]}>{stats.losers}</Text>
-          <Text style={styles.statLabel}>Losers</Text>
-        </Card>
-        
-        <Card style={styles.statCard}>
-          <Text style={[styles.statValue, { color: colors.text.tertiary }]}>{stats.unchanged}</Text>
-          <Text style={styles.statLabel}>Unchanged</Text>
-        </Card>
-      </View>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary.main}
+            colors={[colors.primary.main]}
+          />
+        }
+      >
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeText}>Welcome back, {userName}</Text>
+        </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Top Gainers</Text>
-        <Card variant="default" padding="sm">
-          {topGainers.length === 0 ? (
-            <Text style={styles.emptyText}>No gainers today</Text>
-          ) : (
-            topGainers.map((stock, index) => (
-              <View key={stock.symbol} style={styles.stockRow}>
-                <View style={styles.stockInfo}>
-                  <Text style={styles.stockRank}>{index + 1}</Text>
-                  <View>
-                    <Text style={styles.stockSymbol}>{stock.symbol}</Text>
-                    <Text style={styles.stockName} numberOfLines={1}>{stock.name}</Text>
-                  </View>
-                </View>
-                <View style={styles.stockRight}>
-                  <Text style={styles.stockPrice}>KES {stock.last_price.toFixed(2)}</Text>
-                  <Badge 
-                    text={`+${stock.change_pct.toFixed(2)}%`} 
-                    variant="success"
-                  />
-                </View>
+        <View style={styles.portfolioCard}>
+          <View style={styles.portfolioInfo}>
+            <Text style={styles.portfolioLabel}>Portfolio Value</Text>
+            <Text style={styles.portfolioValue}>
+              Ksh {portfolio.value.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
+            <View style={styles.portfolioChange}>
+              <Text style={styles.arrowUp}>↑</Text>
+              <Text style={styles.changeText}>+{portfolio.changePercent.toFixed(1)}% Today</Text>
+            </View>
+          </View>
+          <View style={styles.chartPlaceholder}>
+            <Text style={styles.chartIcon}>▲</Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>AI Recommendations</Text>
+          
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.horizontalScroll}
+          >
+            <TouchableOpacity 
+              style={styles.recommendationCard}
+              onPress={() => navigation.navigate('Profile', { screen: 'AIAssistant' })}
+            >
+              <View style={styles.recommendationImage}>
+                <Text style={styles.recommendationIcon}>★</Text>
               </View>
-            ))
-          )}
-        </Card>
-      </View>
+              <Text style={styles.recommendationTitle}>Top Picks</Text>
+              <Text style={styles.recommendationSubtitle}>AI recommendations</Text>
+            </TouchableOpacity>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Top Losers</Text>
-        <Card variant="default" padding="sm">
-          {topLosers.length === 0 ? (
-            <Text style={styles.emptyText}>No losers today</Text>
-          ) : (
-            topLosers.map((stock, index) => (
-              <View key={stock.symbol} style={styles.stockRow}>
-                <View style={styles.stockInfo}>
-                  <Text style={styles.stockRank}>{index + 1}</Text>
-                  <View>
-                    <Text style={styles.stockSymbol}>{stock.symbol}</Text>
-                    <Text style={styles.stockName} numberOfLines={1}>{stock.name}</Text>
-                  </View>
-                </View>
-                <View style={styles.stockRight}>
-                  <Text style={styles.stockPrice}>KES {stock.last_price.toFixed(2)}</Text>
-                  <Badge 
-                    text={`${stock.change_pct.toFixed(2)}%`} 
-                    variant="error"
-                  />
-                </View>
+            <TouchableOpacity 
+              style={styles.recommendationCard}
+              onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}
+            >
+              <View style={styles.recommendationImage}>
+                <Text style={styles.recommendationIcon}>≡</Text>
               </View>
-            ))
-          )}
-        </Card>
-      </View>
+              <Text style={styles.recommendationTitle}>Diversify</Text>
+              <Text style={styles.recommendationSubtitle}>New opportunities</Text>
+            </TouchableOpacity>
 
-      <Card variant="outlined" style={styles.actionCard}>
-        <Text style={styles.actionTitle}>Quick Access</Text>
-        <Text style={styles.actionText}>
-          View all markets in the Markets tab{'\n'}
-          Track your investments in Portfolio{'\n'}
-          Stay updated with latest News{'\n'}
-          Manage account in Profile
-        </Text>
-      </Card>
-    </ScrollView>
+            <TouchableOpacity 
+              style={styles.recommendationCard}
+              onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}
+            >
+              <View style={[styles.recommendationImage, styles.recommendationImageAlt]}>
+                <Text style={styles.recommendationIcon}>↗</Text>
+              </View>
+              <Text style={styles.recommendationTitle}>Market Movers</Text>
+              <Text style={styles.recommendationSubtitle}>Trending stocks</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          
+          <View style={styles.actionsGrid}>
+            <TouchableOpacity 
+              style={styles.actionButtonPrimary}
+              onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}
+            >
+              <Text style={styles.actionIconPrimary}>↕</Text>
+              <Text style={styles.actionTextPrimary}>Trade</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionButtonSecondary}
+              onPress={() => navigation.navigate('Profile', { screen: 'Wallet' })}
+            >
+              <Text style={styles.actionIconSecondary}>+</Text>
+              <Text style={styles.actionTextSecondary}>Deposit</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionButtonSecondary}
+              onPress={() => navigation.navigate('Profile', { screen: 'EducationalContent' })}
+            >
+              <Text style={styles.actionIconSecondary}>?</Text>
+              <Text style={styles.actionTextSecondary}>Learn</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={{ height: 100 }} />
+      </ScrollView>
+
+      <FloatingAIButton />
+    </View>
   );
 }
 
@@ -188,114 +205,177 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
-  content: {
-    padding: spacing.base,
-    paddingBottom: 120,
-    minHeight: 1000,
-  },
   header: {
-    marginBottom: spacing.lg,
-  },
-  title: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -spacing.xs,
-    marginBottom: spacing.base,
-  },
-  statCard: {
-    width: (width - spacing.base * 2 - spacing.xs * 2) / 2,
-    margin: spacing.xs,
-    padding: spacing.md,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  statLabel: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  section: {
-    marginBottom: spacing.base,
-  },
-  sectionTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-    marginBottom: spacing.sm,
-  },
-  stockRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
+    backgroundColor: colors.background.primary + 'CC',
     borderBottomWidth: 1,
-    borderBottomColor: colors.border.main,
+    borderBottomColor: 'transparent',
   },
-  stockInfo: {
-    flexDirection: 'row',
+  headerTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  notificationButton: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.full,
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  bellIcon: {
+    fontSize: 24,
+  },
+  scrollView: {
     flex: 1,
   },
-  stockRank: {
-    width: 24,
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.tertiary,
-    marginRight: spacing.sm,
+  content: {
+    paddingBottom: 120,
   },
-  stockSymbol: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold,
+  welcomeSection: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+  },
+  welcomeText: {
+    fontSize: 28,
+    fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
   },
-  stockName: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-    marginTop: 2,
-    maxWidth: width * 0.35,
+  portfolioCard: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.lg,
+    padding: spacing.md,
+    backgroundColor: colors.primary.main + '20',
+    borderRadius: borderRadius.md,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  stockRight: {
-    alignItems: 'flex-end',
+  portfolioInfo: {
+    flex: 1,
   },
-  stockPrice: {
+  portfolioLabel: {
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
-  emptyText: {
-    color: colors.text.tertiary,
+  portfolioValue: {
+    fontSize: 24,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: 4,
+  },
+  portfolioChange: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  arrowUp: {
+    fontSize: 16,
+    color: colors.success,
+    marginRight: 4,
+  },
+  changeText: {
     fontSize: typography.fontSize.sm,
-    textAlign: 'center',
-    paddingVertical: spacing.lg,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.success,
   },
-  actionCard: {
-    marginBottom: spacing.base,
+  chartPlaceholder: {
+    width: 96,
+    height: 64,
+    backgroundColor: colors.background.card + '40',
+    borderRadius: borderRadius.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  actionTitle: {
+  chartIcon: {
+    fontSize: 32,
+  },
+  section: {
+    marginBottom: spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+  },
+  horizontalScroll: {
+    paddingHorizontal: spacing.md,
+    gap: spacing.md,
+  },
+  recommendationCard: {
+    width: 192,
+  },
+  recommendationImage: {
+    width: 192,
+    height: 128,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.background.card,
+    marginBottom: spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  recommendationImageAlt: {
+    backgroundColor: colors.primary.main + '20',
+  },
+  recommendationIcon: {
+    fontSize: 48,
+    color: colors.primary.main,
+  },
+  recommendationTitle: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
     color: colors.text.primary,
-    marginBottom: spacing.sm,
+    marginBottom: 2,
   },
-  actionText: {
+  recommendationSubtitle: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    lineHeight: 20,
+    color: colors.text.secondary,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  actionButtonPrimary: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    backgroundColor: colors.primary.main,
+    borderRadius: borderRadius.md,
+    gap: spacing.sm,
+  },
+  actionIconPrimary: {
+    fontSize: 24,
+  },
+  actionTextPrimary: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.primary.contrast,
+  },
+  actionButtonSecondary: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    backgroundColor: colors.primary.main + '20',
+    borderRadius: borderRadius.md,
+    gap: spacing.sm,
+  },
+  actionIconSecondary: {
+    fontSize: 24,
+  },
+  actionTextSecondary: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.primary.main,
   },
 });

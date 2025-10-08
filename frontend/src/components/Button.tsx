@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { colors, typography, spacing, borderRadius } from '../theme';
+import { colors, typography, spacing, borderRadius, touchTarget } from '../theme';
+import { hapticFeedback } from '../utils/haptics';
 
 interface ButtonProps {
   title: string;
@@ -38,10 +39,22 @@ export function Button({
     styles[`text_${variant}` as keyof typeof styles],
   ];
 
+  const handlePress = () => {
+    // Provide haptic feedback based on button variant
+    if (variant === 'error') {
+      hapticFeedback.warning();
+    } else if (variant === 'success') {
+      hapticFeedback.success();
+    } else {
+      hapticFeedback.medium();
+    }
+    onPress();
+  };
+
   return (
     <TouchableOpacity
       style={buttonStyles}
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled || loading}
       activeOpacity={0.7}
     >
@@ -60,21 +73,25 @@ const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.pill, // Rounded-pill buttons (PRD spec: 20px)
+    minHeight: touchTarget.min, // Ensure minimum 44pt touch target
   },
   
-  // Sizes
+  // Sizes - Mobile-optimized with comfortable touch targets
   sm: {
-    paddingVertical: spacing.xs,
+    minHeight: touchTarget.min,
+    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
   },
   md: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.base,
-  },
-  lg: {
+    minHeight: touchTarget.comfortable,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
+  },
+  lg: {
+    minHeight: touchTarget.large,
+    paddingVertical: spacing.base,
+    paddingHorizontal: spacing.xl,
   },
   
   // Variants
@@ -109,6 +126,7 @@ const styles = StyleSheet.create({
   
   // Text styles
   text: {
+    fontFamily: typography.fontFamily.bodyMedium,
     fontWeight: typography.fontWeight.semibold,
   },
   text_sm: {

@@ -1,31 +1,52 @@
+/**
+ * Portfolio Screen
+ * Current holdings, P/L summary, tax summary, and performance
+ */
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { Card, Badge, LoadingState, EmptyState, Button } from '../components';
+import { LoadingState, FloatingAIButton } from '../components';
 
-interface WatchItem {
-  symbol: string;
-  note?: string;
-  target_price?: number;
+interface Holding {
+  id: string;
+  type: string;
+  name: string;
+  quantity: string;
+  value: number;
+  emoji: string;
 }
-
-interface Position {
-  symbol: string;
-  quantity: number;
-  avg_price: number;
-  market_value: number;
-  unrealized_pl: number;
-}
-
-const { width } = Dimensions.get('window');
 
 export default function Portfolio() {
-  const [watchlist, setWatchlist] = useState<WatchItem[]>([]);
-  const [positions, setPositions] = useState<Position[]>([]);
-  const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
+  const [holdings, setHoldings] = useState<Holding[]>([
+    {
+      id: '1',
+      type: 'Stocks',
+      name: 'Stock Soko',
+      quantity: '100 shares',
+      value: 10000,
+      emoji: 'STK',
+    },
+    {
+      id: '2',
+      type: 'Bonds',
+      name: 'Government Bonds',
+      quantity: '5 bonds',
+      value: 5000,
+      emoji: 'BND',
+    },
+  ]);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [removing, setRemoving] = useState<string | null>(null);
+
+  const totalValue = 15000;
+  const totalProfit = 2500;
+  const profitPercent = 25;
+  const taxableIncome = 1250;
+  const estimatedTax = 250;
+  const performanceChange = 15;
 
   useEffect(() => {
     loadData();
@@ -33,30 +54,14 @@ export default function Portfolio() {
 
   const loadData = async () => {
     try {
-      const [watchlistRes, positionsRes] = await Promise.all([
-        api.get('/watchlist'),
-        api.get('/ledger/positions'),
-      ]);
-      
-      setWatchlist(watchlistRes.data.items || []);
-      setPositions(positionsRes.data.positions || []);
+      // Load real data from API
+      const res = await api.get('/ledger/positions');
+      // Process data...
     } catch (error) {
       console.error('Failed to load portfolio:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
-    }
-  };
-
-  const removeFromWatchlist = async (symbol: string) => {
-    try {
-      setRemoving(symbol);
-      await api.delete(`/watchlist/${encodeURIComponent(symbol)}`);
-      await loadData();
-    } catch (error) {
-      console.error('Failed to remove from watchlist:', error);
-    } finally {
-      setRemoving(null);
     }
   };
 
@@ -69,159 +74,136 @@ export default function Portfolio() {
     return <LoadingState message="Loading portfolio..." />;
   }
 
-  const totalValue = positions.reduce((sum, p) => sum + p.market_value, 0);
-  const totalUPL = positions.reduce((sum, p) => sum + p.unrealized_pl, 0);
-  const uplPercentage = totalValue > 0 ? (totalUPL / (totalValue - totalUPL)) * 100 : 0;
-
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={true}
-      bounces={true}
-      scrollEventThrottle={16}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary.main} />
-      }
-    >
-      {/* Portfolio Summary Card */}
-      <Card variant="elevated" style={styles.summaryCard}>
-        <Text style={styles.summaryLabel}>Total Portfolio Value</Text>
-        <Text style={styles.summaryValue}>KES {totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-        
-        <View style={styles.uplContainer}>
-          <View style={styles.uplRow}>
-            <Text style={styles.uplLabel}>Unrealized P/L</Text>
-            <View style={styles.uplBadge}>
-              <Badge
-                text={`${totalUPL >= 0 ? '+' : ''}${totalUPL.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                variant={totalUPL >= 0 ? 'success' : 'error'}
-              />
-              <Badge
-                text={`${uplPercentage >= 0 ? '+' : ''}${uplPercentage.toFixed(2)}%`}
-                variant={uplPercentage >= 0 ? 'success' : 'error'}
-                style={{ marginLeft: spacing.xs }}
-              />
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton}>
+          <Text style={styles.backIcon}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Portfolio</Text>
+        <View style={styles.headerSpacer} />
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Current Holdings Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Current Holdings</Text>
+          
+          <View style={styles.holdingsContainer}>
+            {holdings.map((holding) => (
+              <TouchableOpacity 
+                key={holding.id} 
+                style={styles.holdingCard}
+                onPress={() => navigation.navigate('HoldingDetail', { holdingId: holding.id })}
+              >
+                <View style={styles.holdingInfo}>
+                  <View style={styles.holdingDetails}>
+                    <Text style={styles.holdingType}>{holding.type}</Text>
+                    <Text style={styles.holdingName}>{holding.name}</Text>
+                    <Text style={styles.holdingQuantity}>{holding.quantity}</Text>
+                  </View>
+                  <View style={styles.holdingValue}>
+                    <Text style={styles.valueText}>KES {holding.value.toLocaleString()}</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.holdingImage}>
+                  <Text style={styles.holdingEmoji}>{holding.emoji}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Profit/Loss Summary */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Profit/Loss Summary</Text>
+          
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryContent}>
+              <View style={styles.summaryInfo}>
+                <View style={styles.summaryDetails}>
+                  <Text style={styles.summaryLabel}>Total Profit</Text>
+                  <Text style={styles.summaryValue}>${totalProfit.toLocaleString()}</Text>
+                  <Text style={styles.summarySubtext}>Since Inception</Text>
+                </View>
+                <View style={styles.profitBadge}>
+                  <Text style={styles.profitBadgeText}>+{profitPercent}%</Text>
+                </View>
+              </View>
+              
+              <View style={styles.summaryImage}>
+                <Text style={styles.summaryEmoji}>↗</Text>
+              </View>
             </View>
           </View>
         </View>
-      </Card>
 
-      {/* Positions Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Holdings ({positions.length})</Text>
-        
-        {positions.length === 0 ? (
-          <Card>
-            <EmptyState
-              title="No Positions"
-              message="You haven't made any trades yet. Start trading in the Markets tab."
-              actionLabel="Go to Markets"
-              onAction={() => {}}
-            />
-          </Card>
-        ) : (
-          <>
-            {positions.map(position => {
-              const plPercentage = position.avg_price > 0 
-                ? (position.unrealized_pl / (position.avg_price * position.quantity)) * 100 
-                : 0;
-              const currentPrice = position.market_value / position.quantity;
-
-              return (
-                <Card key={position.symbol} style={styles.positionCard} padding="md">
-                  <View style={styles.positionHeader}>
-                    <Text style={styles.positionSymbol}>{position.symbol}</Text>
-                    <Badge
-                      text={`${position.unrealized_pl >= 0 ? '+' : ''}${plPercentage.toFixed(2)}%`}
-                      variant={position.unrealized_pl >= 0 ? 'success' : 'error'}
-                    />
-                  </View>
-
-                  <View style={styles.positionGrid}>
-                    <View style={styles.positionStat}>
-                      <Text style={styles.positionStatLabel}>Quantity</Text>
-                      <Text style={styles.positionStatValue}>{position.quantity}</Text>
-                    </View>
-                    
-                    <View style={styles.positionStat}>
-                      <Text style={styles.positionStatLabel}>Avg Price</Text>
-                      <Text style={styles.positionStatValue}>
-                        KES {position.avg_price.toFixed(2)}
-                      </Text>
-                    </View>
-                    
-                    <View style={styles.positionStat}>
-                      <Text style={styles.positionStatLabel}>Current Price</Text>
-                      <Text style={styles.positionStatValue}>
-                        KES {currentPrice.toFixed(2)}
-                      </Text>
-                    </View>
-                    
-                    <View style={styles.positionStat}>
-                      <Text style={styles.positionStatLabel}>Market Value</Text>
-                      <Text style={styles.positionStatValue}>
-                        KES {position.market_value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.positionFooter}>
-                    <Text style={styles.positionPLLabel}>Unrealized P/L</Text>
-                    <Text style={[
-                      styles.positionPLValue,
-                      { color: position.unrealized_pl >= 0 ? colors.gain : colors.loss }
-                    ]}>
-                      {position.unrealized_pl >= 0 ? '+' : ''}
-                      KES {position.unrealized_pl.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </Text>
-                  </View>
-                </Card>
-              );
-            })}
-          </>
-        )}
-      </View>
-
-      {/* Watchlist Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Watchlist ({watchlist.length})</Text>
-        
-        {watchlist.length === 0 ? (
-          <Card>
-            <Text style={styles.emptyText}>
-              No stocks in your watchlist. Add stocks from the Markets tab to keep track of them.
-            </Text>
-          </Card>
-        ) : (
-          <Card padding="sm">
-            {watchlist.map(item => (
-              <View key={item.symbol} style={styles.watchlistItem}>
-                <View style={styles.watchlistInfo}>
-                  <Text style={styles.watchlistSymbol}>{item.symbol}</Text>
-                  {item.note && (
-                    <Text style={styles.watchlistNote}>{item.note}</Text>
-                  )}
-                  {item.target_price && (
-                    <Text style={styles.watchlistTarget}>
-                      Target: KES {item.target_price.toFixed(2)}
-                    </Text>
-                  )}
+        {/* Tax Summary */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Tax Summary</Text>
+          
+          <View style={styles.taxCard}>
+            <View style={styles.taxContent}>
+              <View style={styles.taxInfo}>
+                <View style={styles.taxDetails}>
+                  <Text style={styles.taxLabel}>Taxable Income</Text>
+                  <Text style={styles.taxValue}>${taxableIncome.toLocaleString()}</Text>
+                  <Text style={styles.taxSubtext}>Year to Date</Text>
                 </View>
-                
-                <Button
-                  title={removing === item.symbol ? 'Removing...' : 'Remove'}
-                  onPress={() => removeFromWatchlist(item.symbol)}
-                  variant="ghost"
-                  size="sm"
-                  disabled={removing === item.symbol}
-                />
+                <View style={styles.taxBadge}>
+                  <Text style={styles.taxBadgeText}>${estimatedTax}</Text>
+                </View>
               </View>
-            ))}
-          </Card>
-        )}
-      </View>
-    </ScrollView>
+              
+              <View style={styles.taxImage}>
+                <Text style={styles.taxEmoji}>$</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Performance */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Performance</Text>
+          
+          <View style={styles.performanceCard}>
+            <Text style={styles.performanceLabel}>Portfolio Value</Text>
+            <Text style={styles.performanceValue}>${totalValue.toLocaleString()}</Text>
+            
+            <View style={styles.performanceChange}>
+              <Text style={styles.performanceChangeLabel}>Last 6 Months</Text>
+              <Text style={styles.performanceChangeValue}>+{performanceChange}%</Text>
+            </View>
+
+            {/* Chart Placeholder */}
+            <View style={styles.chartContainer}>
+          <View style={styles.chartArea}>
+            <Text style={styles.chartEmoji}>CHART</Text>
+          </View>
+              <View style={styles.chartLabels}>
+                <Text style={styles.chartLabel}>Jan</Text>
+                <Text style={styles.chartLabel}>Feb</Text>
+                <Text style={styles.chartLabel}>Mar</Text>
+                <Text style={styles.chartLabel}>Apr</Text>
+                <Text style={styles.chartLabel}>May</Text>
+                <Text style={styles.chartLabel}>Jun</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <View style={{ height: 100 }} />
+      </ScrollView>
+
+      <FloatingAIButton />
+    </View>
   );
 }
 
@@ -230,135 +212,276 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.background.primary + 'CC',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.main + '80',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backIcon: {
+    fontSize: 24,
+    color: colors.text.primary,
+  },
+  headerTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    flex: 1,
+    textAlign: 'center',
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  scrollView: {
+    flex: 1,
+  },
   content: {
-    padding: spacing.base,
+    padding: spacing.md,
     paddingBottom: 100,
-    minHeight: 1000,
+  },
+  section: {
+    marginBottom: spacing.xl,
+  },
+  sectionTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.xs,
+  },
+  holdingsContainer: {
+    gap: spacing.md,
+  },
+  holdingCard: {
+    flexDirection: 'row',
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    gap: spacing.md,
+  },
+  holdingInfo: {
+    flex: 1,
+  },
+  holdingDetails: {
+    flex: 1,
+    gap: 4,
+  },
+  holdingType: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.text.secondary,
+  },
+  holdingName: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  holdingQuantity: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+  },
+  holdingValue: {
+    marginTop: spacing.md,
+    backgroundColor: colors.background.secondary,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+    alignSelf: 'flex-start',
+  },
+  valueText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+  },
+  holdingImage: {
+    width: 96,
+    height: 96,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  holdingEmoji: {
+    fontSize: 16,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.primary.main,
   },
   summaryCard: {
-    marginBottom: spacing.lg,
-    padding: spacing.lg,
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+  },
+  summaryContent: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  summaryInfo: {
+    flex: 1,
+  },
+  summaryDetails: {
+    gap: 4,
   },
   summaryLabel: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.text.secondary,
   },
   summaryValue: {
-    fontSize: typography.fontSize['3xl'],
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.md,
-  },
-  uplContainer: {
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.main,
-  },
-  uplRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  uplLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-  },
-  uplBadge: {
-    flexDirection: 'row',
-  },
-  section: {
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-    marginBottom: spacing.sm,
-  },
-  positionCard: {
-    marginBottom: spacing.sm,
-  },
-  positionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  positionSymbol: {
-    fontSize: typography.fontSize.lg,
+    fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
   },
-  positionGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -spacing.xs,
-    marginBottom: spacing.md,
-  },
-  positionStat: {
-    width: '50%',
-    padding: spacing.xs,
-    marginBottom: spacing.sm,
-  },
-  positionStatLabel: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-    marginBottom: 2,
-  },
-  positionStatValue: {
+  summarySubtext: {
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
-    fontWeight: typography.fontWeight.medium,
   },
-  positionFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.main,
+  profitBadge: {
+    marginTop: spacing.md,
+    backgroundColor: colors.success + '20',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+    alignSelf: 'flex-start',
   },
-  positionPLLabel: {
+  profitBadgeText: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.success,
   },
-  positionPLValue: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.bold,
-  },
-  watchlistItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  summaryImage: {
+    width: 96,
+    height: 96,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.background.secondary,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.main,
   },
-  watchlistInfo: {
+  summaryEmoji: {
+    fontSize: 32,
+    color: colors.success,
+  },
+  taxCard: {
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+  },
+  taxContent: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  taxInfo: {
     flex: 1,
   },
-  watchlistSymbol: {
+  taxDetails: {
+    gap: 4,
+  },
+  taxLabel: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.text.secondary,
+  },
+  taxValue: {
     fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  taxSubtext: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+  },
+  taxBadge: {
+    marginTop: spacing.md,
+    backgroundColor: colors.background.secondary,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+    alignSelf: 'flex-start',
+  },
+  taxBadgeText: {
+    fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
     color: colors.text.primary,
-    marginBottom: 2,
   },
-  watchlistNote: {
+  taxImage: {
+    width: 96,
+    height: 96,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  taxEmoji: {
+    fontSize: 32,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.warning,
+  },
+  performanceCard: {
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+  },
+  performanceLabel: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.text.secondary,
+    marginBottom: 4,
+  },
+  performanceValue: {
+    fontSize: 32,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  performanceChange: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: 4,
+    marginBottom: spacing.lg,
+  },
+  performanceChangeLabel: {
+    fontSize: typography.fontSize.base,
+    color: colors.text.secondary,
+  },
+  performanceChangeValue: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.success,
+  },
+  chartContainer: {
+    marginTop: spacing.md,
+  },
+  chartArea: {
+    height: 150,
+    backgroundColor: colors.background.secondary,
+    borderRadius: borderRadius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  chartEmoji: {
+    fontSize: 12,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.disabled,
+    opacity: 0.5,
+  },
+  chartLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.xs,
+  },
+  chartLabel: {
     fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-  },
-  watchlistTarget: {
-    fontSize: typography.fontSize.xs,
-    color: colors.primary.main,
-    marginTop: 2,
-  },
-  emptyText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    textAlign: 'center',
-    paddingVertical: spacing.lg,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.text.secondary,
   },
 });

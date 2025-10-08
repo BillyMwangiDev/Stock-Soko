@@ -1,228 +1,140 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, Linking } from 'react-native';
+/**
+ * News Screen
+ * Financial news feed with category filters
+ */
+import React, { useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { Card, Badge, LoadingState, EmptyState } from '../components';
+import { FloatingAIButton } from '../components';
 
 interface NewsArticle {
   id: string;
+  category: string;
   title: string;
-  source: string;
-  publishedAt: string;
-  url: string;
-  sentiment?: 'positive' | 'negative' | 'neutral';
-  relatedSymbols?: string[];
+  description: string;
+  emoji: string;
 }
 
+const mockArticles: NewsArticle[] = [
+  {
+    id: '1',
+    category: 'Markets',
+    title: 'African markets surge as tech stocks lead the way',
+    description: 'Johannesburg - African stock markets experienced a significant surge today, driven by strong performances in the technology sector...',
+    emoji: '',
+  },
+  {
+    id: '2',
+    category: 'Company',
+    title: 'SokoTech announces record profits for Q2',
+    description: 'Lagos - SokoTech, a leading African technology firm, announced record profits for the second quarter of 2024...',
+    emoji: '',
+  },
+  {
+    id: '3',
+    category: 'Economy',
+    title: 'African economies show resilience despite global headwinds',
+    description: 'Accra - Despite ongoing global economic challenges, many African economies have demonstrated resilience...',
+    emoji: '',
+  },
+  {
+    id: '4',
+    category: 'Education',
+    title: 'New financial literacy program launched for African youth',
+    description: 'Cairo - A new financial literacy program aimed at empowering African youth has been launched by the African Union...',
+    emoji: '',
+  },
+];
+
 export default function News() {
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('Markets');
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'positive' | 'negative' | 'neutral'>('all');
 
-  useEffect(() => {
-    loadNews();
-  }, []);
+  const categories = ['Markets', 'Company', 'Economy', 'Education'];
 
-  const loadNews = async () => {
-    setLoading(true);
-    // Simulated news data - in production, this would come from your backend
-    const mockArticles: NewsArticle[] = [
-      {
-        id: '1',
-        title: 'NSE 20-Share Index Gains 0.5% on Banking Sector Rally',
-        source: 'Business Daily',
-        publishedAt: new Date().toISOString(),
-        url: 'https://example.com',
-        sentiment: 'positive',
-        relatedSymbols: ['KCB', 'EQTY'],
-      },
-      {
-        id: '2',
-        title: 'Safaricom Reports Strong Q3 Earnings Amid M-Pesa Growth',
-        source: 'The Standard',
-        publishedAt: new Date(Date.now() - 3600000).toISOString(),
-        url: 'https://example.com',
-        sentiment: 'positive',
-        relatedSymbols: ['SCOM'],
-      },
-      {
-        id: '3',
-        title: 'Market Volatility Expected Following CMA Regulatory Changes',
-        source: 'Capital FM',
-        publishedAt: new Date(Date.now() - 7200000).toISOString(),
-        url: 'https://example.com',
-        sentiment: 'neutral',
-        relatedSymbols: [],
-      },
-      {
-        id: '4',
-        title: 'Manufacturing Sector Faces Headwinds Amid Rising Input Costs',
-        source: 'Nation',
-        publishedAt: new Date(Date.now() - 10800000).toISOString(),
-        url: 'https://example.com',
-        sentiment: 'negative',
-        relatedSymbols: ['BAT', 'EABL'],
-      },
-      {
-        id: '5',
-        title: 'KenGen Announces New Renewable Energy Project Worth KES 5B',
-        source: 'Reuters',
-        publishedAt: new Date(Date.now() - 14400000).toISOString(),
-        url: 'https://example.com',
-        sentiment: 'positive',
-        relatedSymbols: ['KEGN'],
-      },
-    ];
-
-    setTimeout(() => {
-      setArticles(mockArticles);
-      setLoading(false);
-      setRefreshing(false);
-    }, 1000);
-  };
-
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    loadNews();
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setRefreshing(false);
   };
 
-  const openArticle = (url: string) => {
-    Linking.openURL(url).catch(err => console.error('Failed to open URL:', err));
-  };
-
-  const getTimeAgo = (dateString: string) => {
-    const now = new Date().getTime();
-    const published = new Date(dateString).getTime();
-    const diffMinutes = Math.floor((now - published) / 60000);
-
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
-    if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)}h ago`;
-    return `${Math.floor(diffMinutes / 1440)}d ago`;
-  };
-
-  const filteredArticles = filter === 'all' 
-    ? articles 
-    : articles.filter(a => a.sentiment === filter);
-
-  if (loading && articles.length === 0) {
-    return <LoadingState message="Loading news..." />;
-  }
+  const filteredArticles = activeCategory === 'Markets' 
+    ? mockArticles 
+    : mockArticles.filter(a => a.category === activeCategory);
 
   return (
     <View style={styles.container}>
-      {/* Filter Bar */}
-      <View style={styles.filterBar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <TouchableOpacity
-            style={[styles.filterChip, filter === 'all' && styles.filterChipActive]}
-            onPress={() => setFilter('all')}
-          >
-            <Text style={[styles.filterChipText, filter === 'all' && styles.filterChipTextActive]}>
-              All News
-            </Text>
-          </TouchableOpacity>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>News</Text>
+        <TouchableOpacity style={styles.settingsButton}>
+          <Text style={styles.settingsIcon}>⋮</Text>
+        </TouchableOpacity>
+      </View>
 
-          <TouchableOpacity
-            style={[styles.filterChip, filter === 'positive' && styles.filterChipActive]}
-            onPress={() => setFilter('positive')}
-          >
-            <Text style={[styles.filterChipText, filter === 'positive' && styles.filterChipTextActive]}>
-              Positive
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.filterChip, filter === 'negative' && styles.filterChipActive]}
-            onPress={() => setFilter('negative')}
-          >
-            <Text style={[styles.filterChipText, filter === 'negative' && styles.filterChipTextActive]}>
-              Negative
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.filterChip, filter === 'neutral' && styles.filterChipActive]}
-            onPress={() => setFilter('neutral')}
-          >
-            <Text style={[styles.filterChipText, filter === 'neutral' && styles.filterChipTextActive]}>
-              Neutral
-            </Text>
-          </TouchableOpacity>
+      {/* Category Tabs */}
+      <View style={styles.tabsContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabsContent}
+        >
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={[
+                styles.tab,
+                activeCategory === category && styles.tabActive,
+              ]}
+              onPress={() => setActiveCategory(category)}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeCategory === category && styles.tabTextActive,
+                ]}
+              >
+                {category}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
       </View>
 
+      {/* News Feed */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={true}
-        bounces={true}
-        scrollEventThrottle={16}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary.main} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        showsVerticalScrollIndicator={false}
       >
-        {filteredArticles.length === 0 ? (
-          <EmptyState
-            title="No News"
-            message="No articles available for this filter"
-            actionLabel="Show All"
-            onAction={() => setFilter('all')}
-          />
-        ) : (
-          filteredArticles.map(article => (
+        {filteredArticles.map((article, index) => (
+          <View key={article.id}>
             <TouchableOpacity
-              key={article.id}
-              onPress={() => openArticle(article.url)}
+              style={styles.articleCard}
               activeOpacity={0.7}
             >
-              <Card style={styles.articleCard} padding="md">
-                {/* Article Header */}
-                <View style={styles.articleHeader}>
-                  <Text style={styles.articleSource}>{article.source}</Text>
-                  <View style={styles.articleMeta}>
-                    {article.sentiment && (
-                      <Badge
-                        text={article.sentiment}
-                        variant={
-                          article.sentiment === 'positive' ? 'success' :
-                          article.sentiment === 'negative' ? 'error' : 'neutral'
-                        }
-                        style={{ marginRight: spacing.xs }}
-                      />
-                    )}
-                    <Text style={styles.articleTime}>{getTimeAgo(article.publishedAt)}</Text>
-                  </View>
-                </View>
-
-                {/* Article Title */}
+              <View style={styles.articleContent}>
+                <Text style={styles.categoryLabel}>{article.category.toUpperCase()}</Text>
                 <Text style={styles.articleTitle}>{article.title}</Text>
-
-                {/* Related Symbols */}
-                {article.relatedSymbols && article.relatedSymbols.length > 0 && (
-                  <View style={styles.symbolsContainer}>
-                    {article.relatedSymbols.map(symbol => (
-                      <View key={symbol} style={styles.symbolChip}>
-                        <Text style={styles.symbolText}>{symbol}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
-
-                {/* Read More Indicator */}
-                <View style={styles.readMore}>
-                  <Text style={styles.readMoreText}>Read more →</Text>
-                </View>
-              </Card>
+                <Text style={styles.articleDescription} numberOfLines={3}>
+                  {article.description}
+                </Text>
+              </View>
+              
+              <View style={styles.articleImage}>
+                <Text style={styles.categoryIcon}>{article.category[0]}</Text>
+              </View>
             </TouchableOpacity>
-          ))
-        )}
+            
+            {index < filteredArticles.length - 1 && <View style={styles.divider} />}
+          </View>
+        ))}
 
-        <View style={styles.disclaimerCard}>
-          <Text style={styles.disclaimerText}>
-            News articles are sourced from various publishers. Stock Soko does not guarantee the accuracy of third-party content.
-          </Text>
-        </View>
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      <FloatingAIButton />
     </View>
   );
 }
@@ -232,110 +144,110 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
-  filterBar: {
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.background.primary + 'CC',
+  },
+  headerTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    flex: 1,
+    textAlign: 'center',
+  },
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.full,
     backgroundColor: colors.background.secondary,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.base,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  settingsIcon: {
+    fontSize: 24,
+    color: colors.text.primary,
+    fontWeight: typography.fontWeight.bold,
+  },
+  tabsContainer: {
     borderBottomWidth: 1,
     borderBottomColor: colors.border.main,
   },
-  filterChip: {
-    paddingVertical: spacing.xs,
+  tabsContent: {
     paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.background.tertiary,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    marginRight: spacing.sm,
   },
-  filterChipActive: {
-    backgroundColor: colors.primary.main,
-    borderColor: colors.primary.main,
+  tab: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
-  filterChipText: {
+  tabActive: {
+    borderBottomColor: colors.primary.main,
+  },
+  tabText: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
     fontWeight: typography.fontWeight.medium,
+    color: colors.text.secondary,
   },
-  filterChipTextActive: {
-    color: colors.primary.contrast,
+  tabTextActive: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.primary.main,
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    padding: spacing.base,
-    paddingBottom: 120,
-    minHeight: 1000,
+    padding: spacing.md,
+    paddingBottom: 100,
   },
   articleCard: {
-    marginBottom: spacing.md,
-  },
-  articleHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
+    gap: spacing.md,
+    paddingVertical: spacing.md,
   },
-  articleSource: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
+  articleContent: {
+    flex: 2,
+  },
+  categoryLabel: {
+    fontSize: 10,
     fontWeight: typography.fontWeight.semibold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  articleMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  articleTime: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.disabled,
-  },
-  articleTitle: {
-    fontSize: typography.fontSize.base,
-    color: colors.text.primary,
-    fontWeight: typography.fontWeight.semibold,
-    lineHeight: 22,
-    marginBottom: spacing.sm,
-  },
-  symbolsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: spacing.sm,
-  },
-  symbolChip: {
-    backgroundColor: colors.background.primary,
-    paddingVertical: 4,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.sm,
-    marginRight: spacing.xs,
+    letterSpacing: 1.2,
+    color: colors.primary.main,
     marginBottom: spacing.xs,
   },
-  symbolText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.primary.main,
-    fontWeight: typography.fontWeight.semibold,
+  articleTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    lineHeight: 24,
+    marginBottom: spacing.xs,
   },
-  readMore: {
-    marginTop: spacing.xs,
-  },
-  readMoreText: {
+  articleDescription: {
     fontSize: typography.fontSize.sm,
-    color: colors.primary.main,
-    fontWeight: typography.fontWeight.medium,
+    color: colors.text.secondary,
+    lineHeight: 20,
   },
-  disclaimerCard: {
-    backgroundColor: colors.background.tertiary,
-    padding: spacing.md,
+  articleImage: {
+    flex: 1,
+    aspectRatio: 1,
     borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    marginTop: spacing.base,
+    backgroundColor: colors.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  disclaimerText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-    lineHeight: 16,
+  categoryIcon: {
+    fontSize: 32,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.primary.main,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border.main,
+    marginVertical: spacing.md,
   },
 });

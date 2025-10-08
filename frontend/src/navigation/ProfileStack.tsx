@@ -9,10 +9,15 @@ import { colors } from '../theme';
 
 // Import screens
 import Profile from '../screens/Profile';
+import Dashboard from '../screens/Dashboard';
 import Settings from '../screens/Settings';
 import Wallet from '../screens/Wallet';
 import KYCUpload from '../screens/KYCUpload';
 import AIAssistant from '../screens/AIAssistant';
+import EducationalContent from '../screens/EducationalContent';
+import NotificationCenter from '../screens/NotificationCenter';
+import FractionalShares from '../screens/FractionalShares';
+import CustomerSupport from '../screens/CustomerSupport';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
 
@@ -72,6 +77,46 @@ export default function ProfileStack() {
         component={AIAssistant}
         options={{ 
           title: 'AI Assistant',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen 
+        name="Dashboard" 
+        component={Dashboard}
+        options={{ 
+          title: 'Investment Dashboard',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen 
+        name="EducationalContent" 
+        component={EducationalContent}
+        options={{ 
+          title: 'Learning Center',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen 
+        name="NotificationCenter" 
+        component={NotificationCenter}
+        options={{ 
+          title: 'Notifications',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen 
+        name="FractionalShares" 
+        component={FractionalShares}
+        options={{ 
+          title: 'Fractional Shares',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen 
+        name="CustomerSupport" 
+        component={CustomerSupport}
+        options={{ 
+          title: 'Customer Support',
           headerShown: true,
         }}
       />

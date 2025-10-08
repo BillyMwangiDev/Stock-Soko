@@ -2,7 +2,9 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import Constants from 'expo-constants';
 import { getAccessToken, logout, setAccessToken } from '../store/auth';
 
-const baseURL = (Constants?.expoConfig?.extra as any)?.apiBaseUrl || 'http://localhost:8000';
+// Use local network IP for mobile devices, localhost for web
+const baseURL = (Constants?.expoConfig?.extra as any)?.apiBaseUrl || 
+  (typeof window !== 'undefined' ? 'http://localhost:8000' : 'http://192.168.10.25:8000');
 
 export const api = axios.create({
 	baseURL,

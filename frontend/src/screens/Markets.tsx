@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput as RNTextInput, Alert, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput as RNTextInput, Alert, Dimensions, RefreshControl } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { Card, Button, Input, Badge, LoadingState } from '../components';
+import { Card, Button, Input, Badge, LoadingState, FloatingAIButton } from '../components';
+import { hapticFeedback } from '../utils/haptics';
 
 interface Instrument {
   symbol: string;
@@ -10,20 +12,40 @@ interface Instrument {
   last_price: number;
   change_pct: number;
   volume?: number;
+  high?: number;
+  low?: number;
+  market_cap?: number;
+}
+
+interface MarketSummary {
+  totalGainers: number;
+  totalLosers: number;
+  avgChange: number;
+  topGainer: Instrument | null;
+  topLoser: Instrument | null;
 }
 
 const { width } = Dimensions.get('window');
 
 export default function Markets() {
+  const navigation = useNavigation();
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [filteredInstruments, setFilteredInstruments] = useState<Instrument[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'gainers' | 'losers'>('all');
   const [recommendations, setRecommendations] = useState<Record<string, string>>({});
   const [savingWatchlist, setSavingWatchlist] = useState<string | null>(null);
   const [orderQuantities, setOrderQuantities] = useState<Record<string, string>>({});
   const [placingOrder, setPlacingOrder] = useState<string | null>(null);
+  const [marketSummary, setMarketSummary] = useState<MarketSummary>({
+    totalGainers: 0,
+    totalLosers: 0,
+    avgChange: 0,
+    topGainer: null,
+    topLoser: null,
+  });
 
   useEffect(() => {
     loadMarkets();
@@ -31,18 +53,32 @@ export default function Markets() {
 
   useEffect(() => {
     filterInstruments();
+    calculateMarketSummary();
   }, [searchQuery, filterType, instruments]);
 
-  const loadMarkets = async () => {
+  const loadMarkets = async (isRefreshing = false) => {
+    if (isRefreshing) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
       const res = await api.get('/markets');
       setInstruments(res.data.instruments || []);
     } catch (error) {
       console.error('Failed to load markets:', error);
-      Alert.alert('Error', 'Failed to load market data');
+      if (!isRefreshing) {
+        Alert.alert('Error', 'Failed to load market data');
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    loadMarkets(true);
   };
 
   const filterInstruments = () => {
@@ -59,12 +95,38 @@ export default function Markets() {
 
     // Apply type filter
     if (filterType === 'gainers') {
-      filtered = filtered.filter(i => i.change_pct > 0);
+      filtered = filtered.filter(i => i.change_pct > 0).sort((a, b) => b.change_pct - a.change_pct);
     } else if (filterType === 'losers') {
-      filtered = filtered.filter(i => i.change_pct < 0);
+      filtered = filtered.filter(i => i.change_pct < 0).sort((a, b) => a.change_pct - b.change_pct);
+    } else {
+      filtered = filtered.sort((a, b) => Math.abs(b.change_pct) - Math.abs(a.change_pct));
     }
 
     setFilteredInstruments(filtered);
+  };
+
+  const calculateMarketSummary = () => {
+    const gainers = instruments.filter(i => i.change_pct > 0);
+    const losers = instruments.filter(i => i.change_pct < 0);
+    const avgChange = instruments.length > 0 
+      ? instruments.reduce((sum, i) => sum + i.change_pct, 0) / instruments.length 
+      : 0;
+    
+    const topGainer = gainers.length > 0 
+      ? gainers.reduce((max, i) => i.change_pct > max.change_pct ? i : max, gainers[0])
+      : null;
+    
+    const topLoser = losers.length > 0 
+      ? losers.reduce((min, i) => i.change_pct < min.change_pct ? i : min, losers[0])
+      : null;
+
+    setMarketSummary({
+      totalGainers: gainers.length,
+      totalLosers: losers.length,
+      avgChange,
+      topGainer,
+      topLoser,
+    });
   };
 
   const getRecommendation = async (symbol: string) => {
@@ -118,6 +180,63 @@ export default function Markets() {
 
   return (
     <View style={styles.container}>
+      {/* Header with Watchlist Button */}
+      <View style={styles.headerRow}>
+        <Text style={styles.headerTitle}>Markets</Text>
+        <TouchableOpacity 
+          style={styles.watchlistHeaderButton}
+          onPress={() => {
+            hapticFeedback.light();
+            navigation.navigate('Watchlist' as never);
+          }}
+        >
+          <Text style={styles.watchlistHeaderIcon}>◆</Text>
+          <Text style={styles.watchlistHeaderText}>Watchlist</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Market Summary Cards */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.summaryScroll}
+        contentContainerStyle={styles.summaryContent}
+      >
+        <View style={[styles.summaryCard, styles.summaryCardPrimary]}>
+          <Text style={styles.summaryLabel}>Market Trend</Text>
+          <Text style={[styles.summaryValue, marketSummary.avgChange >= 0 ? styles.positiveText : styles.negativeText]}>
+            {marketSummary.avgChange >= 0 ? '↗' : '↘'} {Math.abs(marketSummary.avgChange).toFixed(2)}%
+          </Text>
+          <Text style={styles.summarySubtext}>{marketSummary.avgChange >= 0 ? 'Bullish' : 'Bearish'}</Text>
+        </View>
+
+        <View style={[styles.summaryCard, styles.summaryCardSuccess]}>
+          <Text style={styles.summaryLabel}>Top Gainer</Text>
+          <Text style={styles.summaryValue}>
+            {marketSummary.topGainer ? marketSummary.topGainer.symbol : 'N/A'}
+          </Text>
+          <Text style={styles.summarySubtext}>
+            {marketSummary.topGainer ? `+${marketSummary.topGainer.change_pct.toFixed(2)}%` : '0.00%'}
+          </Text>
+        </View>
+
+        <View style={[styles.summaryCard, styles.summaryCardError]}>
+          <Text style={styles.summaryLabel}>Top Loser</Text>
+          <Text style={styles.summaryValue}>
+            {marketSummary.topLoser ? marketSummary.topLoser.symbol : 'N/A'}
+          </Text>
+          <Text style={styles.summarySubtext}>
+            {marketSummary.topLoser ? `${marketSummary.topLoser.change_pct.toFixed(2)}%` : '0.00%'}
+          </Text>
+        </View>
+
+        <View style={[styles.summaryCard, styles.summaryCardInfo]}>
+          <Text style={styles.summaryLabel}>Gainers/Losers</Text>
+          <Text style={styles.summaryValue}>{marketSummary.totalGainers}/{marketSummary.totalLosers}</Text>
+          <Text style={styles.summarySubtext}>{instruments.length} stocks</Text>
+        </View>
+      </ScrollView>
+
       {/* Search and Filter Bar */}
       <View style={styles.headerBar}>
         <View style={styles.searchContainer}>
@@ -176,19 +295,48 @@ export default function Markets() {
           <Card key={stock.symbol} style={styles.stockCard} padding="md">
             {/* Stock Header */}
             <View style={styles.stockHeader}>
+              <View style={styles.stockIconContainer}>
+                <View style={[styles.stockIcon, stock.change_pct >= 0 ? styles.stockIconGreen : styles.stockIconRed]}>
+                  <Text style={styles.stockIconText}>{stock.symbol[0]}</Text>
+                </View>
+              </View>
+              
               <View style={styles.stockTitleSection}>
                 <Text style={styles.stockSymbol}>{stock.symbol}</Text>
                 <Text style={styles.stockName} numberOfLines={1}>{stock.name}</Text>
+                {stock.volume && (
+                  <Text style={styles.stockVolume}>Vol: {(stock.volume / 1000).toFixed(1)}K</Text>
+                )}
               </View>
               
               <View style={styles.stockPriceSection}>
                 <Text style={styles.stockPrice}>KES {stock.last_price.toFixed(2)}</Text>
-                <Badge
-                  text={`${stock.change_pct >= 0 ? '+' : ''}${stock.change_pct.toFixed(2)}%`}
-                  variant={stock.change_pct >= 0 ? 'success' : 'error'}
-                />
+                <View style={[styles.changeBadge, stock.change_pct >= 0 ? styles.changeBadgeGreen : styles.changeBadgeRed]}>
+                  <Text style={[styles.changeText, stock.change_pct >= 0 ? styles.changeTextGreen : styles.changeTextRed]}>
+                    {stock.change_pct >= 0 ? '▲' : '▼'} {Math.abs(stock.change_pct).toFixed(2)}%
+                  </Text>
+                </View>
               </View>
             </View>
+
+            {/* Mini Price Range Bar */}
+            {stock.high && stock.low && (
+              <View style={styles.priceRangeContainer}>
+                <Text style={styles.priceRangeLabel}>Day Range</Text>
+                <View style={styles.priceRangeBar}>
+                  <View 
+                    style={[
+                      styles.priceRangeFill, 
+                      { width: `${((stock.last_price - stock.low) / (stock.high - stock.low)) * 100}%` }
+                    ]} 
+                  />
+                </View>
+                <View style={styles.priceRangeValues}>
+                  <Text style={styles.priceRangeText}>L: {stock.low.toFixed(2)}</Text>
+                  <Text style={styles.priceRangeText}>H: {stock.high.toFixed(2)}</Text>
+                </View>
+              </View>
+            )}
 
             {/* AI Recommendation */}
             {recommendations[stock.symbol] && (
@@ -264,6 +412,8 @@ export default function Markets() {
           </View>
         )}
       </ScrollView>
+
+      <FloatingAIButton />
     </View>
   );
 }
@@ -273,9 +423,97 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.background.primary,
+  },
+  headerTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  watchlistHeaderButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background.card,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+    gap: spacing.xs,
+  },
+  watchlistHeaderIcon: {
+    fontSize: 16,
+    color: colors.warning,
+  },
+  watchlistHeaderText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+  },
+  summaryScroll: {
+    backgroundColor: colors.background.secondary,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.main,
+  },
+  summaryContent: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    gap: spacing.md,
+  },
+  summaryCard: {
+    minWidth: 140,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+  },
+  summaryCardPrimary: {
+    backgroundColor: colors.primary.main,
+  },
+  summaryCardSuccess: {
+    backgroundColor: colors.success + '20',
+    borderWidth: 1,
+    borderColor: colors.success,
+  },
+  summaryCardError: {
+    backgroundColor: colors.error + '20',
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
+  summaryCardInfo: {
+    backgroundColor: colors.background.card,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+  },
+  summaryLabel: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+    textTransform: 'uppercase',
+    fontWeight: typography.fontWeight.semibold,
+  },
+  summaryValue: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: 2,
+  },
+  summarySubtext: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+  },
+  positiveText: {
+    color: colors.success,
+  },
+  negativeText: {
+    color: colors.error,
+  },
   headerBar: {
     padding: spacing.base,
-    backgroundColor: colors.background.secondary,
+    backgroundColor: colors.background.primary,
     borderBottomWidth: 1,
     borderBottomColor: colors.border.main,
   },
@@ -333,9 +571,33 @@ const styles = StyleSheet.create({
   },
   stockHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.sm,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  stockIconContainer: {
+    marginRight: spacing.sm,
+  },
+  stockIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: borderRadius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stockIconGreen: {
+    backgroundColor: colors.success + '20',
+    borderWidth: 2,
+    borderColor: colors.success,
+  },
+  stockIconRed: {
+    backgroundColor: colors.error + '20',
+    borderWidth: 2,
+    borderColor: colors.error,
+  },
+  stockIconText: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
   },
   stockTitleSection: {
     flex: 1,
@@ -349,15 +611,72 @@ const styles = StyleSheet.create({
   stockName: {
     fontSize: typography.fontSize.sm,
     color: colors.text.tertiary,
+    marginBottom: 2,
+  },
+  stockVolume: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.disabled,
   },
   stockPriceSection: {
     alignItems: 'flex-end',
   },
   stockPrice: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.secondary,
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
     marginBottom: spacing.xs,
+  },
+  changeBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.sm,
+  },
+  changeBadgeGreen: {
+    backgroundColor: colors.success + '20',
+  },
+  changeBadgeRed: {
+    backgroundColor: colors.error + '20',
+  },
+  changeText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.bold,
+  },
+  changeTextGreen: {
+    color: colors.success,
+  },
+  changeTextRed: {
+    color: colors.error,
+  },
+  priceRangeContainer: {
+    marginBottom: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.main,
+  },
+  priceRangeLabel: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.disabled,
+    marginBottom: spacing.xs,
+    textTransform: 'uppercase',
+  },
+  priceRangeBar: {
+    height: 6,
+    backgroundColor: colors.background.secondary,
+    borderRadius: borderRadius.sm,
+    marginBottom: spacing.xs,
+    overflow: 'hidden',
+  },
+  priceRangeFill: {
+    height: '100%',
+    backgroundColor: colors.primary.main,
+  },
+  priceRangeValues: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  priceRangeText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
   },
   recommendationBanner: {
     backgroundColor: colors.background.primary,

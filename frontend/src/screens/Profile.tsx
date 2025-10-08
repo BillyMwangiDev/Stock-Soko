@@ -1,293 +1,214 @@
+/**
+ * Profile Screen
+ * User profile, account settings, and logout
+ */
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ProfileStackParamList } from '../navigation/types';
 import { api } from '../api/client';
 import { setAccessToken, getAccessToken } from '../store/auth';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { Card, Button, Input, Badge } from '../components';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface UserBalance {
-  available: number;
-  reserved: number;
-  total: number;
+type ProfileScreenProp = StackNavigationProp<ProfileStackParamList, 'Profile'>;
+
+interface Props {
+  navigation: ProfileScreenProp;
 }
 
-export default function Profile() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
-  const [amount, setAmount] = useState('100');
-  const [loading, setLoading] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [balance, setBalance] = useState<UserBalance | null>(null);
+export default function Profile({ navigation }: Props) {
+  const [userName, setUserName] = useState('Trader');
+  const [userHandle, setUserHandle] = useState('@trader');
+  const [joinedYear, setJoinedYear] = useState('2024');
 
   useEffect(() => {
-    checkLoginStatus();
+    loadUserData();
   }, []);
 
-  const checkLoginStatus = async () => {
-    const token = await getAccessToken();
-    setIsLoggedIn(!!token);
-    if (token) {
-      loadBalance();
-    }
-  };
-
-  const loadBalance = async () => {
+  const loadUserData = async () => {
     try {
-      const res = await api.get('/ledger/balance');
-      setBalance(res.data);
+      const email = await AsyncStorage.getItem('userEmail');
+      if (email) {
+        const name = email.split('@')[0];
+        setUserName(name.split('.').map(n => n.charAt(0).toUpperCase() + n.slice(1)).join(' '));
+        setUserHandle('@' + name);
+      }
     } catch (error) {
-      console.error('Failed to load balance:', error);
+      console.error('Failed to load user data:', error);
     }
   };
 
-  const handleRegister = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      await api.post('/auth/register', { email, password });
-      Alert.alert('Success', 'Account created successfully! You can now login.');
-    } catch (error: any) {
-      Alert.alert('Registration Failed', error?.response?.data?.detail || 'Failed to create account');
-    } finally {
-      setLoading(false);
-    }
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await setAccessToken('');
+            await AsyncStorage.removeItem('userEmail');
+            
+            if (typeof window !== 'undefined') {
+              window.location.reload();
+            }
+          },
+        },
+      ]
+    );
   };
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const form = new FormData();
-      form.append('username', email);
-      form.append('password', password);
-      
-      const res = await api.post('/auth/login', form, {
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      });
-      
-      setAccessToken(res.data.access_token);
-      setIsLoggedIn(true);
-      await loadBalance();
-      Alert.alert('Success', 'Logged in successfully!');
-    } catch (error: any) {
-      Alert.alert('Login Failed', error?.response?.data?.detail || 'Invalid credentials');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    setAccessToken('');
-    setIsLoggedIn(false);
-    setBalance(null);
-    setEmail('');
-    setPassword('');
-    Alert.alert('Logged Out', 'You have been logged out successfully');
-  };
-
-  const handleDeposit = async () => {
-    if (!phone || !amount) {
-      Alert.alert('Error', 'Please enter phone number and amount');
-      return;
-    }
-
-    const depositAmount = parseFloat(amount);
-    if (isNaN(depositAmount) || depositAmount <= 0) {
-      Alert.alert('Error', 'Please enter a valid amount');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await api.post('/payments/mpesa/deposit', {
-        phone_number: phone,
-        amount: depositAmount,
-      });
-      Alert.alert('Deposit Initiated', res.data.message || 'Check your phone for STK push prompt');
-    } catch (error: any) {
-      Alert.alert('Deposit Failed', error?.response?.data?.detail || 'Failed to initiate deposit');
-    } finally {
-      setLoading(false);
-    }
+  const handleNavigation = (screen: keyof ProfileStackParamList) => {
+    navigation.navigate(screen as any);
   };
 
   return (
-    <ScrollView 
-      style={styles.container} 
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={true}
-      bounces={true}
-      scrollEventThrottle={16}
-    >
+    <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Profile & Account</Text>
+        <View style={styles.headerSpacer} />
+        <Text style={styles.headerTitle}>Profile</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
-      {isLoggedIn ? (
-        <>
-          {/* Balance Card */}
-          <Card variant="elevated" style={styles.balanceCard}>
-            <Text style={styles.balanceLabel}>Available Balance</Text>
-            <Text style={styles.balanceValue}>
-              KES {balance?.available.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
-            </Text>
-            
-            {balance && balance.reserved > 0 && (
-              <View style={styles.reservedContainer}>
-                <Text style={styles.reservedLabel}>Reserved</Text>
-                <Text style={styles.reservedValue}>
-                  KES {balance.reserved.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </Text>
-              </View>
-            )}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Profile Section */}
+        <View style={styles.profileSection}>
+          <View style={styles.avatarContainer}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{userName[0]}</Text>
+            </View>
+          </View>
+          <Text style={styles.userName}>{userName}</Text>
+          <Text style={styles.userHandle}>{userHandle}</Text>
+          <Text style={styles.joinedText}>Joined {joinedYear}</Text>
+        </View>
 
-            <TouchableOpacity onPress={loadBalance} style={styles.refreshButton}>
-              <Text style={styles.refreshText}>Refresh Balance</Text>
+        {/* Account Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>ACCOUNT</Text>
+          <View style={styles.menuGroup}>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => Alert.alert('Edit Info', 'Coming soon')}
+            >
+              <Text style={styles.menuText}>Edit Info</Text>
+              <Text style={styles.chevron}>›</Text>
             </TouchableOpacity>
-          </Card>
 
-          {/* Deposit Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Deposit Funds (M-Pesa)</Text>
-            <Card>
-              <Input
-                label="Phone Number"
-                placeholder="+254..."
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-              />
-              <Input
-                label="Amount (KES)"
-                placeholder="Enter amount"
-                value={amount}
-                onChangeText={setAmount}
-                keyboardType="numeric"
-              />
-              <Button
-                title={loading ? 'Processing...' : 'Initiate Deposit'}
-                onPress={handleDeposit}
-                variant="primary"
-                disabled={loading}
-                fullWidth
-              />
-              <Text style={styles.helperText}>
-                Sandbox test number: 254708374149
-              </Text>
-            </Card>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => handleNavigation('KYCUpload')}
+            >
+              <Text style={styles.menuText}>View KYC</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => Alert.alert('Linked Broker', 'Broker management coming soon')}
+            >
+              <Text style={styles.menuText}>Linked Broker</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
           </View>
+        </View>
 
-          {/* Account Info */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Account Information</Text>
-            <Card>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Email</Text>
-                <Text style={styles.infoValue}>{email}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Status</Text>
-                <Badge text="Active" variant="success" />
-              </View>
-            </Card>
+        {/* Preferences Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>PREFERENCES</Text>
+          <View style={styles.menuGroup}>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => handleNavigation('Settings')}
+            >
+              <Text style={styles.menuText}>Settings</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => handleNavigation('NotificationCenter')}
+            >
+              <Text style={styles.menuText}>Notifications</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => handleNavigation('Wallet')}
+            >
+              <Text style={styles.menuText}>Wallet & Payments</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
           </View>
+        </View>
 
-          {/* Settings */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Settings</Text>
-            <Card padding="sm">
-              <TouchableOpacity style={styles.settingItem}>
-                <Text style={styles.settingText}>Notifications</Text>
-                <Text style={styles.settingChevron}>›</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.settingItem}>
-                <Text style={styles.settingText}>Security</Text>
-                <Text style={styles.settingChevron}>›</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.settingItem}>
-                <Text style={styles.settingText}>Documents</Text>
-                <Text style={styles.settingChevron}>›</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.settingItem}>
-                <Text style={styles.settingText}>Help & Support</Text>
-                <Text style={styles.settingChevron}>›</Text>
-              </TouchableOpacity>
-            </Card>
+        {/* Learning & Support Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>LEARNING & SUPPORT</Text>
+          <View style={styles.menuGroup}>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => handleNavigation('AIAssistant')}
+            >
+              <Text style={styles.menuText}>AI Assistant</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => handleNavigation('EducationalContent')}
+            >
+              <Text style={styles.menuText}>Learning Center</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => handleNavigation('CustomerSupport')}
+            >
+              <Text style={styles.menuText}>Customer Support</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
           </View>
+        </View>
 
-          {/* Logout Button */}
-          <Button
-            title="Logout"
-            onPress={handleLogout}
-            variant="outline"
-            fullWidth
-            style={styles.logoutButton}
-          />
-        </>
-      ) : (
-        <>
-          {/* Login/Register Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Sign In to Your Account</Text>
-            <Card>
-              <Input
-                label="Email"
-                placeholder="Enter your email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-              <Input
-                label="Password"
-                placeholder="Enter your password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-              <View style={styles.buttonGroup}>
-                <Button
-                  title={loading ? 'Loading...' : 'Login'}
-                  onPress={handleLogin}
-                  variant="primary"
-                  disabled={loading}
-                  fullWidth
-                  style={{ marginBottom: spacing.sm }}
-                />
-                <Button
-                  title="Create Account"
-                  onPress={handleRegister}
-                  variant="outline"
-                  disabled={loading}
-                  fullWidth
-                />
-              </View>
-            </Card>
+        {/* Security Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>SECURITY</Text>
+          <View style={styles.menuGroup}>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => Alert.alert('Change Password', 'Password change coming soon')}
+            >
+              <Text style={styles.menuText}>Change Password</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={handleLogout}
+            >
+              <Text style={styles.logoutText}>Logout</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
           </View>
+        </View>
 
-          {/* Info Card */}
-          <Card variant="outlined" style={styles.infoCard}>
-            <Text style={styles.infoCardTitle}>Why Create an Account?</Text>
-            <Text style={styles.infoCardText}>
-              Access AI-powered stock recommendations{'\n'}
-              Trade stocks with low fees{'\n'}
-              Track your portfolio in real-time{'\n'}
-              Get personalized market insights{'\n'}
-              Secure M-Pesa deposit & withdrawal
-            </Text>
-          </Card>
-        </>
-      )}
-    </ScrollView>
+        <View style={{ height: 100 }} />
+      </ScrollView>
+    </View>
   );
 }
 
@@ -296,128 +217,101 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
-  content: {
-    padding: spacing.base,
-    paddingBottom: 120,
-    minHeight: 1000,
-  },
   header: {
-    marginBottom: spacing.lg,
-  },
-  title: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-  },
-  balanceCard: {
-    marginBottom: spacing.lg,
-    padding: spacing.lg,
-  },
-  balanceLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  balanceValue: {
-    fontSize: typography.fontSize['3xl'],
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.md,
-  },
-  reservedContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.main,
-    marginBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
   },
-  reservedLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
+  headerSpacer: {
+    width: 40,
   },
-  reservedValue: {
-    fontSize: typography.fontSize.sm,
-    color: colors.warning,
-    fontWeight: typography.fontWeight.semibold,
-  },
-  refreshButton: {
-    paddingVertical: spacing.xs,
-  },
-  refreshText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.primary.main,
-    fontWeight: typography.fontWeight.medium,
-  },
-  section: {
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
+  headerTitle: {
     fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
+    fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: spacing.sm,
-  },
-  helperText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-    marginTop: spacing.sm,
+    flex: 1,
     textAlign: 'center',
   },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    paddingBottom: 100,
+  },
+  profileSection: {
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.main,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
   },
-  infoLabel: {
-    fontSize: typography.fontSize.base,
-    color: colors.text.tertiary,
+  avatarContainer: {
+    marginBottom: spacing.md,
   },
-  infoValue: {
-    fontSize: typography.fontSize.base,
-    color: colors.text.primary,
-    fontWeight: typography.fontWeight.medium,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  avatar: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: colors.primary.main + '20',
+    borderWidth: 2,
+    borderColor: colors.primary.main + '40',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.main,
   },
-  settingText: {
-    fontSize: typography.fontSize.base,
-    color: colors.text.primary,
+  avatarText: {
+    fontSize: 40,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.primary.main,
   },
-  settingChevron: {
+  userName: {
     fontSize: typography.fontSize.xl,
-    color: colors.text.tertiary,
-  },
-  logoutButton: {
-    marginTop: spacing.base,
-  },
-  buttonGroup: {
-    marginTop: spacing.sm,
-  },
-  infoCard: {
-    marginTop: spacing.base,
-  },
-  infoCardTitle: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold,
+    fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: spacing.sm,
+    marginBottom: 4,
   },
-  infoCardText: {
+  userHandle: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    lineHeight: 20,
+    color: colors.text.secondary,
+    marginBottom: 4,
+  },
+  joinedText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+  },
+  section: {
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: typography.fontWeight.semibold,
+    letterSpacing: 1,
+    color: colors.text.secondary,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.sm,
+  },
+  menuGroup: {
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    overflow: 'hidden',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  menuText: {
+    fontSize: typography.fontSize.base,
+    color: colors.text.primary,
+  },
+  logoutText: {
+    fontSize: typography.fontSize.base,
+    color: colors.error,
+  },
+  chevron: {
+    fontSize: 24,
+    color: colors.text.disabled,
   },
 });

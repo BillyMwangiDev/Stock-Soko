@@ -1,24 +1,29 @@
-// Spacing System (8px base grid)
 export const spacing = {
   xs: 4,
   sm: 8,
-  md: 12,
-  base: 16,
-  lg: 20,
-  xl: 24,
-  '2xl': 32,
-  '3xl': 40,
-  '4xl': 48,
+  md: 16,
+  base: 20,
+  lg: 24,
+  xl: 32,
+  '2xl': 40,
+  '3xl': 48,
+  '4xl': 64,
 };
 
-// Border radius (from spec)
 export const borderRadius = {
-  sm: 8,           // small from spec
-  md: 12,          // medium from spec
-  lg: 20,          // large from spec
-  xl: 24,
-  '2xl': 32,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  '2xl': 24,
+  pill: 20,
   full: 9999,
+};
+
+export const touchTarget = {
+  min: 44,
+  comfortable: 48,
+  large: 56,
 };
 
 // Shadows (from spec)

@@ -11,6 +11,10 @@ export type RootStackParamList = {
 export type AuthStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
+  RiskProfile: undefined;
+  ChooseBroker: undefined;
+  AccountSetup: undefined;
+  FeatureWalkthrough: undefined;
   Login: undefined;
   Register: undefined;
   OTPVerification: { phone: string };
@@ -40,6 +44,7 @@ export type TradeStackParamList = {
     orderId: string; 
     status: 'pending' | 'executed' | 'failed' 
   };
+  Watchlist: undefined;
 };
 
 export type PortfolioStackParamList = {
@@ -49,10 +54,15 @@ export type PortfolioStackParamList = {
 
 export type ProfileStackParamList = {
   Profile: undefined;
+  Dashboard: undefined;
   Settings: undefined;
   Wallet: undefined;
   KYCUpload: undefined;
   AIAssistant: undefined;
+  EducationalContent: undefined;
+  NotificationCenter: undefined;
+  FractionalShares: undefined;
+  CustomerSupport: undefined;
 };
 
 export type NewsStackParamList = {
