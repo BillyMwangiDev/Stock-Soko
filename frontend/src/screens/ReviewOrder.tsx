@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing } from '../theme';
 import { Card, Button, Badge } from '../components';
+import { api } from '../api/client';
 import type { OrderData } from './TradeOrder';
 
 interface ReviewOrderProps {
@@ -17,9 +18,36 @@ export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: Review
 
   const handleConfirm = async () => {
     setConfirming(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    onConfirm();
+    try {
+      // Execute order via API
+      const orderPayload = {
+        symbol: order.symbol,
+        side: order.side,
+        quantity: order.quantity,
+        order_type: order.orderType,
+        price: order.limitPrice || order.price,
+      };
+
+      console.log('Executing order:', orderPayload);
+      const response = await api.post('/trades', orderPayload);
+      console.log('Order executed:', response.data);
+
+      // Show success message
+      Alert.alert(
+        'Order Placed',
+        `Your ${order.side} order for ${order.quantity} shares of ${order.symbol} has been placed successfully.`,
+        [{ text: 'OK', onPress: () => onConfirm() }]
+      );
+    } catch (error: any) {
+      console.error('Order execution failed:', error);
+      setConfirming(false);
+      
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to place order';
+      Alert.alert('Order Failed', errorMessage, [
+        { text: 'Try Again', style: 'cancel' },
+        { text: 'Edit Order', onPress: () => onEdit() },
+      ]);
+    }
   };
 
   return (

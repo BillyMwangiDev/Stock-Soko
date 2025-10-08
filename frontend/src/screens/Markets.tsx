@@ -277,9 +277,17 @@ export default function Markets() {
         </Text>
 
         {filteredInstruments.map(stock => (
-          <Card key={stock.symbol} style={styles.stockCard} padding="md">
-            {/* Stock Header */}
-            <View style={styles.stockHeader}>
+          <TouchableOpacity 
+            key={stock.symbol} 
+            onPress={() => {
+              hapticFeedback.impact();
+              navigation.navigate('StockDetail' as never, { symbol: stock.symbol } as never);
+            }}
+            activeOpacity={0.7}
+          >
+            <Card style={styles.stockCard} padding="md">
+              {/* Stock Header */}
+              <View style={styles.stockHeader}>
               <View style={styles.stockIconContainer}>
                 <View style={[styles.stockIcon, stock.change_pct >= 0 ? styles.stockIconGreen : styles.stockIconRed]}>
                   <Text style={styles.stockIconText}>{stock.symbol[0]}</Text>
@@ -388,6 +396,7 @@ export default function Markets() {
               </View>
             </View>
           </Card>
+          </TouchableOpacity>
         ))}
 
         {filteredInstruments.length === 0 && (

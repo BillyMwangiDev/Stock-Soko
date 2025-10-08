@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, TextInput as RNTextInput } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, TextInput as RNTextInput, Modal } from 'react-native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { LoadingState } from '../components';
 import PriceChart from '../components/PriceChart';
 import { api } from '../api/client';
 import { hapticFeedback } from '../utils/haptics';
+import TradeOrder, { OrderData } from './TradeOrder';
+import ReviewOrder from './ReviewOrder';
+import type { TradeStackParamList } from '../navigation/types';
 
-interface StockDetailProps {
-  symbol: string;
-  onBack: () => void;
-  onTrade?: (symbol: string, side: 'buy' | 'sell') => void;
-}
+type StockDetailNavigationProp = StackNavigationProp<TradeStackParamList, 'StockDetail'>;
+type StockDetailRouteProp = RouteProp<TradeStackParamList, 'StockDetail'>;
 
 interface StockData {
   symbol: string;
@@ -34,7 +36,11 @@ interface StockData {
   risk_rating?: string;
 }
 
-export default function StockDetail({ symbol, onBack, onTrade }: StockDetailProps) {
+export default function StockDetail() {
+  const navigation = useNavigation<StockDetailNavigationProp>();
+  const route = useRoute<StockDetailRouteProp>();
+  const { symbol } = route.params;
+
   const [stock, setStock] = useState<StockData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('1M');
@@ -42,8 +48,12 @@ export default function StockDetail({ symbol, onBack, onTrade }: StockDetailProp
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [aiRecommendation, setAiRecommendation] = useState<any>(null);
   const [loadingAI, setLoadingAI] = useState(false);
-  const [showBuyModal, setShowBuyModal] = useState(false);
-  const [showSellModal, setShowSellModal] = useState(false);
+  
+  // Order flow states
+  const [showTradeModal, setShowTradeModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [tradeSide, setTradeSide] = useState<'buy' | 'sell'>('buy');
+  const [currentOrder, setCurrentOrder] = useState<OrderData | null>(null);
   const [orderType, setOrderType] = useState<'market' | 'limit'>('market');
   const [quantity, setQuantity] = useState('');
   const [limitPrice, setLimitPrice] = useState('');
@@ -574,7 +584,8 @@ export default function StockDetail({ symbol, onBack, onTrade }: StockDetailProp
           style={styles.buyButton}
           onPress={() => {
             hapticFeedback.impact();
-            if (onTrade) onTrade(symbol, 'buy');
+            setTradeSide('buy');
+            setShowTradeModal(true);
           }}
         >
           <Text style={styles.buyButtonText}>Buy {stock.symbol}</Text>
@@ -585,13 +596,62 @@ export default function StockDetail({ symbol, onBack, onTrade }: StockDetailProp
           style={styles.sellButton}
           onPress={() => {
             hapticFeedback.impact();
-            if (onTrade) onTrade(symbol, 'sell');
+            setTradeSide('sell');
+            setShowTradeModal(true);
           }}
         >
           <Text style={styles.sellButtonText}>Sell {stock.symbol}</Text>
           <Text style={styles.buttonSubtext}>Short / Exit</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Trade Order Modal */}
+      <Modal
+        visible={showTradeModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowTradeModal(false)}
+      >
+        <TradeOrder
+          symbol={symbol}
+          side={tradeSide}
+          currentPrice={stock.last_price}
+          onBack={() => setShowTradeModal(false)}
+          onReview={(orderData) => {
+            setCurrentOrder(orderData);
+            setShowTradeModal(false);
+            setShowReviewModal(true);
+          }}
+        />
+      </Modal>
+
+      {/* Review Order Modal */}
+      <Modal
+        visible={showReviewModal}
+        transparent={false}
+        animationType="slide"
+        onRequestClose={() => setShowReviewModal(false)}
+      >
+        {currentOrder && (
+          <ReviewOrder
+            order={currentOrder}
+            onBack={() => setShowReviewModal(false)}
+            onEdit={() => {
+              setShowReviewModal(false);
+              setShowTradeModal(true);
+            }}
+            onConfirm={() => {
+              setShowReviewModal(false);
+              setCurrentOrder(null);
+              Alert.alert(
+                'Order Placed',
+                'Your order has been placed successfully!',
+                [{ text: 'OK', onPress: () => navigation.goBack() }]
+              );
+            }}
+          />
+        )}
+      </Modal>
     </View>
   );
 }
