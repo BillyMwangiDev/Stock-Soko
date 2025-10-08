@@ -56,10 +56,7 @@ export default function Login({ navigation }: Props) {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <View style={styles.container}>
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.content}
@@ -112,7 +109,7 @@ export default function Login({ navigation }: Props) {
           </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -125,10 +122,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: spacing.xl,
-    paddingTop: spacing['3xl'],
-    paddingBottom: 100,
-    minHeight: 700,
+    padding: spacing.md,
+    paddingTop: spacing.xl,
+    paddingBottom: 60,
+    justifyContent: 'center',
   },
   title: {
     fontSize: typography.fontSize['2xl'],
