@@ -10,43 +10,36 @@ import { colors, typography, spacing, borderRadius } from '../theme';
 import { LoadingState, FloatingAIButton } from '../components';
 
 interface Holding {
-  id: string;
-  type: string;
-  name: string;
-  quantity: string;
-  value: number;
-  emoji: string;
+  symbol: string;
+  quantity: number;
+  avg_price: number;
+  current_price: number;
+  total_value: number;
+  profit_loss: number;
+  profit_loss_percent: number;
+  name?: string;
+}
+
+interface PortfolioSummary {
+  total_value: number;
+  total_profit_loss: number;
+  total_profit_loss_percent: number;
+  total_invested: number;
+  cash_balance: number;
 }
 
 export default function Portfolio() {
   const navigation = useNavigation();
-  const [holdings, setHoldings] = useState<Holding[]>([
-    {
-      id: '1',
-      type: 'Stocks',
-      name: 'Stock Soko',
-      quantity: '100 shares',
-      value: 10000,
-      emoji: 'STK',
-    },
-    {
-      id: '2',
-      type: 'Bonds',
-      name: 'Government Bonds',
-      quantity: '5 bonds',
-      value: 5000,
-      emoji: 'BND',
-    },
-  ]);
-  const [loading, setLoading] = useState(false);
+  const [holdings, setHoldings] = useState<Holding[]>([]);
+  const [portfolioSummary, setPortfolioSummary] = useState<PortfolioSummary>({
+    total_value: 0,
+    total_profit_loss: 0,
+    total_profit_loss_percent: 0,
+    total_invested: 0,
+    cash_balance: 0,
+  });
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  const totalValue = 15000;
-  const totalProfit = 2500;
-  const profitPercent = 25;
-  const taxableIncome = 1250;
-  const estimatedTax = 250;
-  const performanceChange = 15;
 
   useEffect(() => {
     loadData();
@@ -54,9 +47,66 @@ export default function Portfolio() {
 
   const loadData = async () => {
     try {
-      // Load real data from API
-      const res = await api.get('/ledger/positions');
-      // Process data...
+      // Load portfolio positions
+      const positionsRes = await api.get('/ledger/positions');
+      const positions = positionsRes.data.positions || [];
+      
+      // Load wallet balance
+      const balanceRes = await api.get('/ledger/balance');
+      const cashBalance = balanceRes.data.available_balance || 0;
+      
+      // Calculate portfolio summary
+      let totalValue = 0;
+      let totalInvested = 0;
+      let totalProfitLoss = 0;
+      
+      const processedHoldings: Holding[] = await Promise.all(
+        positions.map(async (position: any) => {
+          try {
+            // Fetch current stock price
+            const stockRes = await api.get(`/markets/stocks/${position.symbol}`);
+            const currentPrice = stockRes.data.last_price || 0;
+            const stockName = stockRes.data.name || position.symbol;
+            
+            const totalVal = position.quantity * currentPrice;
+            const avgCost = position.avg_price * position.quantity;
+            const profitLoss = totalVal - avgCost;
+            const profitLossPct = avgCost > 0 ? (profitLoss / avgCost) * 100 : 0;
+            
+            totalValue += totalVal;
+            totalInvested += avgCost;
+            totalProfitLoss += profitLoss;
+            
+            return {
+              symbol: position.symbol,
+              name: stockName,
+              quantity: position.quantity,
+              avg_price: position.avg_price,
+              current_price: currentPrice,
+              total_value: totalVal,
+              profit_loss: profitLoss,
+              profit_loss_percent: profitLossPct,
+            };
+          } catch (err) {
+            console.error(`Failed to load price for ${position.symbol}:`, err);
+            return null;
+          }
+        })
+      );
+      
+      // Filter out failed positions
+      const validHoldings = processedHoldings.filter(h => h !== null) as Holding[];
+      setHoldings(validHoldings);
+      
+      const totalProfitLossPct = totalInvested > 0 ? (totalProfitLoss / totalInvested) * 100 : 0;
+      
+      setPortfolioSummary({
+        total_value: totalValue + cashBalance,
+        total_profit_loss: totalProfitLoss,
+        total_profit_loss_percent: totalProfitLossPct,
+        total_invested: totalInvested,
+        cash_balance: cashBalance,
+      });
     } catch (error) {
       console.error('Failed to load portfolio:', error);
     } finally {
@@ -91,81 +141,94 @@ export default function Portfolio() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         showsVerticalScrollIndicator={false}
       >
+        {/* Portfolio Summary */}
+        <View style={styles.summarySection}>
+          <View style={styles.totalValueContainer}>
+            <Text style={styles.totalValueLabel}>Total Portfolio Value</Text>
+            <Text style={styles.totalValueAmount}>KES {portfolioSummary.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+            <View style={[styles.profitLossContainer, portfolioSummary.total_profit_loss >= 0 ? styles.profitContainer : styles.lossContainer]}>
+              <Text style={[styles.profitLossText, portfolioSummary.total_profit_loss >= 0 ? styles.profitText : styles.lossText]}>
+                {portfolioSummary.total_profit_loss >= 0 ? '+' : ''}KES {portfolioSummary.total_profit_loss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Text>
+              <Text style={[styles.profitLossPctText, portfolioSummary.total_profit_loss >= 0 ? styles.profitText : styles.lossText]}>
+                ({portfolioSummary.total_profit_loss >= 0 ? '+' : ''}{portfolioSummary.total_profit_loss_percent.toFixed(2)}%)
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.balanceBreakdown}>
+            <View style={styles.breakdownItem}>
+              <Text style={styles.breakdownLabel}>Cash Balance</Text>
+              <Text style={styles.breakdownValue}>KES {portfolioSummary.cash_balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+            </View>
+            <View style={styles.breakdownItem}>
+              <Text style={styles.breakdownLabel}>Invested</Text>
+              <Text style={styles.breakdownValue}>KES {portfolioSummary.total_invested.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+            </View>
+          </View>
+        </View>
+
         {/* Current Holdings Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Current Holdings</Text>
           
-          <View style={styles.holdingsContainer}>
-            {holdings.map((holding) => (
-              <TouchableOpacity 
-                key={holding.id} 
-                style={styles.holdingCard}
-                onPress={() => navigation.navigate('HoldingDetail', { holdingId: holding.id })}
-              >
-                <View style={styles.holdingInfo}>
-                  <View style={styles.holdingDetails}>
-                    <Text style={styles.holdingType}>{holding.type}</Text>
-                    <Text style={styles.holdingName}>{holding.name}</Text>
-                    <Text style={styles.holdingQuantity}>{holding.quantity}</Text>
-                  </View>
-                  <View style={styles.holdingValue}>
-                    <Text style={styles.valueText}>KES {holding.value.toLocaleString()}</Text>
-                  </View>
-                </View>
-                
-                <View style={styles.holdingImage}>
-                  <Text style={styles.holdingEmoji}>{holding.emoji}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Profit/Loss Summary */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Profit/Loss Summary</Text>
-          
-          <View style={styles.summaryCard}>
-            <View style={styles.summaryContent}>
-              <View style={styles.summaryInfo}>
-                <View style={styles.summaryDetails}>
-                  <Text style={styles.summaryLabel}>Total Profit</Text>
-                  <Text style={styles.summaryValue}>${totalProfit.toLocaleString()}</Text>
-                  <Text style={styles.summarySubtext}>Since Inception</Text>
-                </View>
-                <View style={styles.profitBadge}>
-                  <Text style={styles.profitBadgeText}>+{profitPercent}%</Text>
-                </View>
-              </View>
-              
-              <View style={styles.summaryImage}>
-                <Text style={styles.summaryEmoji}>↗</Text>
-              </View>
+          {holdings.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No holdings yet</Text>
+              <Text style={styles.emptySubtext}>Start trading to build your portfolio</Text>
             </View>
-          </View>
+          ) : (
+            <View style={styles.holdingsContainer}>
+              {holdings.map((holding) => (
+                <TouchableOpacity 
+                  key={holding.symbol} 
+                  style={styles.holdingCard}
+                  onPress={() => navigation.navigate('HoldingDetail' as never, { symbol: holding.symbol, quantity: holding.quantity, avgPrice: holding.avg_price } as never)}
+                >
+                  <View style={styles.holdingInfo}>
+                    <View style={styles.holdingDetails}>
+                      <View style={styles.holdingIconContainer}>
+                        <View style={[styles.holdingIcon, holding.profit_loss >= 0 ? styles.holdingIconGreen : styles.holdingIconRed]}>
+                          <Text style={styles.holdingIconText}>{holding.symbol[0]}</Text>
+                        </View>
+                      </View>
+                      <View style={styles.holdingTextInfo}>
+                        <Text style={styles.holdingSymbol}>{holding.symbol}</Text>
+                        <Text style={styles.holdingName}>{holding.name}</Text>
+                        <Text style={styles.holdingQuantity}>{holding.quantity} shares @ KES {holding.avg_price.toFixed(2)}</Text>
+                      </View>
+                    </View>
+                    
+                    <View style={styles.holdingValue}>
+                      <Text style={styles.valueText}>KES {holding.total_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+                      <Text style={[styles.holdingProfitLoss, holding.profit_loss >= 0 ? styles.profitText : styles.lossText]}>
+                        {holding.profit_loss >= 0 ? '+' : ''}KES {holding.profit_loss.toFixed(2)}
+                      </Text>
+                      <Text style={[styles.holdingProfitLossPct, holding.profit_loss >= 0 ? styles.profitText : styles.lossText]}>
+                        ({holding.profit_loss >= 0 ? '+' : ''}{holding.profit_loss_percent.toFixed(2)}%)
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Tax Summary */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tax Summary</Text>
+          <Text style={styles.sectionTitle}>Tax Estimate</Text>
           
           <View style={styles.taxCard}>
-            <View style={styles.taxContent}>
-              <View style={styles.taxInfo}>
-                <View style={styles.taxDetails}>
-                  <Text style={styles.taxLabel}>Taxable Income</Text>
-                  <Text style={styles.taxValue}>${taxableIncome.toLocaleString()}</Text>
-                  <Text style={styles.taxSubtext}>Year to Date</Text>
-                </View>
-                <View style={styles.taxBadge}>
-                  <Text style={styles.taxBadgeText}>${estimatedTax}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.taxImage}>
-                <Text style={styles.taxEmoji}>$</Text>
-              </View>
+            <View style={styles.taxRow}>
+              <Text style={styles.taxLabel}>Estimated CGT (5%)</Text>
+              <Text style={styles.taxValue}>
+                KES {portfolioSummary.total_profit_loss > 0 ? (portfolioSummary.total_profit_loss * 0.05).toFixed(2) : '0.00'}
+              </Text>
             </View>
+            <Text style={styles.taxSubtext}>
+              Note: Tax applies only on realized gains when you sell. Capital Gains Tax in Kenya is 5% on net gains.
+            </Text>
           </View>
         </View>
 
@@ -174,27 +237,16 @@ export default function Portfolio() {
           <Text style={styles.sectionTitle}>Performance</Text>
           
           <View style={styles.performanceCard}>
-            <Text style={styles.performanceLabel}>Portfolio Value</Text>
-            <Text style={styles.performanceValue}>${totalValue.toLocaleString()}</Text>
+            <Text style={styles.performanceLabel}>Total Returns</Text>
+            <Text style={[styles.performanceValue, portfolioSummary.total_profit_loss >= 0 ? styles.profitText : styles.lossText]}>
+              {portfolioSummary.total_profit_loss >= 0 ? '+' : ''}KES {portfolioSummary.total_profit_loss.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </Text>
             
             <View style={styles.performanceChange}>
-              <Text style={styles.performanceChangeLabel}>Last 6 Months</Text>
-              <Text style={styles.performanceChangeValue}>+{performanceChange}%</Text>
-            </View>
-
-            {/* Chart Placeholder */}
-            <View style={styles.chartContainer}>
-          <View style={styles.chartArea}>
-            <Text style={styles.chartEmoji}>CHART</Text>
-          </View>
-              <View style={styles.chartLabels}>
-                <Text style={styles.chartLabel}>Jan</Text>
-                <Text style={styles.chartLabel}>Feb</Text>
-                <Text style={styles.chartLabel}>Mar</Text>
-                <Text style={styles.chartLabel}>Apr</Text>
-                <Text style={styles.chartLabel}>May</Text>
-                <Text style={styles.chartLabel}>Jun</Text>
-              </View>
+              <Text style={styles.performanceChangeLabel}>Since Inception</Text>
+              <Text style={[styles.performanceChangeValue, portfolioSummary.total_profit_loss >= 0 ? styles.profitText : styles.lossText]}>
+                {portfolioSummary.total_profit_loss >= 0 ? '+' : ''}{portfolioSummary.total_profit_loss_percent.toFixed(2)}%
+              </Text>
             </View>
           </View>
         </View>
@@ -483,5 +535,135 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.xs,
     fontWeight: typography.fontWeight.medium,
     color: colors.text.secondary,
+  },
+  // New styles for real data UI
+  summarySection: {
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+  },
+  totalValueContainer: {
+    marginBottom: spacing.md,
+  },
+  totalValueLabel: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  totalValueAmount: {
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
+  },
+  profitLossContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  profitContainer: {
+    backgroundColor: colors.success + '20',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+  },
+  lossContainer: {
+    backgroundColor: colors.error + '20',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+  },
+  profitLossText: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  profitLossPctText: {
+    fontSize: typography.fontSize.sm,
+  },
+  profitText: {
+    color: colors.success,
+  },
+  lossText: {
+    color: colors.error,
+  },
+  balanceBreakdown: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.light,
+  },
+  breakdownItem: {
+    flex: 1,
+  },
+  breakdownLabel: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  breakdownValue: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+  },
+  emptyState: {
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    padding: spacing.xl,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
+  },
+  emptySubtext: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+  },
+  holdingIconContainer: {
+    marginRight: spacing.sm,
+  },
+  holdingIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  holdingIconGreen: {
+    backgroundColor: colors.success + '20',
+  },
+  holdingIconRed: {
+    backgroundColor: colors.error + '20',
+  },
+  holdingIconText: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  holdingTextInfo: {
+    flex: 1,
+  },
+  holdingSymbol: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  holdingProfitLoss: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
+  },
+  holdingProfitLossPct: {
+    fontSize: typography.fontSize.xs,
+  },
+  taxRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
   },
 });
