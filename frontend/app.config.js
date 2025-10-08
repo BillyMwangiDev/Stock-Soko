@@ -12,7 +12,7 @@ module.exports = {
 		android: { },
 		web: { },
 		extra: {
-			apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8080"
+			apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:5000"
 		}
 	}
 };
