@@ -14,8 +14,8 @@ Welcome to Stock Soko! This guide will help you get started with contributing to
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/stock-soko.git
-cd stock-soko
+git clone https://github.com/BillyMwangiDev/Stock-Soko.git
+cd Stock-Soko
 ```
 
 ### Backend Setup
