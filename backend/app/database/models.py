@@ -2,8 +2,8 @@
 SQLAlchemy ORM Models - Stock Soko Database Schema
 Based on YAML architecture specification
 """
-from sqlalchemy import Column, String, Boolean, Numeric, Integer, DateTime, Date, ForeignKey, Text, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Column, String, Boolean, Numeric, Integer, DateTime, Date, ForeignKey, Text, Index, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
@@ -45,9 +45,9 @@ class UserProfile(Base):
     nationality = Column(String, nullable=True)
     address = Column(Text, nullable=True)
     occupation = Column(String, nullable=True)
-    kyc_status = Column(String, default="pending")  # pending, verified, rejected
+    kyc_status = Column(String, default="pending")
     kyc_provider_id = Column(String, nullable=True)
-    kyc_metadata = Column(JSONB, nullable=True)
+    kyc_data = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
@@ -62,9 +62,9 @@ class Broker(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
     api_base_url = Column(String, nullable=True)
-    connector_type = Column(String, nullable=True)  # REST, FIX, SOAP
+    connector_type = Column(String, nullable=True)
     sandbox_mode = Column(Boolean, default=True)
-    credentials = Column(JSONB, nullable=True)  # encrypted in app layer
+    credentials = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
@@ -120,7 +120,7 @@ class Stock(Base):
     previous_close = Column(Numeric, nullable=True)
     pe_ratio = Column(Numeric, nullable=True)
     dividend_yield = Column(Numeric, nullable=True)
-    metadata = Column(JSONB, nullable=True)
+    extra_data = Column(JSON, nullable=True)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
@@ -217,7 +217,7 @@ class MarketTick(Base):
     volume = Column(Numeric, nullable=True)
     bid = Column(Numeric, nullable=True)
     ask = Column(Numeric, nullable=True)
-    metadata = Column(JSONB, nullable=True)
+    extra_data = Column(JSON, nullable=True)
     
     # Relationships
     stock = relationship("Stock", back_populates="market_ticks")
@@ -234,8 +234,8 @@ class News(Base):
     source = Column(String, nullable=True)
     url = Column(String, nullable=True)
     published_at = Column(DateTime(timezone=True), nullable=False, index=True)
-    sentiment_score = Column(Numeric, nullable=True)  # -1 .. +1
-    metadata = Column(JSONB, nullable=True)
+    sentiment_score = Column(Numeric, nullable=True)
+    extra_data = Column(JSON, nullable=True)
     
     # Relationships
     stock = relationship("Stock", back_populates="news")

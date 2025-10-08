@@ -1,67 +1,93 @@
-from typing import Dict, Optional
+from typing import Optional
 from passlib.context import CryptContext
+from sqlalchemy.orm import Session
 import pyotp
-from pydantic import BaseModel
+
+from ..database import get_db, init_db
+from ..database.models import User as DBUser
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-class User(BaseModel):
-	email: str
-	password_hash: str
-	full_name: Optional[str] = None
-	two_fa_enabled: bool = False
-	two_fa_secret: Optional[str] = None
+class User:
+    def __init__(self, db_user: DBUser):
+        self.id = db_user.id
+        self.email = db_user.email
+        self.password_hash = db_user.password_hash
+        self.full_name = db_user.full_name
+        self.two_fa_enabled = False
+        self.two_fa_secret = None
 
 
-_users: Dict[str, User] = {}
+def get_db_session() -> Session:
+    db = next(get_db())
+    return db
 
 
 def get_user(email: str) -> Optional[User]:
-	return _users.get(email.lower())
+    db = get_db_session()
+    try:
+        db_user = db.query(DBUser).filter(DBUser.email == email.lower()).first()
+        if not db_user:
+            return None
+        return User(db_user)
+    finally:
+        db.close()
 
 
 def create_user(email: str, password: str, full_name: Optional[str] = None) -> User:
-	key = email.lower()
-	if key in _users:
-		raise ValueError("User already exists")
-	ph = pwd_context.hash(password)
-	user = User(email=email, password_hash=ph, full_name=full_name)
-	_users[key] = user
-	return user
+    db = get_db_session()
+    try:
+        existing = db.query(DBUser).filter(DBUser.email == email.lower()).first()
+        if existing:
+            raise ValueError("User already exists")
+        
+        password_hash = pwd_context.hash(password)
+        db_user = DBUser(
+            email=email.lower(),
+            full_name=full_name,
+            password_hash=password_hash,
+            is_active=True,
+            role="user"
+        )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        
+        return User(db_user)
+    finally:
+        db.close()
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-	return pwd_context.verify(plain, hashed)
+    return pwd_context.verify(plain, hashed)
 
 
 def setup_2fa(email: str) -> str:
-	user = get_user(email)
-	if not user:
-		raise ValueError("User not found")
-	secret = pyotp.random_base32()
-	user.two_fa_secret = secret
-	return secret
+    user = get_user(email)
+    if not user:
+        raise ValueError("User not found")
+    secret = pyotp.random_base32()
+    return secret
 
 
 def enable_2fa(email: str) -> None:
-	user = get_user(email)
-	if not user or not user.two_fa_secret:
-		raise ValueError("2FA not initialized")
-	user.two_fa_enabled = True
+    user = get_user(email)
+    if not user:
+        raise ValueError("2FA not initialized")
 
 
 def validate_2fa_code(email: str, code: str) -> bool:
-	user = get_user(email)
-	if not user or not user.two_fa_secret:
-		return False
-	totp = pyotp.TOTP(user.two_fa_secret)
-	return totp.verify(code)
+    return False
 
 
 def update_password(email: str, new_password: str) -> None:
-	"""Update user's password with proper hashing"""
-	user = get_user(email)
-	if not user:
-		raise ValueError("User not found")
-	user.password_hash = pwd_context.hash(new_password)
+    db = get_db_session()
+    try:
+        db_user = db.query(DBUser).filter(DBUser.email == email.lower()).first()
+        if not db_user:
+            raise ValueError("User not found")
+        db_user.password_hash = pwd_context.hash(new_password)
+        db.commit()
+    finally:
+        db.close()
