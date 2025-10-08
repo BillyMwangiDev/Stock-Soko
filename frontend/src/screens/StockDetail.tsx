@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, TextInput as RNTextInput } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { LoadingState } from '../components';
 import PriceChart from '../components/PriceChart';
@@ -255,6 +255,135 @@ export default function StockDetail({ symbol, onBack, onTrade }: StockDetailProp
 
         {/* Interactive Price Chart */}
         <PriceChart symbol={stock.symbol} currentPrice={stock.last_price} />
+
+        {/* Order Book - OKX Style */}
+        <View style={styles.orderBookSection}>
+          <View style={styles.orderBookHeader}>
+            <Text style={styles.orderBookTitle}>Order Book</Text>
+            <View style={styles.orderBookTabs}>
+              <Text style={[styles.orderBookTab, styles.orderBookTabActive]}>Depth</Text>
+              <Text style={styles.orderBookTab}>Recent Trades</Text>
+            </View>
+          </View>
+
+          <View style={styles.orderBookContent}>
+            <View style={styles.orderBookColumn}>
+              <Text style={styles.orderBookColumnTitle}>Sell Orders</Text>
+              {[
+                { price: stock.last_price * 1.02, amount: 150, total: stock.last_price * 1.02 * 150 },
+                { price: stock.last_price * 1.015, amount: 230, total: stock.last_price * 1.015 * 230 },
+                { price: stock.last_price * 1.01, amount: 320, total: stock.last_price * 1.01 * 320 },
+                { price: stock.last_price * 1.005, amount: 450, total: stock.last_price * 1.005 * 450 },
+              ].map((order, idx) => (
+                <View key={idx} style={styles.orderBookRow}>
+                  <Text style={[styles.orderPrice, styles.sellPrice]}>{order.price.toFixed(2)}</Text>
+                  <Text style={styles.orderAmount}>{order.amount}</Text>
+                  <Text style={styles.orderTotal}>{order.total.toFixed(0)}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.spreadIndicator}>
+              <Text style={styles.spreadLabel}>Spread</Text>
+              <Text style={styles.spreadValue}>0.5%</Text>
+            </View>
+
+            <View style={styles.orderBookColumn}>
+              <Text style={styles.orderBookColumnTitle}>Buy Orders</Text>
+              {[
+                { price: stock.last_price * 0.995, amount: 480, total: stock.last_price * 0.995 * 480 },
+                { price: stock.last_price * 0.99, amount: 350, total: stock.last_price * 0.99 * 350 },
+                { price: stock.last_price * 0.985, amount: 270, total: stock.last_price * 0.985 * 270 },
+                { price: stock.last_price * 0.98, amount: 190, total: stock.last_price * 0.98 * 190 },
+              ].map((order, idx) => (
+                <View key={idx} style={styles.orderBookRow}>
+                  <Text style={[styles.orderPrice, styles.buyPrice]}>{order.price.toFixed(2)}</Text>
+                  <Text style={styles.orderAmount}>{order.amount}</Text>
+                  <Text style={styles.orderTotal}>{order.total.toFixed(0)}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        {/* Trading Controls - OKX Style */}
+        <View style={styles.tradingControls}>
+          <View style={styles.tradingHeader}>
+            <Text style={styles.tradingTitle}>Place Order</Text>
+            <View style={styles.orderTypeSelector}>
+              <TouchableOpacity 
+                style={[styles.orderTypeButton, orderType === 'market' && styles.orderTypeButtonActive]}
+                onPress={() => setOrderType('market')}
+              >
+                <Text style={[styles.orderTypeText, orderType === 'market' && styles.orderTypeTextActive]}>Market</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.orderTypeButton, orderType === 'limit' && styles.orderTypeButtonActive]}
+                onPress={() => setOrderType('limit')}
+              >
+                <Text style={[styles.orderTypeText, orderType === 'limit' && styles.orderTypeTextActive]}>Limit</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.orderForm}>
+            {orderType === 'limit' && (
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Price (KES)</Text>
+                <View style={styles.inputContainer}>
+                  <RNTextInput
+                    style={styles.formInput}
+                    placeholder={stock.last_price.toFixed(2)}
+                    placeholderTextColor={colors.text.disabled}
+                    keyboardType="decimal-pad"
+                    value={limitPrice}
+                    onChangeText={setLimitPrice}
+                  />
+                </View>
+              </View>
+            )}
+
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Quantity (Shares)</Text>
+              <View style={styles.inputContainer}>
+                <RNTextInput
+                  style={styles.formInput}
+                  placeholder="0"
+                  placeholderTextColor={colors.text.disabled}
+                  keyboardType="number-pad"
+                  value={quantity}
+                  onChangeText={setQuantity}
+                />
+                <View style={styles.quickAmounts}>
+                  <TouchableOpacity style={styles.quickAmountBtn} onPress={() => setQuantity('10')}>
+                    <Text style={styles.quickAmountText}>10</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.quickAmountBtn} onPress={() => setQuantity('50')}>
+                    <Text style={styles.quickAmountText}>50</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.quickAmountBtn} onPress={() => setQuantity('100')}>
+                    <Text style={styles.quickAmountText}>100</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.orderSummary}>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Est. Total</Text>
+                <Text style={styles.summaryValue}>
+                  KES {((orderType === 'limit' ? parseFloat(limitPrice || '0') : stock.last_price) * parseFloat(quantity || '0')).toFixed(2)}
+                </Text>
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Fee (0.2%)</Text>
+                <Text style={styles.summaryValue}>
+                  KES {(((orderType === 'limit' ? parseFloat(limitPrice || '0') : stock.last_price) * parseFloat(quantity || '0')) * 0.002).toFixed(2)}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
 
         {/* AI Recommendation with Detailed Analysis */}
         {aiRecommendation && (
@@ -959,5 +1088,209 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.xs,
     color: '#FFFFFF',
     opacity: 0.8,
+  },
+  // Order Book Styles
+  orderBookSection: {
+    backgroundColor: colors.background.card,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+    overflow: 'hidden',
+  },
+  orderBookHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+  },
+  orderBookTitle: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  orderBookTabs: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  orderBookTab: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  orderBookTabActive: {
+    color: colors.primary.main,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  orderBookContent: {
+    padding: spacing.md,
+  },
+  orderBookColumn: {
+    marginBottom: spacing.md,
+  },
+  orderBookColumnTitle: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  orderBookRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.xs,
+  },
+  orderPrice: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
+    flex: 1,
+  },
+  sellPrice: {
+    color: colors.error,
+  },
+  buyPrice: {
+    color: colors.success,
+  },
+  orderAmount: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    flex: 1,
+    textAlign: 'center',
+  },
+  orderTotal: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.tertiary,
+    flex: 1,
+    textAlign: 'right',
+  },
+  spreadIndicator: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.background.secondary,
+    borderRadius: borderRadius.sm,
+    marginVertical: spacing.sm,
+  },
+  spreadLabel: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+  },
+  spreadValue: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.primary,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  // Trading Controls Styles
+  tradingControls: {
+    backgroundColor: colors.background.card,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+    overflow: 'hidden',
+  },
+  tradingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+  },
+  tradingTitle: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  orderTypeSelector: {
+    flexDirection: 'row',
+    backgroundColor: colors.background.secondary,
+    borderRadius: borderRadius.sm,
+    padding: 2,
+  },
+  orderTypeButton: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.sm,
+  },
+  orderTypeButtonActive: {
+    backgroundColor: colors.primary.main,
+  },
+  orderTypeText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+    fontWeight: typography.fontWeight.medium,
+  },
+  orderTypeTextActive: {
+    color: colors.primary.contrast,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  orderForm: {
+    padding: spacing.md,
+  },
+  formGroup: {
+    marginBottom: spacing.md,
+  },
+  formLabel: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+    fontWeight: typography.fontWeight.medium,
+  },
+  inputContainer: {
+    position: 'relative',
+  },
+  formInput: {
+    backgroundColor: colors.background.secondary,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    fontSize: typography.fontSize.base,
+    color: colors.text.primary,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  quickAmounts: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginTop: spacing.xs,
+  },
+  quickAmountBtn: {
+    flex: 1,
+    paddingVertical: spacing.xs,
+    backgroundColor: colors.background.secondary,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    alignItems: 'center',
+  },
+  quickAmountText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.primary.main,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  orderSummary: {
+    marginTop: spacing.sm,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.light,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+  },
+  summaryLabel: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+  },
+  summaryValue: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.primary,
+    fontWeight: typography.fontWeight.semibold,
   },
 });
