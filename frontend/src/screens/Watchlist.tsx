@@ -22,9 +22,17 @@ export default function Watchlist() {
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   useEffect(() => {
     loadWatchlist();
+    
+    // Auto-refresh every 30 seconds for real-time updates
+    const refreshInterval = setInterval(() => {
+      loadWatchlist(true);
+    }, 30000);
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const loadWatchlist = async (isRefresh = false) => {
@@ -55,9 +63,12 @@ export default function Watchlist() {
       });
 
       setItems(enrichedItems);
+      setLastUpdate(new Date());
     } catch (error) {
       console.error('Failed to load watchlist:', error);
-      Alert.alert('Error', 'Failed to load watchlist. Please try again.');
+      if (!isRefresh) {
+        Alert.alert('Error', 'Failed to load watchlist. Please try again.');
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -122,9 +133,14 @@ export default function Watchlist() {
         {/* Header Info */}
         <View style={styles.headerInfo}>
           <Text style={styles.headerTitle}>Your Watchlist</Text>
-          <Text style={styles.headerSubtitle}>
-            {items.length} {items.length === 1 ? 'stock' : 'stocks'} tracked
-          </Text>
+          <View style={styles.headerMetadata}>
+            <Text style={styles.headerSubtitle}>
+              {items.length} {items.length === 1 ? 'stock' : 'stocks'} tracked
+            </Text>
+            <Text style={styles.lastUpdateText}>
+              Last updated: {lastUpdate.toLocaleTimeString()}
+            </Text>
+          </View>
         </View>
 
         {/* Watchlist Items */}
@@ -227,6 +243,16 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
+  },
+  headerMetadata: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  lastUpdateText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.disabled,
+    fontStyle: 'italic',
   },
   stockCard: {
     marginBottom: spacing.md,
