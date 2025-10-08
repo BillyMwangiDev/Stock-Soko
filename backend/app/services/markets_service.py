@@ -15,6 +15,7 @@ class MarketsService:
             "volume": 12500000,
             "market_cap": 731000000000,  # 731 billion KES
             "pe_ratio": 8.5,
+            "eps": 2.15,  # EPS = Price / P/E ratio (18.25 / 8.5)
             "dividend_yield": 4.8,
             "sector": "Telecommunications",
             "high_52w": 25.50,
@@ -28,6 +29,7 @@ class MarketsService:
             "volume": 3200000,
             "market_cap": 264200000000,  # 264 billion KES
             "pe_ratio": 3.2,
+            "eps": 6.91,  # EPS = 22.10 / 3.2
             "dividend_yield": 7.5,
             "sector": "Banking",
             "high_52w": 28.00,
@@ -41,6 +43,7 @@ class MarketsService:
             "volume": 4100000,
             "market_cap": 172000000000,
             "pe_ratio": 4.1,
+            "eps": 11.10,  # EPS = 45.50 / 4.1
             "dividend_yield": 6.2,
             "sector": "Banking",
             "high_52w": 52.00,
@@ -54,6 +57,7 @@ class MarketsService:
             "volume": 890000,
             "market_cap": 112000000000,
             "pe_ratio": 12.8,
+            "eps": 11.76,  # EPS = 150.50 / 12.8
             "dividend_yield": 5.2,
             "sector": "Consumer Goods",
             "high_52w": 175.00,
@@ -67,6 +71,7 @@ class MarketsService:
             "volume": 125000,
             "market_cap": 33600000000,
             "pe_ratio": 10.2,
+            "eps": 41.18,  # EPS = 420.00 / 10.2
             "dividend_yield": 8.5,
             "sector": "Consumer Goods",
             "high_52w": 480.00,
@@ -80,6 +85,7 @@ class MarketsService:
             "volume": 8500000,
             "market_cap": 60000000000,
             "pe_ratio": 6.5,
+            "eps": 0.44,  # EPS = 2.85 / 6.5
             "dividend_yield": 3.5,
             "sector": "Energy",
             "high_52w": 3.50,
@@ -93,6 +99,7 @@ class MarketsService:
             "volume": 450000,
             "market_cap": 56640000000,
             "pe_ratio": 5.8,
+            "eps": 27.24,  # EPS = 158.00 / 5.8
             "dividend_yield": 9.2,
             "sector": "Banking",
             "high_52w": 180.00,
@@ -106,6 +113,7 @@ class MarketsService:
             "volume": 2100000,
             "market_cap": 54625000000,
             "pe_ratio": 3.8,
+            "eps": 3.29,  # EPS = 12.50 / 3.8
             "dividend_yield": 8.0,
             "sector": "Banking",
             "high_52w": 15.00,
@@ -139,13 +147,65 @@ class MarketsService:
                 detail["change_pct"] = round(detail["change_pct"] + variation / 10, 2)
                 
                 detail["market_cap_formatted"] = f"KES {detail['market_cap'] / 1e9:.2f}B"
-                detail["eps"] = round(detail["last_price"] / detail["pe_ratio"], 2)
+                detail["eps"] = detail.get("eps", round(detail["last_price"] / detail["pe_ratio"], 2))
                 detail["book_value"] = round(detail["last_price"] * 0.8, 2)
                 detail["current_ratio"] = round(random.uniform(1.2, 2.5), 2)
                 detail["debt_to_equity"] = round(random.uniform(0.3, 1.5), 2)
                 
+                # Risk Profile Metrics
+                detail["beta"] = round(random.uniform(0.6, 1.5), 2)  # Market sensitivity
+                detail["volatility"] = round(random.uniform(15, 45), 2)  # Annual volatility %
+                detail["sharpe_ratio"] = round(random.uniform(0.5, 2.5), 2)  # Risk-adjusted return
+                detail["risk_rating"] = self._calculate_risk_rating(
+                    detail.get("beta", 1.0),
+                    detail.get("volatility", 25.0),
+                    detail.get("debt_to_equity", 0.5)
+                )
+                
                 return detail
         return None
+    
+    def _calculate_risk_rating(self, beta: float, volatility: float, debt_to_equity: float) -> str:
+        """Calculate overall risk rating: Low, Medium, High, Very High"""
+        risk_score = 0
+        
+        # Beta contribution (0-3 points)
+        if beta < 0.8:
+            risk_score += 0
+        elif beta < 1.2:
+            risk_score += 1
+        elif beta < 1.5:
+            risk_score += 2
+        else:
+            risk_score += 3
+        
+        # Volatility contribution (0-3 points)
+        if volatility < 20:
+            risk_score += 0
+        elif volatility < 30:
+            risk_score += 1
+        elif volatility < 40:
+            risk_score += 2
+        else:
+            risk_score += 3
+        
+        # Debt to Equity contribution (0-2 points)
+        if debt_to_equity < 0.5:
+            risk_score += 0
+        elif debt_to_equity < 1.0:
+            risk_score += 1
+        else:
+            risk_score += 2
+        
+        # Determine rating
+        if risk_score <= 2:
+            return "Low"
+        elif risk_score <= 4:
+            return "Medium"
+        elif risk_score <= 6:
+            return "High"
+        else:
+            return "Very High"
     
     def get_quote(self, symbol: str) -> QuoteResponse:
         for inst in self.MOCK_INSTRUMENTS_DETAILED:

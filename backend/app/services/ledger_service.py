@@ -76,6 +76,11 @@ def list_orders() -> List[OrderRecord]:
 	return list(_orders)
 
 
+def get_account_balance(email: str) -> float:
+	"""Get account balance for a user - returns mock balance for now"""
+	return 100000.0
+
+
 class LedgerService:
 	"""Service class for ledger operations"""
 	

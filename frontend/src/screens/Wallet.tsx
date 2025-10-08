@@ -281,7 +281,7 @@ export default function Wallet() {
         {activeTab === 'deposit' && (
           <>
             <Card variant="elevated" style={styles.formCard}>
-              <Text style={styles.formTitle}>💰 Deposit via M-Pesa</Text>
+              <Text style={styles.formTitle}>Deposit via M-Pesa</Text>
               <Text style={styles.formSubtitle}>
                 Add funds to your trading account using M-Pesa STK Push
               </Text>
@@ -312,7 +312,7 @@ export default function Wallet() {
               />
 
               <Text style={styles.helperText}>
-                💡 Test with sandbox number: 254708374149
+                Note: Test with sandbox number: 254708374149
               </Text>
             </Card>
           </>
@@ -321,7 +321,7 @@ export default function Wallet() {
         {activeTab === 'withdrawal' && (
           <>
             <Card variant="elevated" style={styles.formCard}>
-              <Text style={styles.formTitle}>💸 Withdraw Funds</Text>
+              <Text style={styles.formTitle}>Withdraw Funds</Text>
               <Text style={styles.formSubtitle}>
                 Available Balance: KES {balance.available.toLocaleString()}
               </Text>
@@ -366,7 +366,7 @@ export default function Wallet() {
               />
 
               <Text style={styles.helperText}>
-                ⚠️ Withdrawals may take 1-3 business days to process
+                Note: Withdrawals may take 1-3 business days to process
               </Text>
             </Card>
           </>

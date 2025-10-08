@@ -46,7 +46,7 @@ export default function FractionalShares() {
         <Text style={styles.sectionTitle}>Benefits</Text>
         <View style={styles.benefits}>
           <View style={styles.benefitItem}>
-            <Text style={styles.benefitIcon}>💰</Text>
+            <Text style={styles.benefitIcon}>$</Text>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Lower Entry Cost</Text>
               <Text style={styles.benefitText}>
@@ -56,7 +56,7 @@ export default function FractionalShares() {
           </View>
 
           <View style={styles.benefitItem}>
-            <Text style={styles.benefitIcon}>📊</Text>
+            <Text style={styles.benefitIcon}>D</Text>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Diversification</Text>
               <Text style={styles.benefitText}>
@@ -66,7 +66,7 @@ export default function FractionalShares() {
           </View>
 
           <View style={styles.benefitItem}>
-            <Text style={styles.benefitIcon}>⚡</Text>
+            <Text style={styles.benefitIcon}>A</Text>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Dollar Cost Averaging</Text>
               <Text style={styles.benefitText}>

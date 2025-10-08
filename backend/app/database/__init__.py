@@ -23,4 +23,6 @@ def get_db() -> Session:
 
 
 def init_db() -> None:
+    # Import models to register them with Base.metadata
+    from . import models  # noqa: F401
     Base.metadata.create_all(bind=engine)

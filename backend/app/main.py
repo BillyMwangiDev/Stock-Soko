@@ -8,6 +8,7 @@ from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_
 import logging
 
 from .config import APP_NAME, ALLOWED_ORIGINS
+from .database import init_db
 from .routers import (
     health, markets, trades, payments, kyc, watchlist, ledger,
     cds, auth, news, ai_chat, settings, dashboard, charts, alerts
@@ -34,6 +35,11 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Initialize database on startup
+@app.on_event("startup")
+def on_startup() -> None:
+    init_db()
 
 # Configure CORS
 app.add_middleware(

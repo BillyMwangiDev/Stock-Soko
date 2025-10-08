@@ -162,7 +162,7 @@ export default function AIAssistant({ navigation }: Props) {
               {message.hasChart && (
                 <View style={styles.chartContainer}>
                   <View style={styles.chartPlaceholder}>
-                    <Text style={styles.chartEmoji}>📊</Text>
+                    <Text style={styles.chartEmoji}>CHART</Text>
                     <Text style={styles.chartText}>MTN Stock Chart</Text>
                   </View>
                 </View>
@@ -197,7 +197,7 @@ export default function AIAssistant({ navigation }: Props) {
             onPress={handleSend}
             disabled={!input.trim()}
           >
-            <Text style={styles.sendIcon}>➤</Text>
+            <Text style={styles.sendIcon}>></Text>
           </TouchableOpacity>
         </View>
       </View>

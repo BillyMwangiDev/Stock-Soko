@@ -1,12 +1,10 @@
 from typing import Optional
-from passlib.context import CryptContext
+import bcrypt
 from sqlalchemy.orm import Session
 import pyotp
 
 from ..database import get_db, init_db
 from ..database.models import User as DBUser
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class User:
@@ -35,17 +33,23 @@ def get_user(email: str) -> Optional[User]:
         db.close()
 
 
-def create_user(email: str, password: str, full_name: Optional[str] = None) -> User:
+def create_user(email: str, password: str, full_name: Optional[str] = None, phone: Optional[str] = None) -> User:
     db = get_db_session()
     try:
         existing = db.query(DBUser).filter(DBUser.email == email.lower()).first()
         if existing:
             raise ValueError("User already exists")
         
-        password_hash = pwd_context.hash(password)
+        # Truncate password to 72 bytes for bcrypt
+        password_bytes = password.encode('utf-8')
+        if len(password_bytes) > 72:
+            password_bytes = password_bytes[:72]
+        
+        password_hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('utf-8')
         db_user = DBUser(
             email=email.lower(),
             full_name=full_name,
+            phone=phone,
             password_hash=password_hash,
             is_active=True,
             role="user"
@@ -60,7 +64,10 @@ def create_user(email: str, password: str, full_name: Optional[str] = None) -> U
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    password_bytes = plain.encode('utf-8')
+    if len(password_bytes) > 72:
+        password_bytes = password_bytes[:72]
+    return bcrypt.checkpw(password_bytes, hashed.encode('utf-8'))
 
 
 def setup_2fa(email: str) -> str:
@@ -87,7 +94,13 @@ def update_password(email: str, new_password: str) -> None:
         db_user = db.query(DBUser).filter(DBUser.email == email.lower()).first()
         if not db_user:
             raise ValueError("User not found")
-        db_user.password_hash = pwd_context.hash(new_password)
+        
+        # Truncate password to 72 bytes for bcrypt
+        password_bytes = new_password.encode('utf-8')
+        if len(password_bytes) > 72:
+            password_bytes = password_bytes[:72]
+        
+        db_user.password_hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('utf-8')
         db.commit()
     finally:
         db.close()

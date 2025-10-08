@@ -26,27 +26,27 @@ const features: Feature[] = [
   {
     title: 'Real-Time Market Data',
     description: 'Access live NSE stock prices, charts, and market movements at your fingertips.',
-    icon: '📊',
+    icon: 'M',
   },
   {
     title: 'AI-Powered Insights',
     description: 'Get personalized stock recommendations based on your risk profile and market analysis.',
-    icon: '🤖',
+    icon: 'AI',
   },
   {
     title: 'Instant M-Pesa Deposits',
     description: 'Fund your trading account instantly using M-Pesa and start investing immediately.',
-    icon: '💳',
+    icon: 'P',
   },
   {
     title: 'Portfolio Tracking',
     description: 'Monitor your investments with automated portfolio analytics and performance tracking.',
-    icon: '📈',
+    icon: 'T',
   },
   {
     title: 'Fractional Shares',
     description: 'Invest in expensive stocks with as little as KES 100 through fractional ownership.',
-    icon: '🪙',
+    icon: 'F',
   },
 ];
 

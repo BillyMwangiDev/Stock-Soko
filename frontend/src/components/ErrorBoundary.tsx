@@ -60,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
       retryCount: this.retryCount,
     };
 
-    console.error('🚨 ErrorBoundary caught error:', errorDetails);
+    console.error('[ERROR] ErrorBoundary caught error:', errorDetails);
 
     // Call custom error handler if provided
     if (this.props.onError) {
@@ -127,7 +127,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
           <View style={styles.iconContainer}>
-            <Text style={styles.errorIcon}>⚠️</Text>
+            <Text style={styles.errorIcon}>!</Text>
           </View>
 
           <Text style={styles.title}>Something went wrong</Text>

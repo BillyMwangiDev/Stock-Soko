@@ -36,6 +36,6 @@ DEBUG: bool = config("DEBUG", default=True, cast=bool)
 
 ALLOWED_ORIGINS: List[str] = config(
     "ALLOWED_ORIGINS",
-    default="http://localhost:3000,http://localhost:8081,http://localhost:19006,exp://localhost:8081",
+    default="http://localhost:3000,http://localhost:8081,http://localhost:8147,http://localhost:19006,http://127.0.0.1:8081,http://192.168.10.25:8081,exp://192.168.10.25:8081,exp://localhost:8081",
     cast=lambda v: [origin.strip() for origin in v.split(",")]
 )

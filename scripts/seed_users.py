@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from backend.app.database import SessionLocal, init_db
 from backend.app.database.models import User, UserProfile, Portfolio
-from backend.app.utils.security import hash_password
+import bcrypt
 import uuid
 
 
@@ -60,12 +60,18 @@ def seed_users():
                 continue
             
             # Create user
+            # Hash password using bcrypt (same as user_service)
+            password_bytes = user_data["password"].encode('utf-8')
+            if len(password_bytes) > 72:
+                password_bytes = password_bytes[:72]
+            password_hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('utf-8')
+            
             user = User(
-                id=uuid.uuid4(),
+                # Let SQLAlchemy generate the ID automatically
                 email=user_data["email"],
                 phone=user_data["phone"],
                 full_name=user_data["full_name"],
-                password_hash=hash_password(user_data["password"]),
+                password_hash=password_hash,
                 is_active=True,
                 role="user"
             )
@@ -77,7 +83,7 @@ def seed_users():
                 user_id=user.id,
                 kyc_status=user_data["kyc_status"],
                 nationality="KE",
-                kyc_metadata={}
+                kyc_data={}
             )
             db.add(profile)
             
@@ -96,16 +102,16 @@ def seed_users():
         
         db.commit()
         
-        print(f"\n✅ User seed complete!")
+        print(f"\n[SUCCESS] User seed complete!")
         print(f"   Users created: {users_created}")
         print(f"   Total users in DB: {db.query(User).count()}")
-        print("\n📝 Test Credentials:")
+        print("\n[CREDENTIALS] Test Credentials:")
         for user_data in SEED_USERS:
             print(f"   {user_data['email']} / {user_data['password']}")
         
     except Exception as e:
         db.rollback()
-        print(f"\n❌ Error seeding users: {e}")
+        print(f"\n[ERROR] Error seeding users: {e}")
         raise
     finally:
         db.close()

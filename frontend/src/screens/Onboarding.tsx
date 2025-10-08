@@ -16,17 +16,17 @@ interface Props {
 
 const slides = [
   {
-    emoji: '💡',
+    emoji: 'I',
     title: 'Invest Smarter',
     subtitle: 'Trade stocks across Kenyan markets with confidence and ease',
   },
   {
-    emoji: '📊',
+    emoji: 'R',
     title: 'Insights & Research',
     subtitle: 'AI-backed analysis, sentiment tracking & fundamental insights',
   },
   {
-    emoji: '⚡',
+    emoji: 'T',
     title: 'Trade with Ease',
     subtitle: 'One-click trades via integrated brokers with low fees',
   },

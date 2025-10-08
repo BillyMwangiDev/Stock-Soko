@@ -14,7 +14,7 @@ class User(Base):
     """Registered users"""
     __tablename__ = "users"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     email = Column(String, unique=True, nullable=False, index=True)
     phone = Column(String, unique=True, nullable=True, index=True)
     full_name = Column(String, nullable=True)
@@ -40,7 +40,7 @@ class UserProfile(Base):
     """Extended profile and KYC status"""
     __tablename__ = "user_profiles"
     
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
+    user_id = Column(String, ForeignKey("users.id"), primary_key=True)
     dob = Column(Date, nullable=True)
     nationality = Column(String, nullable=True)
     address = Column(Text, nullable=True)
@@ -59,7 +59,7 @@ class Broker(Base):
     """Broker partners and connection metadata"""
     __tablename__ = "brokers"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String, nullable=False)
     api_base_url = Column(String, nullable=True)
     connector_type = Column(String, nullable=True)
@@ -75,9 +75,9 @@ class Account(Base):
     """User brokerage account / CDS mapping"""
     __tablename__ = "accounts"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    broker_id = Column(UUID(as_uuid=True), ForeignKey("brokers.id"), nullable=False)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    broker_id = Column(String, ForeignKey("brokers.id"), nullable=False)
     broker_account_ref = Column(String, nullable=True)
     cds_number = Column(String, nullable=True)
     status = Column(String, default="onboarding")  # active, onboarding, suspended
@@ -93,7 +93,7 @@ class Portfolio(Base):
     """User's portfolio overview (computed or materialized)"""
     __tablename__ = "portfolios"
     
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
+    user_id = Column(String, ForeignKey("users.id"), primary_key=True)
     cash = Column(Numeric, default=0)
     buying_power = Column(Numeric, default=0)
     total_value = Column(Numeric, default=0)
@@ -108,7 +108,7 @@ class Stock(Base):
     """Canonical list of companies / instruments"""
     __tablename__ = "stocks"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     symbol = Column(String, unique=True, nullable=False, index=True)
     name = Column(String, nullable=False)
     exchange = Column(String, default="NSE")
@@ -136,9 +136,9 @@ class Holding(Base):
     """Per-user holdings, per stock"""
     __tablename__ = "holdings"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
-    stock_id = Column(UUID(as_uuid=True), ForeignKey("stocks.id"), nullable=False, index=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    stock_id = Column(String, ForeignKey("stocks.id"), nullable=False, index=True)
     quantity = Column(Numeric, nullable=False)
     avg_price = Column(Numeric, nullable=False)
     market_value = Column(Numeric, nullable=True)
@@ -159,11 +159,11 @@ class Order(Base):
     """Order placement & lifecycle"""
     __tablename__ = "orders"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
-    account_id = Column(UUID(as_uuid=True), ForeignKey("accounts.id"), nullable=False)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    account_id = Column(String, ForeignKey("accounts.id"), nullable=False)
     broker_order_id = Column(String, nullable=True)
-    stock_id = Column(UUID(as_uuid=True), ForeignKey("stocks.id"), nullable=False, index=True)
+    stock_id = Column(String, ForeignKey("stocks.id"), nullable=False, index=True)
     side = Column(String, nullable=False)  # buy/sell
     order_type = Column(String, nullable=False)  # market/limit/stop
     quantity = Column(Numeric, nullable=False)
@@ -189,8 +189,8 @@ class Transaction(Base):
     """Funding / withdrawals / STK push records"""
     __tablename__ = "transactions"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
     type = Column(String, nullable=False)  # deposit, withdrawal
     method = Column(String, nullable=False)  # mpesa, bank
     amount = Column(Numeric, nullable=False)
@@ -212,7 +212,7 @@ class MarketTick(Base):
     __tablename__ = "market_ticks"
     
     time = Column(DateTime(timezone=True), primary_key=True)
-    stock_id = Column(UUID(as_uuid=True), ForeignKey("stocks.id"), primary_key=True, index=True)
+    stock_id = Column(String, ForeignKey("stocks.id"), primary_key=True, index=True)
     price = Column(Numeric, nullable=False)
     volume = Column(Numeric, nullable=True)
     bid = Column(Numeric, nullable=True)
@@ -227,8 +227,8 @@ class News(Base):
     """Aggregated news & sentiment"""
     __tablename__ = "news"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    stock_id = Column(UUID(as_uuid=True), ForeignKey("stocks.id"), nullable=True, index=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    stock_id = Column(String, ForeignKey("stocks.id"), nullable=True, index=True)
     title = Column(String, nullable=False)
     summary = Column(Text, nullable=True)
     source = Column(String, nullable=True)
@@ -250,9 +250,9 @@ class Alert(Base):
     """User price/volume alerts"""
     __tablename__ = "alerts"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
-    stock_id = Column(UUID(as_uuid=True), ForeignKey("stocks.id"), nullable=False, index=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    stock_id = Column(String, ForeignKey("stocks.id"), nullable=False, index=True)
     type = Column(String, nullable=False)  # price_above, price_below, pct_change
     value = Column(Numeric, nullable=False)
     active = Column(Boolean, default=True)
@@ -267,9 +267,9 @@ class Watchlist(Base):
     """User watchlist entries"""
     __tablename__ = "watchlists"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
-    stock_id = Column(UUID(as_uuid=True), ForeignKey("stocks.id"), nullable=False, index=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    stock_id = Column(String, ForeignKey("stocks.id"), nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships

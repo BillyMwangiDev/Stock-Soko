@@ -243,7 +243,7 @@ export default function StockDetail({ symbol, onBack, onTrade }: StockDetailProp
 
           <View style={styles.riskInfo}>
             <Text style={styles.riskInfoText}>
-              ℹ️ Risk assessment based on market volatility, debt levels, and historical performance.
+              Note: Risk assessment based on market volatility, debt levels, and historical performance.
             </Text>
           </View>
         </View>
@@ -271,7 +271,7 @@ export default function StockDetail({ symbol, onBack, onTrade }: StockDetailProp
               <Text style={styles.cardDescription}>{stock.news}</Text>
             </View>
             <View style={styles.cardImage}>
-              <Text style={styles.imageEmoji}>📰</Text>
+              <Text style={styles.imageEmoji}>NEWS</Text>
             </View>
           </View>
         </View>

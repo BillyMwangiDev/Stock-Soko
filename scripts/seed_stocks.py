@@ -327,7 +327,7 @@ def seed_stocks():
         
         db.commit()
         
-        print(f"\n✅ Seed complete!")
+        print(f"\n[SUCCESS] Seed complete!")
         print(f"   Stocks created: {stocks_created}")
         print(f"   Stocks updated: {stocks_updated}")
         print(f"   News articles created: {news_created}")
@@ -335,7 +335,7 @@ def seed_stocks():
         
     except Exception as e:
         db.rollback()
-        print(f"\n❌ Error seeding database: {e}")
+        print(f"\n[ERROR] Error seeding database: {e}")
         raise
     finally:
         db.close()

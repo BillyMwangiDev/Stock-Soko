@@ -76,38 +76,38 @@ class AIChatService:
             
             return f"""Based on current market analysis for {stock}:
 
-📊 **Technical Analysis**: The stock shows {random.choice(['bullish', 'neutral', 'consolidating'])} momentum on the daily chart.
+**Technical Analysis**: The stock shows {random.choice(['bullish', 'neutral', 'consolidating'])} momentum on the daily chart.
 
-📈 **Fundamentals**: {random.choice([
+**Fundamentals**: {random.choice([
     'Strong earnings growth and solid dividend yield',
     'P/E ratio is attractive compared to sector average',
     'Recent quarterly results beat analyst expectations'
 ])}
 
-💡 **Recommendation**: {random.choice(['BUY', 'HOLD', 'Consider for long-term'])} - {random.choice([
+**Recommendation**: {random.choice(['BUY', 'HOLD', 'Consider for long-term'])} - {random.choice([
     'Good entry point for long-term investors',
     'Wait for pullback before entering',
     'Strong fundamentals support current price'
 ])}
 
-⚠️ **Risk**: This is not financial advice. Always do your own research and consider your risk tolerance."""
+**Risk**: This is not financial advice. Always do your own research and consider your risk tolerance."""
 
         # Market overview queries
         elif any(word in message for word in ["market", "today", "performing", "top"]):
             return """Here's today's market overview for NSE:
 
-📈 **Top Gainers**:
-• KCB Group: +2.3% (Strong banking sector performance)
-• Safaricom: +1.8% (M-Pesa growth momentum)
-• EABL: +1.2% (Dividend announcement boost)
+**Top Gainers**:
+- KCB Group: +2.3% (Strong banking sector performance)
+- Safaricom: +1.8% (M-Pesa growth momentum)
+- EABL: +1.2% (Dividend announcement boost)
 
-📉 **Top Losers**:
-• BAT Kenya: -1.5% (Regulatory concerns)
+**Top Losers**:
+- BAT Kenya: -1.5% (Regulatory concerns)
 
-💼 **Market Summary**:
-• NSE 20-Share Index: +0.5%
-• Total Volume: 12.5M shares
-• Market Sentiment: Positive
+**Market Summary**:
+- NSE 20-Share Index: +0.5%
+- Total Volume: 12.5M shares
+- Market Sentiment: Positive
 
 Would you like detailed analysis on any specific stock?"""
 
@@ -116,51 +116,51 @@ Would you like detailed analysis on any specific stock?"""
             if "p/e" in message or "pe ratio" in message:
                 return """**P/E Ratio (Price-to-Earnings Ratio)** explained simply:
 
-📊 **What it is**: The P/E ratio shows how much investors are willing to pay for each shilling of a company's earnings.
+**What it is**: The P/E ratio shows how much investors are willing to pay for each shilling of a company's earnings.
 
-🔢 **Formula**: P/E Ratio = Stock Price ÷ Earnings Per Share
+**Formula**: P/E Ratio = Stock Price ÷ Earnings Per Share
 
-💡 **Example**: If KCB trades at KES 50 and earns KES 10 per share:
+**Example**: If KCB trades at KES 50 and earns KES 10 per share:
    P/E Ratio = 50 ÷ 10 = 5
 
-📈 **Interpretation**:
-• **Low P/E** (5-10): May indicate undervalued stock or slow growth
-• **Medium P/E** (10-20): Generally fair valuation
-• **High P/E** (20+): May indicate overvaluation or high growth expectations
+**Interpretation**:
+- **Low P/E** (5-10): May indicate undervalued stock or slow growth
+- **Medium P/E** (10-20): Generally fair valuation
+- **High P/E** (20+): May indicate overvaluation or high growth expectations
 
-⚡ **For NSE stocks**: Average P/E is around 8-12. Compare within the same sector for best insights.
+**For NSE stocks**: Average P/E is around 8-12. Compare within the same sector for best insights.
 
 Want to see P/E ratios for specific stocks?"""
             
             return """I can help you understand stock market concepts! Here are some topics:
 
-📚 **Popular Topics**:
-• P/E Ratio - Valuation metric
-• Dividend Yield - Income from stocks
-• Market Cap - Company size
-• Technical Analysis - Chart patterns
-• Fundamental Analysis - Company health
+**Popular Topics**:
+- P/E Ratio - Valuation metric
+- Dividend Yield - Income from stocks
+- Market Cap - Company size
+- Technical Analysis - Chart patterns
+- Fundamental Analysis - Company health
 
 What would you like to learn about?"""
 
         # Investment strategy queries
         elif any(word in message for word in ["strategy", "beginner", "start", "invest"]):
-            return """**Investment Strategy for Beginners** 🎯
+            return """**Investment Strategy for Beginners**
 
-1️⃣ **Start Small**: Begin with amount you can afford to lose (KES 5,000-10,000)
+**Start Small**: Begin with amount you can afford to lose (KES 5,000-10,000)
 
-2️⃣ **Diversify**: Don't put all money in one stock
-   • 40% Blue chips (KCB, SCOM, EQTY)
-   • 30% Dividend stocks (EABL)
-   • 30% Growth stocks
+**Diversify**: Don't put all money in one stock
+   - 40% Blue chips (KCB, SCOM, EQTY)
+   - 30% Dividend stocks (EABL)
+   - 30% Growth stocks
 
-3️⃣ **Long-term Focus**: Hold for at least 1-2 years
+**Long-term Focus**: Hold for at least 1-2 years
 
-4️⃣ **Regular Review**: Check portfolio monthly, not daily
+**Regular Review**: Check portfolio monthly, not daily
 
-5️⃣ **Keep Learning**: Follow market news and company reports
+**Keep Learning**: Follow market news and company reports
 
-💡 **Tip**: Start with well-known companies you understand (Safaricom, KCB, Equity Bank)
+**Tip**: Start with well-known companies you understand (Safaricom, KCB, Equity Bank)
 
 Ready to start? I can help you analyze specific stocks!"""
 
@@ -168,11 +168,11 @@ Ready to start? I can help you analyze specific stocks!"""
         return """Hello! I'm your AI trading assistant for the Kenyan stock market. 
 
 I can help you with:
-• 📊 Stock analysis and recommendations
-• 📈 Market trends and insights
-• 💡 Investment strategies
-• 📚 Learning about trading concepts
-• 🎯 Portfolio advice
+- Stock analysis and recommendations
+- Market trends and insights
+- Investment strategies
+- Learning about trading concepts
+- Portfolio advice
 
 What would you like to know about?"""
     

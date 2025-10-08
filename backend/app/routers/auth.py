@@ -51,9 +51,19 @@ def current_user_email(token: str = Depends(oauth2_scheme)) -> str:
 @router.post("/register", response_model=UserPublic)
 def register(payload: UserCreate) -> UserPublic:
     try:
-        email = validate_email(payload.email)
+        if not validate_email(payload.email):
+            raise ValueError("Invalid email format")
+        
         validate_password_strength(payload.password)
-        user = create_user(email, payload.password, payload.full_name)
+        
+        # Truncate password to 72 bytes for bcrypt compatibility
+        password_bytes = payload.password.encode('utf-8')
+        if len(password_bytes) > 72:
+            truncated_password = password_bytes[:72].decode('utf-8', errors='ignore')
+        else:
+            truncated_password = payload.password
+        
+        user = create_user(payload.email, truncated_password, payload.full_name, payload.phone)
         return UserPublic(
             email=user.email,
             full_name=user.full_name,

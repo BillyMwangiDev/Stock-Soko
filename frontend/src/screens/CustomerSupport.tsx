@@ -198,7 +198,7 @@ export default function CustomerSupport() {
             </Text>
 
             <View style={styles.contactCard}>
-              <Text style={styles.contactIcon}>📞</Text>
+              <Text style={styles.contactIcon}>P</Text>
               <View style={styles.contactInfo}>
                 <Text style={styles.contactLabel}>Phone Support</Text>
                 <Text style={styles.contactValue}>+254 700 000 000</Text>
@@ -210,7 +210,7 @@ export default function CustomerSupport() {
             </View>
 
             <View style={styles.contactCard}>
-              <Text style={styles.contactIcon}>✉️</Text>
+              <Text style={styles.contactIcon}>@</Text>
               <View style={styles.contactInfo}>
                 <Text style={styles.contactLabel}>Email Support</Text>
                 <Text style={styles.contactValue}>support@stocksoko.co.ke</Text>
@@ -222,7 +222,7 @@ export default function CustomerSupport() {
             </View>
 
             <View style={styles.contactCard}>
-              <Text style={styles.contactIcon}>📍</Text>
+              <Text style={styles.contactIcon}>L</Text>
               <View style={styles.contactInfo}>
                 <Text style={styles.contactLabel}>Office Location</Text>
                 <Text style={styles.contactValue}>Nairobi, Kenya</Text>
@@ -231,7 +231,7 @@ export default function CustomerSupport() {
             </View>
 
             <View style={styles.contactCard}>
-              <Text style={styles.contactIcon}>🕒</Text>
+              <Text style={styles.contactIcon}>H</Text>
               <View style={styles.contactInfo}>
                 <Text style={styles.contactLabel}>Support Hours</Text>
                 <Text style={styles.contactValue}>Monday - Friday</Text>
