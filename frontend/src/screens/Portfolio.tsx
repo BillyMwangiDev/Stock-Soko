@@ -233,6 +233,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.base,
     paddingBottom: 100,
+    minHeight: 1000,
   },
   summaryCard: {
     marginBottom: spacing.lg,

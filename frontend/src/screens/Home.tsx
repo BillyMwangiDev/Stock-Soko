@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.base,
     paddingBottom: 120,
+    minHeight: 1000,
   },
   header: {
     marginBottom: spacing.lg,

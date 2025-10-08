@@ -217,6 +217,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.base,
     paddingBottom: 120,
+    minHeight: 1200,
   },
   profileCard: {
     marginBottom: spacing.lg,

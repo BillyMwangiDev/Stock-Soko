@@ -321,6 +321,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.base,
     paddingBottom: 100,
+    minHeight: 1200,
   },
   resultsText: {
     fontSize: typography.fontSize.sm,

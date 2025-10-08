@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     paddingTop: spacing.xl,
     paddingBottom: 150,
+    minHeight: 900,
   },
   title: {
     fontSize: typography.fontSize['2xl'],
