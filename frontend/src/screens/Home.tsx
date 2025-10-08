@@ -77,6 +77,9 @@ export default function Home() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Text style={styles.logoText}>SS</Text>
+        </View>
         <Text style={styles.headerTitle}>Stock Soko</Text>
         <TouchableOpacity 
           style={styles.notificationButton}
@@ -110,56 +113,60 @@ export default function Home() {
               Ksh {portfolio.value.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
             <View style={styles.portfolioChange}>
-              <Text style={styles.arrowUp}>↑</Text>
-              <Text style={styles.changeText}>+{portfolio.changePercent.toFixed(1)}% Today</Text>
+              <Text style={[styles.changeText, portfolio.changePercent >= 0 ? styles.changePositive : styles.changeNegative]}>
+                {portfolio.changePercent >= 0 ? '+' : ''}{portfolio.changePercent.toFixed(1)}% Today
+              </Text>
             </View>
           </View>
           <View style={styles.chartPlaceholder}>
-            <Text style={styles.chartIcon}>▲</Text>
+            <View style={styles.miniChart}>
+              <Text style={styles.chartLabel}>Chart</Text>
+            </View>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>AI Recommendations</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>AI Recommendations</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Profile', { screen: 'AIAssistant' })}>
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
+          </View>
           
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScroll}
-          >
+          <View style={styles.recommendationsGrid}>
             <TouchableOpacity 
               style={styles.recommendationCard}
               onPress={() => navigation.navigate('Profile', { screen: 'AIAssistant' })}
             >
-              <View style={styles.recommendationImage}>
-                <Text style={styles.recommendationIcon}>★</Text>
+              <View style={[styles.recommendationIcon, {backgroundColor: colors.primary.main + '20'}]}>
+                <Text style={[styles.recommendationEmoji, {color: colors.primary.main}]}>★</Text>
               </View>
               <Text style={styles.recommendationTitle}>Top Picks</Text>
-              <Text style={styles.recommendationSubtitle}>AI recommendations</Text>
+              <Text style={styles.recommendationSubtitle}>AI selected</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.recommendationCard}
               onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}
             >
-              <View style={styles.recommendationImage}>
-                <Text style={styles.recommendationIcon}>≡</Text>
+              <View style={[styles.recommendationIcon, {backgroundColor: colors.success + '20'}]}>
+                <Text style={[styles.recommendationEmoji, {color: colors.success}]}>▲</Text>
               </View>
-              <Text style={styles.recommendationTitle}>Diversify</Text>
-              <Text style={styles.recommendationSubtitle}>New opportunities</Text>
+              <Text style={styles.recommendationTitle}>Trending</Text>
+              <Text style={styles.recommendationSubtitle}>Movers</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.recommendationCard}
               onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}
             >
-              <View style={[styles.recommendationImage, styles.recommendationImageAlt]}>
-                <Text style={styles.recommendationIcon}>↗</Text>
+              <View style={[styles.recommendationIcon, {backgroundColor: colors.warning + '20'}]}>
+                <Text style={[styles.recommendationEmoji, {color: colors.warning}]}>◆</Text>
               </View>
-              <Text style={styles.recommendationTitle}>Market Movers</Text>
-              <Text style={styles.recommendationSubtitle}>Trending stocks</Text>
+              <Text style={styles.recommendationTitle}>Value</Text>
+              <Text style={styles.recommendationSubtitle}>Undervalued</Text>
             </TouchableOpacity>
-          </ScrollView>
+          </View>
         </View>
 
         <View style={styles.section}>
@@ -170,7 +177,9 @@ export default function Home() {
               style={styles.actionButtonPrimary}
               onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}
             >
-              <Text style={styles.actionIconPrimary}>↕</Text>
+              <View style={styles.actionIconContainerPrimary}>
+                <Text style={styles.actionIconPrimary}>↕</Text>
+              </View>
               <Text style={styles.actionTextPrimary}>Trade</Text>
             </TouchableOpacity>
 
@@ -178,7 +187,9 @@ export default function Home() {
               style={styles.actionButtonSecondary}
               onPress={() => navigation.navigate('Profile', { screen: 'Wallet' })}
             >
-              <Text style={styles.actionIconSecondary}>+</Text>
+              <View style={styles.actionIconContainerSecondary}>
+                <Text style={styles.actionIconSecondary}>+</Text>
+              </View>
               <Text style={styles.actionTextSecondary}>Deposit</Text>
             </TouchableOpacity>
 
@@ -186,7 +197,9 @@ export default function Home() {
               style={styles.actionButtonSecondary}
               onPress={() => navigation.navigate('Profile', { screen: 'EducationalContent' })}
             >
-              <Text style={styles.actionIconSecondary}>?</Text>
+              <View style={styles.actionIconContainerSecondary}>
+                <Text style={styles.actionIconSecondary}>?</Text>
+              </View>
               <Text style={styles.actionTextSecondary}>Learn</Text>
             </TouchableOpacity>
           </View>
@@ -215,10 +228,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'transparent',
   },
+  logoContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.primary.main,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 18,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.primary.contrast,
+  },
   headerTitle: {
+    flex: 1,
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
+    marginLeft: spacing.sm,
   },
   notificationButton: {
     width: 40,
@@ -228,7 +256,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bellIcon: {
-    fontSize: 24,
+    fontSize: 20,
+    color: colors.text.secondary,
   },
   scrollView: {
     flex: 1,
@@ -272,24 +301,36 @@ const styles = StyleSheet.create({
   portfolioChange: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  arrowUp: {
-    fontSize: 16,
-    color: colors.success,
-    marginRight: 4,
+    marginTop: 4,
   },
   changeText: {
     fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  changePositive: {
     color: colors.success,
   },
+  changeNegative: {
+    color: colors.error,
+  },
   chartPlaceholder: {
-    width: 96,
+    width: 80,
     height: 64,
-    backgroundColor: colors.background.card + '40',
+    marginLeft: spacing.sm,
+  },
+  miniChart: {
+    flex: 1,
+    backgroundColor: colors.success + '20',
     borderRadius: borderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.success + '40',
+  },
+  chartLabel: {
+    fontSize: 10,
+    color: colors.success,
+    fontWeight: typography.fontWeight.medium,
   },
   chartIcon: {
     fontSize: 32,
@@ -297,45 +338,60 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: spacing.lg,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+  },
   sectionTitle: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.md,
   },
-  horizontalScroll: {
+  seeAllText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.primary.main,
+    fontWeight: typography.fontWeight.medium,
+  },
+  recommendationsGrid: {
+    flexDirection: 'row',
     paddingHorizontal: spacing.md,
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   recommendationCard: {
-    width: 192,
-  },
-  recommendationImage: {
-    width: 192,
-    height: 128,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.background.card,
-    marginBottom: spacing.sm,
-    justifyContent: 'center',
+    flex: 1,
     alignItems: 'center',
-  },
-  recommendationImageAlt: {
-    backgroundColor: colors.primary.main + '20',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.main,
   },
   recommendationIcon: {
-    fontSize: 48,
-    color: colors.primary.main,
+    width: 48,
+    height: 48,
+    borderRadius: borderRadius.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  recommendationEmoji: {
+    fontSize: 24,
   },
   recommendationTitle: {
-    fontSize: typography.fontSize.base,
+    fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
     color: colors.text.primary,
     marginBottom: 2,
+    textAlign: 'center',
   },
   recommendationSubtitle: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
+    textAlign: 'center',
   },
   actionsGrid: {
     flexDirection: 'row',
@@ -347,17 +403,19 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.lg,
     backgroundColor: colors.primary.main,
     borderRadius: borderRadius.md,
-    gap: spacing.sm,
+  },
+  actionIconContainerPrimary: {
+    marginBottom: spacing.xs,
   },
   actionIconPrimary: {
-    fontSize: 24,
+    fontSize: 28,
   },
   actionTextPrimary: {
     fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium,
+    fontWeight: typography.fontWeight.semibold,
     color: colors.primary.contrast,
   },
   actionButtonSecondary: {
@@ -365,17 +423,21 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.md,
-    backgroundColor: colors.primary.main + '20',
+    paddingVertical: spacing.lg,
+    backgroundColor: colors.background.card,
     borderRadius: borderRadius.md,
-    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+  },
+  actionIconContainerSecondary: {
+    marginBottom: spacing.xs,
   },
   actionIconSecondary: {
-    fontSize: 24,
+    fontSize: 28,
   },
   actionTextSecondary: {
     fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.primary.main,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
   },
 });
