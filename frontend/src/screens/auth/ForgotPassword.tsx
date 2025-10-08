@@ -1,7 +1,3 @@
-/**
- * Login Screen
- * Email/password authentication
- */
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -9,47 +5,42 @@ import { AuthStackParamList } from '../../navigation/types';
 import { Button, Input } from '../../components';
 import { colors, typography, spacing } from '../../theme';
 import { api } from '../../api/client';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type LoginScreenProp = StackNavigationProp<AuthStackParamList, 'Login'>;
+type ForgotPasswordScreenProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
 interface Props {
-  navigation: LoginScreenProp;
+  navigation: ForgotPasswordScreenProp;
 }
 
-export default function Login({ navigation }: Props) {
+export default function ForgotPassword({ navigation }: Props) {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email address');
       return;
     }
 
     try {
       setLoading(true);
-      const form = new FormData();
-      form.append('username', email);
-      form.append('password', password);
       
-      const res = await api.post('/auth/login', form, {
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      });
+      await api.post('/auth/forgot-password', { email });
       
-      // Save token
-      await AsyncStorage.setItem('accessToken', res.data.access_token);
-      await AsyncStorage.setItem('userEmail', email);
-      
-      // Navigate to main app
-      Alert.alert('Success', 'Logged in successfully!', [
-        { text: 'OK', onPress: () => {
-          // App.tsx will handle navigation to Main stack
-        }}
-      ]);
+      setEmailSent(true);
+      Alert.alert(
+        'Email Sent',
+        'If an account exists with this email, you will receive password reset instructions.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login')
+          }
+        ]
+      );
     } catch (error: any) {
-      Alert.alert('Login Failed', error?.response?.data?.detail || 'Invalid credentials');
+      Alert.alert('Error', error?.response?.data?.detail || 'Failed to send reset email');
     } finally {
       setLoading(false);
     }
@@ -67,8 +58,10 @@ export default function Login({ navigation }: Props) {
         keyboardShouldPersistTaps="handled"
         bounces={true}
       >
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to continue trading</Text>
+        <Text style={styles.title}>Forgot Password</Text>
+        <Text style={styles.subtitle}>
+          Enter your email address and we'll send you instructions to reset your password.
+        </Text>
 
         <View style={styles.form}>
           <Input
@@ -78,36 +71,23 @@ export default function Login({ navigation }: Props) {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            editable={!emailSent}
           />
-          
-          <Input
-            label="Password"
-            placeholder="Enter your password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-
-          <TouchableOpacity 
-            style={styles.forgotPassword}
-            onPress={() => navigation.navigate('ForgotPassword' as any)}
-          >
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
 
           <Button
-            title="Sign In"
-            onPress={handleLogin}
+            title={emailSent ? 'Email Sent' : 'Send Reset Link'}
+            onPress={handleForgotPassword}
             loading={loading}
             variant="primary"
             size="lg"
             fullWidth
+            disabled={emailSent}
           />
 
-          <View style={styles.signupContainer}>
-            <Text style={styles.signupText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.signupLink}>Sign Up</Text>
+          <View style={styles.backContainer}>
+            <Text style={styles.backText}>Remember your password? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.backLink}>Sign In</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -140,29 +120,21 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.base,
     color: colors.text.secondary,
     marginBottom: spacing['2xl'],
+    lineHeight: 24,
   },
   form: {
     gap: spacing.lg,
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginTop: -spacing.sm,
-  },
-  forgotPasswordText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.primary.main,
-    fontWeight: typography.fontWeight.semibold,
-  },
-  signupContainer: {
+  backContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: spacing.lg,
   },
-  signupText: {
+  backText: {
     fontSize: typography.fontSize.base,
     color: colors.text.secondary,
   },
-  signupLink: {
+  backLink: {
     fontSize: typography.fontSize.base,
     color: colors.primary.main,
     fontWeight: typography.fontWeight.semibold,

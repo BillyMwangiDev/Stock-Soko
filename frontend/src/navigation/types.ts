@@ -14,6 +14,7 @@ export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   OTPVerification: { phone: string };
+  ForgotPassword: undefined;
 };
 
 export type MainTabParamList = {
