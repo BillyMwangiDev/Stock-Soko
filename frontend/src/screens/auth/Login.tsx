@@ -92,6 +92,7 @@ export default function Login({ navigation }: Props) {
             loading={loading}
             variant="primary"
             size="lg"
+            fullWidth
           />
 
           <View style={styles.signupContainer}>

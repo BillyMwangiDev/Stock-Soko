@@ -120,6 +120,7 @@ export default function Register({ navigation }: Props) {
           loading={loading}
           variant="primary"
           size="lg"
+          fullWidth
         />
 
         <View style={styles.loginContainer}>
@@ -140,7 +141,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.xl,
-    paddingBottom: spacing['3xl'],
+    paddingBottom: 100,
+    minHeight: '100%',
   },
   title: {
     fontSize: typography.fontSize['2xl'],
@@ -155,6 +157,7 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: spacing.lg,
+    marginBottom: spacing.xl,
   },
   loginContainer: {
     flexDirection: 'row',
