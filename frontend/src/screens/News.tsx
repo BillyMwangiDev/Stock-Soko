@@ -2,65 +2,79 @@
  * News Screen
  * Financial news feed with category filters
  */
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { FloatingAIButton } from '../components';
+import { api } from '../api/client';
 
 interface NewsArticle {
   id: string;
   category: string;
   title: string;
   description: string;
-  emoji: string;
+  source?: string;
+  published_at?: string;
+  url?: string;
 }
 
-const mockArticles: NewsArticle[] = [
-  {
-    id: '1',
-    category: 'Markets',
-    title: 'African markets surge as tech stocks lead the way',
-    description: 'Johannesburg - African stock markets experienced a significant surge today, driven by strong performances in the technology sector...',
-    emoji: '',
-  },
-  {
-    id: '2',
-    category: 'Company',
-    title: 'SokoTech announces record profits for Q2',
-    description: 'Lagos - SokoTech, a leading African technology firm, announced record profits for the second quarter of 2024...',
-    emoji: '',
-  },
-  {
-    id: '3',
-    category: 'Economy',
-    title: 'African economies show resilience despite global headwinds',
-    description: 'Accra - Despite ongoing global economic challenges, many African economies have demonstrated resilience...',
-    emoji: '',
-  },
-  {
-    id: '4',
-    category: 'Education',
-    title: 'New financial literacy program launched for African youth',
-    description: 'Cairo - A new financial literacy program aimed at empowering African youth has been launched by the African Union...',
-    emoji: '',
-  },
-];
-
 export default function News() {
-  const [activeCategory, setActiveCategory] = useState('Markets');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
 
-  const categories = ['Markets', 'Company', 'Economy', 'Education'];
+  const categories = [
+    { id: 'all', label: 'All' },
+    { id: 'markets', label: 'Markets' },
+    { id: 'stocks', label: 'Stocks' },
+    { id: 'economy', label: 'Economy' },
+    { id: 'technology', label: 'Tech' },
+  ];
+
+  useEffect(() => {
+    loadNews();
+  }, [activeCategory]);
+
+  const loadNews = async () => {
+    try {
+      const params = activeCategory !== 'all' ? { category: activeCategory } : {};
+      const response = await api.get('/news', { params });
+      
+      const newsData = response.data.news || response.data.articles || [];
+      setArticles(newsData.map((item: any) => ({
+        id: item.id || item.article_id || Math.random().toString(),
+        category: item.category || 'Markets',
+        title: item.title || '',
+        description: item.description || item.summary || item.content || '',
+        source: item.source || 'Stock Soko',
+        published_at: item.published_at || item.date || new Date().toISOString(),
+        url: item.url || '',
+      })));
+    } catch (error) {
+      console.error('Failed to load news:', error);
+      // Fallback to mock data if API fails
+      setArticles([
+        {
+          id: '1',
+          category: 'Markets',
+          title: 'Connect to News API for live updates',
+          description: 'Real-time market news will appear here once the backend /news endpoint is configured with a news data provider.',
+          source: 'Stock Soko',
+        },
+      ]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setRefreshing(false);
+    await loadNews();
   };
 
-  const filteredArticles = activeCategory === 'Markets' 
-    ? mockArticles 
-    : mockArticles.filter(a => a.category === activeCategory);
+  const filteredArticles = articles;
 
   return (
     <View style={styles.container}>
@@ -81,20 +95,20 @@ export default function News() {
         >
           {categories.map((category) => (
             <TouchableOpacity
-              key={category}
+              key={category.id}
               style={[
                 styles.tab,
-                activeCategory === category && styles.tabActive,
+                activeCategory === category.id && styles.tabActive,
               ]}
-              onPress={() => setActiveCategory(category)}
+              onPress={() => setActiveCategory(category.id)}
             >
               <Text
                 style={[
                   styles.tabText,
-                  activeCategory === category && styles.tabTextActive,
+                  activeCategory === category.id && styles.tabTextActive,
                 ]}
               >
-                {category}
+                {category.label}
               </Text>
             </TouchableOpacity>
           ))}
@@ -102,12 +116,18 @@ export default function News() {
       </View>
 
       {/* News Feed */}
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        showsVerticalScrollIndicator={false}
-      >
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary.main} />
+          <Text style={styles.loadingText}>Loading news...</Text>
+        </View>
+      ) : (
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary.main} />}
+          showsVerticalScrollIndicator={false}
+        >
         {filteredArticles.map((article, index) => (
           <View key={article.id}>
             <TouchableOpacity
@@ -131,8 +151,9 @@ export default function News() {
           </View>
         ))}
 
-        <View style={{ height: 100 }} />
-      </ScrollView>
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      )}
 
       <FloatingAIButton />
     </View>
@@ -249,5 +270,16 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.border.main,
     marginVertical: spacing.md,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  loadingText: {
+    marginTop: spacing.md,
+    fontSize: typography.fontSize.base,
+    color: colors.text.secondary,
   },
 });
