@@ -2,9 +2,14 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import Constants from 'expo-constants';
 import { getAccessToken, logout, setAccessToken } from '../store/auth';
 
-// Use localhost for all platforms (works with Expo tunneling and web)
-// For physical device testing on local network, update this to your machine's IP
-const baseURL = 'http://localhost:5000';
+// Use localhost for web, local network IP for mobile devices
+const defaultBaseURL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  ? 'http://localhost:8000'
+  : 'http://192.168.1.15:8000';
+
+const baseURL = (Constants?.expoConfig?.extra as any)?.apiBaseUrl || 
+  process.env.EXPO_PUBLIC_API_URL || 
+  defaultBaseURL;
 
 console.log('[API Client] Using baseURL:', baseURL);
 

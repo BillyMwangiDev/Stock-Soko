@@ -1,14 +1,9 @@
-/**
- * Enhanced Notification Center Screen
- * Priority-based notifications with categories and actions
- */
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { ProfileStackParamList } from '../navigation/types';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { Card } from '../components';
 import { useNavigation } from '@react-navigation/native';
 
 type NotificationCenterScreenProp = StackNavigationProp<ProfileStackParamList, 'NotificationCenter'>;
@@ -17,25 +12,27 @@ interface Props {
   navigation: NotificationCenterScreenProp;
 }
 
+type NotificationType = 'trade' | 'news' | 'account';
+
 interface Notification {
   id: string;
-  category: 'Trade' | 'Alert' | 'News' | 'Account';
-  priority: 'High' | 'Medium' | 'Low';
+  type: NotificationType;
   title: string;
-  description: string;
+  message: string;
   timestamp: string;
-  isRead: boolean;
+  read: boolean;
+  ticker?: string;
   actionLabel?: string;
   actionTarget?: string;
-  actionSymbol?: string;
-  icon: string;
-  iconColor: string;
+  priority?: 'high' | 'medium' | 'low';
 }
+
+type FilterType = 'all' | NotificationType;
 
 export default function NotificationCenter({ navigation }: Props) {
   const nav = useNavigation();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [filter, setFilter] = useState<'All' | 'Trade' | 'Alert' | 'News' | 'Account'>('All');
+  const [filter, setFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -43,83 +40,56 @@ export default function NotificationCenter({ navigation }: Props) {
   }, []);
 
   const loadNotifications = async () => {
-    // In production, fetch from API: await api.get('/notifications');
-    // For now, using enhanced mock data
     const mockData: Notification[] = [
       {
         id: '1',
-        category: 'Alert',
-        priority: 'High',
-        title: 'Price Alert Triggered',
-        description: 'SCOM reached your target price of KES 45.00',
-        timestamp: new Date().toISOString(),
-        isRead: false,
-        actionLabel: 'View Stock',
-        actionTarget: 'StockDetail',
-        actionSymbol: 'SCOM',
-        icon: 'alarm',
-        iconColor: colors.error,
+        type: 'trade',
+        title: 'Order Executed',
+        message: 'Your buy order for 10 shares of KCB at KES 32.50 was executed successfully',
+        timestamp: '15m ago',
+        read: false,
+        ticker: 'KCB',
+        actionLabel: 'View Portfolio',
+        priority: 'high',
       },
       {
         id: '2',
-        category: 'Trade',
-        priority: 'High',
-        title: 'Order Executed',
-        description: 'Your buy order for 10 shares of KCB at KES 32.50 was executed successfully',
-        timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-        isRead: false,
-        actionLabel: 'View Portfolio',
-        icon: 'checkmark-circle',
-        iconColor: colors.success,
+        type: 'trade',
+        title: 'Price Alert Triggered',
+        message: 'SCOM reached your target price of KES 45.00',
+        timestamp: '1h ago',
+        read: false,
+        ticker: 'SCOM',
+        actionLabel: 'View Stock',
+        priority: 'high',
       },
       {
         id: '3',
-        category: 'News',
-        priority: 'Medium',
+        type: 'news',
         title: 'Market Update',
-        description: 'NSE 20-Share Index gains 1.2% on banking sector strength',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-        isRead: false,
+        message: 'NSE 20-Share Index gains 1.2% on banking sector strength',
+        timestamp: '2h ago',
+        read: false,
         actionLabel: 'Read More',
-        icon: 'newspaper',
-        iconColor: colors.info,
+        priority: 'medium',
       },
       {
         id: '4',
-        category: 'Alert',
-        priority: 'Medium',
-        title: 'Volume Spike Detected',
-        description: 'EQTY trading volume increased by 150% above average',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-        isRead: true,
-        actionLabel: 'Analyze',
-        actionTarget: 'StockDetail',
-        actionSymbol: 'EQTY',
-        icon: 'pulse',
-        iconColor: colors.warning,
+        type: 'account',
+        title: 'M-Pesa Deposit Confirmed',
+        message: 'KES 5,000 successfully added to your wallet',
+        timestamp: '3h ago',
+        read: true,
+        actionLabel: 'View Wallet',
       },
       {
         id: '5',
-        category: 'Account',
-        priority: 'Low',
-        title: 'M-Pesa Deposit Confirmed',
-        description: 'KES 5,000 successfully added to your wallet',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-        isRead: true,
-        actionLabel: 'View Wallet',
-        icon: 'wallet',
-        iconColor: colors.success,
-      },
-      {
-        id: '6',
-        category: 'Trade',
-        priority: 'Low',
+        type: 'trade',
         title: 'Order Pending',
-        description: 'Your limit order for EABL is pending execution',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-        isRead: true,
-        icon: 'time',
-        iconColor: colors.text.tertiary,
+        message: 'Your limit order for EABL is pending execution',
+        timestamp: '1d ago',
+        read: true,
+        ticker: 'EABL',
       },
     ];
 
@@ -132,110 +102,158 @@ export default function NotificationCenter({ navigation }: Props) {
     loadNotifications();
   };
 
-  const handleMarkAsRead = (notifId: string) => {
+  const markAsRead = (id: string) => {
     setNotifications(prev =>
-      prev.map(n => (n.id === notifId ? { ...n, isRead: true } : n))
+      prev.map(n => (n.id === id ? { ...n, read: true } : n))
     );
   };
 
-  const handleNotificationAction = (notification: Notification) => {
-    handleMarkAsRead(notification.id);
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
 
-    if (notification.actionTarget === 'StockDetail' && notification.actionSymbol) {
-      (nav as any).navigate('Markets', {
-        screen: 'StockDetail',
-        params: { symbol: notification.actionSymbol },
-      });
-    } else if (notification.actionLabel === 'View Portfolio') {
+  const deleteNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const handleNotificationAction = (notification: Notification) => {
+    markAsRead(notification.id);
+
+    if (notification.actionLabel === 'View Portfolio') {
       (nav as any).navigate('Portfolio');
     } else if (notification.actionLabel === 'View Wallet') {
       navigation.navigate('Wallet');
+    } else if (notification.actionLabel === 'View Stock' && notification.ticker) {
+      (nav as any).navigate('Markets', {
+        screen: 'Markets',
+      });
     }
   };
 
-  const filteredNotifications = notifications.filter(n =>
-    filter === 'All' ? true : n.category === filter
+  const filteredNotifications = filter === 'all'
+    ? notifications
+    : notifications.filter(n => n.type === filter);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const getTypeIcon = (type: NotificationType): string => {
+    switch (type) {
+      case 'trade':
+        return 'trending-up';
+      case 'news':
+        return 'newspaper';
+      case 'account':
+        return 'person';
+    }
+  };
+
+  const getTypeColor = (type: NotificationType): string => {
+    switch (type) {
+      case 'trade':
+        return colors.warning;
+      case 'news':
+        return colors.status.info;
+      case 'account':
+        return colors.primary.main;
+    }
+  };
+
+  const getPriorityStyle = (priority?: string) => {
+    if (priority === 'high') {
+      return { borderLeftColor: colors.error, borderLeftWidth: 4 };
+    }
+    return {};
+  };
+
+  const FilterButton = ({ label, count, active, onPress, icon, color }: {
+    label: string;
+    count: number;
+    active: boolean;
+    onPress: () => void;
+    icon?: string;
+    color?: string;
+  }) => (
+    <TouchableOpacity
+      style={[styles.filterButton, active && styles.filterButtonActive]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      {icon && (
+        <Ionicons
+          name={icon as any}
+          color={active ? colors.background.primary : color || colors.text.tertiary}
+          size={16}
+        />
+      )}
+      <Text style={[styles.filterText, active && styles.filterTextActive]}>
+        {label}
+      </Text>
+      <View style={[styles.countBadge, active && styles.countBadgeActive]}>
+        <Text style={[styles.countText, active && styles.countTextActive]}>
+          {count}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'High':
-        return colors.error;
-      case 'Medium':
-        return colors.warning;
-      case 'Low':
-        return colors.info;
-      default:
-        return colors.text.tertiary;
-    }
-  };
-
-  const getRelativeTime = (timestamp: string) => {
-    const now = Date.now();
-    const time = new Date(timestamp).getTime();
-    const diff = now - time;
-
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days === 1) return 'Yesterday';
-    if (days < 7) return `${days}d ago`;
-    return new Date(timestamp).toLocaleDateString();
-  };
-
   return (
-    <View style={styles.container}>      <View style={styles.header}>
+    <View style={styles.container}>
+      <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
         {unreadCount > 0 && (
-          <View style={styles.unreadBadge}>
-            <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
-          </View>
+          <TouchableOpacity onPress={markAllAsRead} style={styles.headerButton}>
+            <Ionicons name="checkmark" color={colors.warning} size={20} />
+            <Text style={styles.headerButtonText}>Mark All Read</Text>
+          </TouchableOpacity>
         )}
       </View>
 
-      {/* Filter Tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterScroll}
-        contentContainerStyle={styles.filterContent}
-      >
-        {['All', 'Trade', 'Alert', 'News', 'Account'].map((category) => (
-          <TouchableOpacity
-            key={category}
-            style={[styles.filterTab, filter === category && styles.filterTabActive]}
-            onPress={() => setFilter(category as any)}
-          >
-            <Text
-              style={[
-                styles.filterTabText,
-                filter === category && styles.filterTabTextActive,
-              ]}
-            >
-              {category}
-            </Text>
-            {category === 'All' && unreadCount > 0 && (
-              <View style={styles.filterBadge}>
-                <Text style={styles.filterBadgeText}>{unreadCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <View style={styles.filterContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScroll}
+        >
+          <FilterButton
+            label="All"
+            count={notifications.length}
+            active={filter === 'all'}
+            onPress={() => setFilter('all')}
+          />
+          <FilterButton
+            label="Trade"
+            count={notifications.filter(n => n.type === 'trade').length}
+            active={filter === 'trade'}
+            onPress={() => setFilter('trade')}
+            icon="trending-up"
+            color={colors.warning}
+          />
+          <FilterButton
+            label="News"
+            count={notifications.filter(n => n.type === 'news').length}
+            active={filter === 'news'}
+            onPress={() => setFilter('news')}
+            icon="newspaper"
+            color={colors.status.info}
+          />
+          <FilterButton
+            label="Account"
+            count={notifications.filter(n => n.type === 'account').length}
+            active={filter === 'account'}
+            onPress={() => setFilter('account')}
+            icon="person"
+            color={colors.primary.main}
+          />
+        </ScrollView>
+      </View>
 
-      {/* Notifications List */}
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -246,92 +264,75 @@ export default function NotificationCenter({ navigation }: Props) {
         }
       >
         {filteredNotifications.length === 0 ? (
-          <Card variant="outline" style={styles.emptyState}>
-            <Ionicons name="notifications-off-outline" size={48} color={colors.text.tertiary} />
+          <View style={styles.emptyState}>
+            <Ionicons name="notifications-off" color={colors.text.tertiary} size={64} />
             <Text style={styles.emptyTitle}>No Notifications</Text>
-            <Text style={styles.emptyText}>
-              {filter === 'All' ? 'You\'re all caught up!' : `No ${filter.toLowerCase()} notifications`}
+            <Text style={styles.emptyMessage}>
+              You're all caught up! Check back later for updates.
             </Text>
-          </Card>
+          </View>
         ) : (
-          filteredNotifications.map((notification) => (
-            <TouchableOpacity
-              key={notification.id}
-              onPress={() => handleMarkAsRead(notification.id)}
-              activeOpacity={0.7}
-            >
-              <Card
-                variant={notification.isRead ? 'glass' : 'elevated'}
+          filteredNotifications.map((notification) => {
+            const typeIcon = getTypeIcon(notification.type);
+            const typeColor = getTypeColor(notification.type);
+
+            return (
+              <TouchableOpacity
+                key={notification.id}
                 style={[
                   styles.notificationCard,
-                  !notification.isRead && styles.notificationCardUnread,
+                  !notification.read && styles.unreadCard,
+                  getPriorityStyle(notification.priority),
                 ]}
-              >                <View style={styles.notificationHeader}>
-                  <View style={styles.notificationLeft}>
-                    <View style={[styles.iconContainer, { backgroundColor: notification.iconColor + '20' }]}>
-                      <Ionicons name={notification.icon as any} size={20} color={notification.iconColor} />
+                onPress={() => markAsRead(notification.id)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.notificationContent}>
+                  <View style={[styles.iconContainer, { backgroundColor: typeColor + '20' }]}>
+                    <Ionicons name={typeIcon as any} color={typeColor} size={20} />
+                  </View>
+
+                  <View style={styles.textContainer}>
+                    <View style={styles.headerRow}>
+                      <Text style={[styles.title, !notification.read && styles.unreadTitle]}>
+                        {notification.title}
+                      </Text>
+                      {!notification.read && <View style={styles.unreadDot} />}
                     </View>
-                    <View style={styles.notificationInfo}>
-                      <View style={styles.titleRow}>
-                        <Text style={styles.notificationTitle}>{notification.title}</Text>
-                        {!notification.isRead && <View style={styles.unreadDot} />}
+
+                    {notification.ticker && (
+                      <View style={styles.tickerBadge}>
+                        <Text style={styles.tickerText}>{notification.ticker}</Text>
                       </View>
-                      <View style={styles.metaRow}>
-                        <View
-                          style={[
-                            styles.categoryBadge,
-                            { backgroundColor: getPriorityColor(notification.priority) + '20' },
-                          ]}
+                    )}
+
+                    <Text style={styles.message}>{notification.message}</Text>
+
+                    <View style={styles.footer}>
+                      <Text style={styles.timestamp}>{notification.timestamp}</Text>
+                      {notification.actionLabel && (
+                        <TouchableOpacity
+                          style={styles.actionButton}
+                          onPress={() => handleNotificationAction(notification)}
                         >
-                          <Text
-                            style={[
-                              styles.categoryText,
-                              { color: getPriorityColor(notification.priority) },
-                            ]}
-                          >
-                            {notification.category}
-                          </Text>
-                        </View>
-                        <View
-                          style={[
-                            styles.priorityBadge,
-                            { borderColor: getPriorityColor(notification.priority) },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.priorityText,
-                              { color: getPriorityColor(notification.priority) },
-                            ]}
-                          >
-                            {notification.priority}
-                          </Text>
-                        </View>
-                      </View>
+                          <Text style={styles.actionText}>{notification.actionLabel}</Text>
+                          <Ionicons name="chevron-forward" color={colors.warning} size={14} />
+                        </TouchableOpacity>
+                      )}
                     </View>
                   </View>
-                  <Text style={styles.timestamp}>{getRelativeTime(notification.timestamp)}</Text>
-                </View>
 
-                {/* Description */}
-                <Text style={styles.notificationDescription}>{notification.description}</Text>
-
-                
-                {notification.actionLabel && (
                   <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => handleNotificationAction(notification)}
+                    style={styles.deleteButton}
+                    onPress={() => deleteNotification(notification.id)}
                   >
-                    <Text style={styles.actionButtonText}>{notification.actionLabel}</Text>
-                    <Ionicons name="arrow-forward" size={16} color={colors.primary.main} />
+                    <Ionicons name="close" color={colors.text.tertiary} size={18} />
                   </TouchableOpacity>
-                )}
-              </Card>
-            </TouchableOpacity>
-          ))
+                </View>
+              </TouchableOpacity>
+            );
+          })
         )}
-
-        <View style={{ height: 100 }} />
       </ScrollView>
     </View>
   );
@@ -363,179 +364,179 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     marginLeft: spacing.sm,
   },
-  unreadBadge: {
-    backgroundColor: colors.error,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: borderRadius.full,
-    minWidth: 24,
-    alignItems: 'center',
-  },
-  unreadBadgeText: {
-    fontSize: typography.fontSize.xs,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.inverse,
-  },
-  filterScroll: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.main,
-  },
-  filterContent: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    gap: spacing.sm,
-  },
-  filterTab: {
+  headerButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.background.secondary,
-    gap: spacing.xs,
+    gap: 6,
   },
-  filterTabActive: {
-    backgroundColor: colors.primary.main,
-  },
-  filterTabText: {
+  headerButtonText: {
     fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium,
+    color: colors.warning,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  filterContainer: {
+    backgroundColor: colors.background.secondary,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.main,
+    paddingVertical: 12,
+  },
+  filterScroll: {
+    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.pill,
+    backgroundColor: colors.input.background,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+  },
+  filterButtonActive: {
+    backgroundColor: colors.warning,
+    borderColor: colors.warning,
+  },
+  filterText: {
+    fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
+    fontWeight: typography.fontWeight.semibold,
   },
-  filterTabTextActive: {
-    color: colors.primary.contrast,
-    fontWeight: typography.fontWeight.bold,
+  filterTextActive: {
+    color: colors.background.primary,
   },
-  filterBadge: {
-    backgroundColor: colors.error,
+  countBadge: {
+    backgroundColor: colors.border.main,
     paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: borderRadius.full,
-    minWidth: 18,
+    paddingVertical: 2,
+    borderRadius: 10,
+    minWidth: 20,
     alignItems: 'center',
   },
-  filterBadgeText: {
-    fontSize: typography.fontSize.xs - 1,
+  countBadgeActive: {
+    backgroundColor: colors.background.primary + '40',
+  },
+  countText: {
+    fontSize: 11,
+    color: colors.text.secondary,
     fontWeight: typography.fontWeight.bold,
-    color: colors.text.inverse,
+  },
+  countTextActive: {
+    color: colors.background.primary,
   },
   scrollView: {
     flex: 1,
   },
-  content: {
+  scrollContent: {
     padding: spacing.lg,
-  },
-  emptyState: {
-    alignItems: 'center',
-    padding: spacing.xl,
-    marginTop: spacing.xl,
-  },
-  emptyTitle: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginTop: spacing.md,
-    marginBottom: spacing.xs,
-  },
-  emptyText: {
-    fontSize: typography.fontSize.base,
-    color: colors.text.secondary,
-    textAlign: 'center',
+    gap: 12,
   },
   notificationCard: {
-    marginBottom: spacing.md,
-    borderLeftWidth: 3,
-    borderLeftColor: 'transparent',
+    backgroundColor: colors.background.secondary,
+    borderRadius: spacing.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border.main,
   },
-  notificationCardUnread: {
-    borderLeftColor: colors.primary.main,
-    backgroundColor: colors.background.secondary + 'ee',
+  unreadCard: {
+    backgroundColor: colors.background.secondary + 'CC',
+    borderColor: colors.warning + '40',
   },
-  notificationHeader: {
+  notificationContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.sm,
-  },
-  notificationLeft: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    gap: 12,
   },
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: borderRadius.sm,
-    justifyContent: 'center',
+    borderRadius: 20,
     alignItems: 'center',
-    marginRight: spacing.sm,
+    justifyContent: 'center',
   },
-  notificationInfo: {
+  textContainer: {
     flex: 1,
+    gap: 6,
   },
-  titleRow: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-    marginBottom: spacing.xs,
+    gap: spacing.sm,
   },
-  notificationTitle: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold,
+  title: {
+    fontSize: 15,
     color: colors.text.primary,
+    fontWeight: typography.fontWeight.semibold,
     flex: 1,
+  },
+  unreadTitle: {
+    fontWeight: typography.fontWeight.bold,
   },
   unreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.primary.main,
+    backgroundColor: colors.warning,
   },
-  metaRow: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-  },
-  categoryBadge: {
+  tickerBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary.main + '40',
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-  },
-  categoryText: {
-    fontSize: typography.fontSize.xs,
-    fontWeight: typography.fontWeight.medium,
-  },
-  priorityBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
+    paddingVertical: 3,
+    borderRadius: 6,
     borderWidth: 1,
+    borderColor: colors.primary.main,
   },
-  priorityText: {
-    fontSize: typography.fontSize.xs,
+  tickerText: {
+    fontSize: 11,
+    color: colors.warning,
     fontWeight: typography.fontWeight.bold,
   },
-  timestamp: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-    marginLeft: spacing.sm,
-  },
-  notificationDescription: {
-    fontSize: typography.fontSize.sm,
+  message: {
+    fontSize: 14,
     color: colors.text.secondary,
     lineHeight: 20,
-    marginBottom: spacing.sm,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: colors.text.tertiary,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.main + '40',
+    gap: 4,
   },
-  actionButtonText: {
-    fontSize: typography.fontSize.sm,
+  actionText: {
+    fontSize: 12,
+    color: colors.warning,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.primary.main,
+  },
+  deleteButton: {
+    padding: 4,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
+    gap: spacing.lg,
+  },
+  emptyTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+  },
+  emptyMessage: {
+    fontSize: typography.fontSize.base,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    paddingHorizontal: 32,
   },
 });

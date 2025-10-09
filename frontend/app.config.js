@@ -6,11 +6,11 @@ module.exports = {
 		scheme: "stocksoko",
 		version: "1.0.0",
 		orientation: "portrait",
-		icon: "./assets/images/icon.png",
+		icon: "./assets/images/logo.png",
 		splash: {
 			image: "./assets/images/splash.png",
 			resizeMode: "contain",
-			backgroundColor: "#1a1a1a"
+			backgroundColor: "#0D1117"
 		},
 		updates: { enabled: true },
 		assetBundlePatterns: ["**/*"],
@@ -20,16 +20,16 @@ module.exports = {
 		},
 		android: {
 			adaptiveIcon: {
-				foregroundImage: "./assets/images/adaptive-icon.png",
-				backgroundColor: "#1a1a1a"
+				foregroundImage: "./assets/images/logo.png",
+				backgroundColor: "#0D1117"
 			},
 			package: "com.stocksoko.app"
 		},
 		web: {
-			favicon: "./assets/images/favicon.png"
+			favicon: "./assets/images/logo.png"
 		},
 		extra: {
-			apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.1.5:5000"
+			apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.1.15:8000"
 		}
 	}
 };
