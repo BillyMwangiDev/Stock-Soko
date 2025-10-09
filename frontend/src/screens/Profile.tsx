@@ -155,6 +155,17 @@ export default function Profile({ navigation }: Props) {
           />
           <View style={styles.divider} />
           <MenuItem
+            icon="alarm-outline"
+            title="Price Alerts"
+            subtitle="Set price notifications"
+            onPress={() => {
+              hapticFeedback.light();
+              handleNavigation('PriceAlerts');
+            }}
+            color={colors.warning}
+          />
+          <View style={styles.divider} />
+          <MenuItem
             icon="shield-checkmark-outline"
             title="Security"
             subtitle="Password and authentication"

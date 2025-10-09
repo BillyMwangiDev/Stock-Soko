@@ -18,6 +18,7 @@ import EducationalContent from '../screens/EducationalContent';
 import NotificationCenter from '../screens/NotificationCenter';
 import FractionalShares from '../screens/FractionalShares';
 import CustomerSupport from '../screens/CustomerSupport';
+import PriceAlerts from '../screens/PriceAlerts';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
 
@@ -118,6 +119,14 @@ export default function ProfileStack() {
         options={{ 
           title: 'Customer Support',
           headerShown: true,
+        }}
+      />
+      <Stack.Screen 
+        name="PriceAlerts" 
+        component={PriceAlerts}
+        options={{ 
+          title: 'Price Alerts',
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

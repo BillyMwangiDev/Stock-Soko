@@ -63,6 +63,7 @@ export type ProfileStackParamList = {
   NotificationCenter: undefined;
   FractionalShares: undefined;
   CustomerSupport: undefined;
+  PriceAlerts: undefined;
 };
 
 export type NewsStackParamList = {
