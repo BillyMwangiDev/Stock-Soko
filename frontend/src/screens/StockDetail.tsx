@@ -618,11 +618,9 @@ export default function StockDetail() {
           </View>
         </View>
 
-        {/* Company Fundamentals Section */}
         <View style={styles.fundamentalsWrapper}>
           <Text style={styles.sectionMainTitle}>Company Fundamentals & Analysis</Text>
           
-          {/* Company Profile Card */}
           <View style={styles.fundamentalCard}>
             <View style={styles.fundamentalHeader}>
               <Text style={styles.fundamentalHeaderText}>Company Profile</Text>
@@ -1082,7 +1080,7 @@ export default function StockDetail() {
         >
           <View style={styles.orderBookToggleHeader}>
             <View style={styles.orderBookToggleLeft}>
-              <Text style={styles.orderBookToggleIcon}>📊</Text>
+              <Ionicons name="list" size={20} color={colors.primary.main} />
               <Text style={styles.orderBookToggleTitle}>Order Book</Text>
               {orderBook && (
                 <View style={styles.spreadBadge}>
