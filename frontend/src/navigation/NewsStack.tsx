@@ -7,7 +7,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { NewsStackParamList } from './types';
 import { colors } from '../theme';
 
-// Import screens
 import News from '../screens/News';
 
 const Stack = createStackNavigator<NewsStackParamList>();
@@ -42,4 +41,3 @@ export default function NewsStack() {
     </Stack.Navigator>
   );
 }
-

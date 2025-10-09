@@ -12,7 +12,6 @@ import { colors, typography } from '../theme';
 import { api } from '../api/client';
 import { getBottomSpace } from '../utils/responsive';
 
-// Import stack navigators
 import Home from '../screens/Home';
 import TradeStack from './TradeStack';
 import PortfolioStack from './PortfolioStack';
@@ -178,4 +177,3 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.bold,
   },
 });
-

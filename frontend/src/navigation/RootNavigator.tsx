@@ -25,7 +25,6 @@ export default function RootNavigator() {
 
   const initializeApp = async () => {
     try {
-      // Initialize auth state from stored tokens
       await initializeAuth();
 
       // Small delay to ensure smooth transition
@@ -84,4 +83,3 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.primary,
   },
 });
-

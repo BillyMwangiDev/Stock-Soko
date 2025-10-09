@@ -138,4 +138,3 @@ async def reset_settings(current_user: dict = Depends(get_current_user)):
         "message": "Settings reset to defaults",
         "settings": default_settings
     }
-

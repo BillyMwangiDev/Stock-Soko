@@ -22,7 +22,6 @@ export default function Splash({ navigation }: Props) {
       // Wait 2 seconds for splash effect
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Initialize auth state
       await initializeAuth();
       
       // Check if user is logged in
@@ -69,7 +68,7 @@ export default function Splash({ navigation }: Props) {
             <View style={styles.progressFill} />
           </View>
           <View style={styles.starIcon}>
-            <Text style={styles.star}>✦</Text>
+            <Text style={styles.star}></Text>
           </View>
         </View>
       </View>

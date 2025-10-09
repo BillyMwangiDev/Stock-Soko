@@ -223,4 +223,3 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.medium,
   },
 });
-

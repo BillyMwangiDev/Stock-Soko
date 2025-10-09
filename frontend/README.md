@@ -284,4 +284,3 @@ For support, email support@stocksoko.com
 ---
 
 **Built with  using React Native & Expo**
-

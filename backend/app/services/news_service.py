@@ -171,4 +171,3 @@ class NewsService:
 
 # Singleton instance
 news_service = NewsService()
-

@@ -207,4 +207,3 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
 });
-

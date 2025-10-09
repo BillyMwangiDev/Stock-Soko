@@ -157,4 +157,3 @@ const styles = StyleSheet.create({
     color: colors.primary.contrast,  // #FFFFFF on red
   },
 });
-

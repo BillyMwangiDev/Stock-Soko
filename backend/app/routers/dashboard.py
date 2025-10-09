@@ -149,4 +149,3 @@ def get_time_of_day() -> str:
         return "evening"
     else:
         return "night"
-

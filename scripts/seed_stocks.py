@@ -343,4 +343,3 @@ def seed_stocks():
 
 if __name__ == "__main__":
     seed_stocks()
-

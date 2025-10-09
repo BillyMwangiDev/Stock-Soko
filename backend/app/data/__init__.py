@@ -22,4 +22,3 @@ __all__ = [
     "get_low_risk_stocks",
     "SAMPLE_STOCKS",
 ]
-

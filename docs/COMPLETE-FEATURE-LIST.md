@@ -647,5 +647,4 @@
 
 ---
 
-**Stock Soko is a fully-featured, professional-grade trading platform ready for beta launch!** 
-
+**Stock Soko is a fully-featured, professional-grade trading platform ready for beta launch!**

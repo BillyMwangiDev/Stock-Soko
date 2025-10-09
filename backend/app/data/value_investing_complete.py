@@ -572,4 +572,3 @@ def gordon_growth_model(current_dividend: float, growth_rate: float, required_re
     if required_return <= growth_rate:
         return 0
     return (current_dividend * (1 + growth_rate)) / (required_return - growth_rate)
-

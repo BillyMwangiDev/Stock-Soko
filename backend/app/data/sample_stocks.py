@@ -1272,4 +1272,3 @@ def get_low_risk_stocks(limit: int = 5):
     """Get stocks with lowest risk scores"""
     sorted_stocks = sorted(SAMPLE_STOCKS, key=lambda x: x["risk_score"])
     return sorted_stocks[:limit]
-

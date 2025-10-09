@@ -91,4 +91,3 @@ def delete_notification(
 ) -> Dict[str, str]:
     """Delete a notification"""
     return {"status": "success", "notification_id": notification_id}
-

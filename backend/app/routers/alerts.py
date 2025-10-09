@@ -187,4 +187,3 @@ async def trigger_alert(alert_id: str):
                 }
     
     raise HTTPException(status_code=404, detail="Alert not found")
-

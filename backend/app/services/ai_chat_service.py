@@ -244,4 +244,3 @@ What would you like to know about?"""
 
 # Singleton instance
 ai_chat_service = AIChatService()
-

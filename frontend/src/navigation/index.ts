@@ -10,4 +10,3 @@ export { default as ProfileStack } from './ProfileStack';
 export { default as NewsStack } from './NewsStack';
 
 export * from './types';
-

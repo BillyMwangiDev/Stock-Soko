@@ -467,4 +467,3 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
 });
-

@@ -7,7 +7,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { TradeStackParamList } from './types';
 import { colors } from '../theme';
 
-// Import screens
 import Markets from '../screens/Markets';
 import StockDetail from '../screens/StockDetail';
 import TradeOrder from '../screens/TradeOrder';
@@ -88,4 +87,3 @@ export default function TradeStack() {
     </Stack.Navigator>
   );
 }
-

@@ -750,4 +750,3 @@ def batch_analyze_stocks(stocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     analyses.sort(key=lambda x: x['composite_score'], reverse=True)
     
     return analyses
-

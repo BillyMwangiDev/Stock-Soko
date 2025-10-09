@@ -142,4 +142,3 @@ Proprietary - Stock Soko Ltd. All rights reserved.
 ---
 
 *Documentation last updated: 2025-10-09*
-

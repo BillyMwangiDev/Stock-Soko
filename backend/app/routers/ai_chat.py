@@ -101,4 +101,3 @@ async def get_suggestions():
     ]
     
     return {"suggestions": suggestions}
-

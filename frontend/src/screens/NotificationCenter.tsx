@@ -5,26 +5,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { ProfileStackParamList } from '../navigation/types';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useNavigation } from '@react-navigation/native';
+import { mockNotifications, Notification, NotificationType } from '../mocks';
 
 type NotificationCenterScreenProp = StackNavigationProp<ProfileStackParamList, 'NotificationCenter'>;
 
 interface Props {
   navigation: NotificationCenterScreenProp;
-}
-
-type NotificationType = 'trade' | 'news' | 'account';
-
-interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-  ticker?: string;
-  actionLabel?: string;
-  actionTarget?: string;
-  priority?: 'high' | 'medium' | 'low';
 }
 
 type FilterType = 'all' | NotificationType;
@@ -40,60 +26,7 @@ export default function NotificationCenter({ navigation }: Props) {
   }, []);
 
   const loadNotifications = async () => {
-    const mockData: Notification[] = [
-      {
-        id: '1',
-        type: 'trade',
-        title: 'Order Executed',
-        message: 'Your buy order for 10 shares of KCB at KES 32.50 was executed successfully',
-        timestamp: '15m ago',
-        read: false,
-        ticker: 'KCB',
-        actionLabel: 'View Portfolio',
-        priority: 'high',
-      },
-      {
-        id: '2',
-        type: 'trade',
-        title: 'Price Alert Triggered',
-        message: 'SCOM reached your target price of KES 45.00',
-        timestamp: '1h ago',
-        read: false,
-        ticker: 'SCOM',
-        actionLabel: 'View Stock',
-        priority: 'high',
-      },
-      {
-        id: '3',
-        type: 'news',
-        title: 'Market Update',
-        message: 'NSE 20-Share Index gains 1.2% on banking sector strength',
-        timestamp: '2h ago',
-        read: false,
-        actionLabel: 'Read More',
-        priority: 'medium',
-      },
-      {
-        id: '4',
-        type: 'account',
-        title: 'M-Pesa Deposit Confirmed',
-        message: 'KES 5,000 successfully added to your wallet',
-        timestamp: '3h ago',
-        read: true,
-        actionLabel: 'View Wallet',
-      },
-      {
-        id: '5',
-        type: 'trade',
-        title: 'Order Pending',
-        message: 'Your limit order for EABL is pending execution',
-        timestamp: '1d ago',
-        read: true,
-        ticker: 'EABL',
-      },
-    ];
-
-    setNotifications(mockData);
+    setNotifications(mockNotifications);
     setRefreshing(false);
   };
 

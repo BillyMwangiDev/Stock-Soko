@@ -40,4 +40,3 @@ const styles = StyleSheet.create({
     borderColor: colors.border.main,  // #D1D5DB
   },
 });
-

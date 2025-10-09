@@ -110,7 +110,7 @@ export default function KYCUpload({ navigation }: Props) {
   return (
     <View style={styles.container}>      <View style={styles.header}>
         <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-          <Text style={styles.closeIcon}>✕</Text>
+          <Text style={styles.closeIcon}></Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Verify your identity</Text>
         <View style={styles.headerSpacer} />

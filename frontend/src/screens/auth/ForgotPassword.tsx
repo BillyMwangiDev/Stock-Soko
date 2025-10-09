@@ -140,4 +140,3 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
   },
 });
-

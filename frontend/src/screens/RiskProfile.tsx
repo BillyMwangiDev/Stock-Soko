@@ -136,7 +136,7 @@ export default function RiskProfile({ navigation }: Props) {
       <View style={styles.header}>
         <View style={styles.headerSpacer} />
         <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipText}>✕</Text>
+          <Text style={styles.skipText}></Text>
         </TouchableOpacity>
       </View>
 
@@ -325,4 +325,3 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.primary,
   },
 });
-

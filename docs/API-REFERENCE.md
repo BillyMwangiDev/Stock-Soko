@@ -343,4 +343,3 @@ Real-time price updates and notifications will be available via WebSocket connec
 ---
 
 *For interactive API documentation, visit: http://localhost:5000/docs*
-

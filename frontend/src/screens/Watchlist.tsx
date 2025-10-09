@@ -208,7 +208,7 @@ export default function Watchlist() {
                   );
                 }}
               >
-                <Text style={styles.removeButtonText}>✕</Text>
+                <Text style={styles.removeButtonText}></Text>
               </TouchableOpacity>
             </Card>
           );
@@ -343,4 +343,3 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.bold,
   },
 });
-

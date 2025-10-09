@@ -474,4 +474,3 @@ const styles = StyleSheet.create({
     backgroundColor: colors.text.disabled,
   },
 });
-

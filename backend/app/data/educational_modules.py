@@ -662,4 +662,3 @@ def search_glossary(term: str) -> Dict[str, Any]:
             return value
     
     return None
-

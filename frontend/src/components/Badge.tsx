@@ -58,4 +58,3 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,  // #6B7280
   },
 });
-

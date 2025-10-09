@@ -42,4 +42,3 @@ class NewsResponse(BaseModel):
     total: int
     offset: int
     limit: int
-

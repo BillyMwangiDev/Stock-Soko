@@ -137,4 +137,3 @@ async def get_technical_indicators(
         }
     
     return result
-

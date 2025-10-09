@@ -436,4 +436,3 @@ This security audit has been completed and all critical issues have been resolve
 ---
 
 *Stock Soko Security Team*
-

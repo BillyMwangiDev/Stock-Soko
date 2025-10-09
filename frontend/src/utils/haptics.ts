@@ -62,4 +62,3 @@ export const hapticFeedback = {
     // Haptics disabled - expo-haptics not installed
   },
 };
-

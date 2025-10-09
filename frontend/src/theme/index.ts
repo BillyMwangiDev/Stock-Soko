@@ -1,4 +1,3 @@
-// Main theme export
 export { colors, gradients } from './colors';
 export { typography, textStyles } from './typography';
 export { spacing, borderRadius, shadows, touchTarget } from './spacing';
@@ -20,4 +19,3 @@ export const theme = {
 };
 
 export type Theme = typeof theme;
-

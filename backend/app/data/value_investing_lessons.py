@@ -544,4 +544,3 @@ def get_value_investing_lessons_by_level(level: int):
     elif level == 3:
         return VALUE_INVESTING_ADVANCED
     return []
-

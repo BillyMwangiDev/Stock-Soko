@@ -7,7 +7,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { ProfileStackParamList } from './types';
 import { colors } from '../theme';
 
-// Import screens
 import Profile from '../screens/Profile';
 import Dashboard from '../screens/Dashboard';
 import Settings from '../screens/Settings';
@@ -231,4 +230,3 @@ export default function ProfileStack() {
     </Stack.Navigator>
   );
 }
-

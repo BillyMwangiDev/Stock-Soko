@@ -36,7 +36,6 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Initialize database on startup
 @app.on_event("startup")
 def on_startup() -> None:
     init_db()

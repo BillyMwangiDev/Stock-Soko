@@ -682,4 +682,3 @@ METRIC_DEFINITIONS = [
         how_used="Compare strategies and portfolios. Higher Sharpe = better risk-adjusted performance."
     )
 ]
-

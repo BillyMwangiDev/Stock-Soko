@@ -280,4 +280,3 @@ class Watchlist(Base):
     __table_args__ = (
         Index('ix_watchlist_user_stock', 'user_id', 'stock_id', unique=True),
     )
-

@@ -322,5 +322,4 @@ Total Portfolio: KES 100,000
 
 **Remember**: Value investing is simple, but not easy. It requires patience, discipline, and the courage to act when others are fearful.
 
-**Start small, learn continuously, and think long-term!** 
-
+**Start small, learn continuously, and think long-term!**

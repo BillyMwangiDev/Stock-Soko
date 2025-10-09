@@ -55,4 +55,3 @@ class ConversationHistory(BaseModel):
     messages: List[ChatMessage]
     created_at: datetime
     updated_at: datetime
-

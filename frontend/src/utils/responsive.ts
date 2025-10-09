@@ -82,4 +82,3 @@ export const responsiveFonts = {
   '2xl': scaleFont(28),
   '3xl': scaleFont(32),
 };
-

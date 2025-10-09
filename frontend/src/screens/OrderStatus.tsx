@@ -222,4 +222,3 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
 });
-

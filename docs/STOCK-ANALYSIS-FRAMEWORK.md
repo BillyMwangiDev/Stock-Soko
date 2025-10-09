@@ -208,4 +208,3 @@ shares = RiskManagement.shares_from_stop(
 
 *Last Updated: 2025-10-09*
 *For questions or improvements, refer to the codebase documentation.*
-

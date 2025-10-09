@@ -7,7 +7,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { PortfolioStackParamList } from './types';
 import { colors } from '../theme';
 
-// Import screens
 import Portfolio from '../screens/Portfolio';
 import HoldingDetail from '../screens/HoldingDetail';
 import TradeHistory from '../screens/TradeHistory';
@@ -69,4 +68,3 @@ export default function PortfolioStack() {
     </Stack.Navigator>
   );
 }
-

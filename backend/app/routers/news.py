@@ -69,4 +69,3 @@ async def analyze_sentiment(text: str):
         "text": text,
         "sentiment": sentiment
     }
-

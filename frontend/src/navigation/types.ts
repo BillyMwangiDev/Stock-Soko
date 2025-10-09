@@ -84,4 +84,3 @@ export type NewsStackParamList = {
   News: undefined;
   NewsDetail: { articleId: string };
 };
-
