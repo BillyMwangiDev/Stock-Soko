@@ -21,61 +21,116 @@ interface Course {
   description: string;
   category: string;
   emoji: string;
+  duration?: string;
+  skillLevel?: 'Beginner' | 'Intermediate' | 'Advanced';
+  completed?: boolean;
+  progress?: number;
 }
 
 const coursesByCategory = {
-  'Trading Basics': [
+  'Beginner': [
     {
       id: '1',
       lessonNumber: 'Lesson 1',
       title: 'Introduction to Stock Trading',
-      description: 'Learn the fundamentals of stock trading.',
-      category: 'Trading Basics',
+      description: 'Learn the fundamentals of stock trading and how the NSE works.',
+      category: 'Beginner',
       emoji: '01',
+      duration: '15 min',
+      skillLevel: 'Beginner' as const,
+      completed: true,
+      progress: 100,
     },
     {
       id: '2',
       lessonNumber: 'Lesson 2',
       title: 'Understanding Market Trends',
-      description: 'Explore how to analyze market trends.',
-      category: 'Trading Basics',
+      description: 'Explore how to identify and analyze market trends for better decisions.',
+      category: 'Beginner',
       emoji: '02',
+      duration: '20 min',
+      skillLevel: 'Beginner' as const,
+      completed: true,
+      progress: 100,
     },
-  ],
-  'NSE 101': [
     {
       id: '3',
       lessonNumber: 'Lesson 3',
-      title: 'Navigating the NSE',
-      description: 'Get acquainted with the Nairobi Stock Exchange.',
-      category: 'NSE 101',
+      title: 'Reading Stock Charts',
+      description: 'Master the basics of candlesticks and price charts.',
+      category: 'Beginner',
       emoji: '03',
+      duration: '25 min',
+      skillLevel: 'Beginner' as const,
+      completed: false,
+      progress: 60,
     },
+  ],
+  'Intermediate': [
     {
       id: '4',
       lessonNumber: 'Lesson 4',
-      title: 'Investing in Kenyan Stocks',
-      description: 'Discover strategies for investing in Kenyan stocks.',
-      category: 'NSE 101',
+      title: 'Technical Analysis Fundamentals',
+      description: 'Learn RSI, MACD, and other key indicators.',
+      category: 'Intermediate',
       emoji: '04',
+      duration: '30 min',
+      skillLevel: 'Intermediate' as const,
+      completed: false,
+      progress: 0,
     },
-  ],
-  'Advanced AI Insights': [
     {
       id: '5',
       lessonNumber: 'Lesson 5',
-      title: 'AI-Powered Trading Strategies',
-      description: 'Leverage AI for smarter trading decisions.',
-      category: 'Advanced AI Insights',
+      title: 'Portfolio Diversification Strategies',
+      description: 'Build a balanced portfolio across sectors.',
+      category: 'Intermediate',
       emoji: '05',
+      duration: '25 min',
+      skillLevel: 'Intermediate' as const,
+      completed: false,
+      progress: 0,
+    },
+  ],
+  'Advanced': [
+    {
+      id: '6',
+      lessonNumber: 'Lesson 6',
+      title: 'AI-Powered Trading Strategies',
+      description: 'Leverage AI insights for advanced trading decisions.',
+      category: 'Advanced',
+      emoji: '06',
+      duration: '40 min',
+      skillLevel: 'Advanced' as const,
+      completed: false,
+      progress: 0,
+    },
+    {
+      id: '7',
+      lessonNumber: 'Lesson 7',
+      title: 'Risk Management & Position Sizing',
+      description: 'Advanced techniques for managing risk and capital allocation.',
+      category: 'Advanced',
+      emoji: '07',
+      duration: '35 min',
+      skillLevel: 'Advanced' as const,
+      completed: false,
+      progress: 0,
     },
   ],
 };
 
 export default function EducationalContent({ navigation }: Props) {
+  const [selectedLevel, setSelectedLevel] = useState<'Beginner' | 'Intermediate' | 'Advanced'>('Beginner');
+
   const handleBack = () => {
     navigation.goBack();
   };
+
+  const allCourses = Object.values(coursesByCategory).flat();
+  const completedCount = allCourses.filter(c => c.completed).length;
+  const totalCount = allCourses.length;
+  const overallProgress = (completedCount / totalCount) * 100;
 
   return (
     <View style={styles.container}>
@@ -94,32 +149,76 @@ export default function EducationalContent({ navigation }: Props) {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {Object.entries(coursesByCategory).map(([category, courses]) => (
-          <View key={category} style={styles.categorySection}>
-            <Text style={styles.categoryTitle}>{category}</Text>
-            
-            <View style={styles.coursesContainer}>
-              {courses.map((course) => (
-                <TouchableOpacity key={course.id} style={styles.courseCard}>
-                  <View style={styles.courseImage}>
+        {/* Progress Summary */}
+        <View style={styles.progressCard}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressTitle}>Your Progress</Text>
+            <Text style={styles.progressStats}>{completedCount}/{totalCount} Completed</Text>
+          </View>
+          <View style={styles.progressBarContainer}>
+            <View style={[styles.progressBarFill, { width: `${overallProgress}%` }]} />
+          </View>
+          <Text style={styles.progressPercent}>{overallProgress.toFixed(0)}% Complete</Text>
+        </View>
+
+        {/* Skill Level Tabs */}
+        <View style={styles.levelTabs}>
+          {(['Beginner', 'Intermediate', 'Advanced'] as const).map((level) => (
+            <TouchableOpacity
+              key={level}
+              style={[styles.levelTab, selectedLevel === level && styles.levelTabActive]}
+              onPress={() => setSelectedLevel(level)}
+            >
+              <Text style={[styles.levelTabText, selectedLevel === level && styles.levelTabTextActive]}>
+                {level}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Courses for Selected Level */}
+        <View style={styles.categorySection}>
+          <View style={styles.coursesContainer}>
+            {coursesByCategory[selectedLevel].map((course) => (
+              <TouchableOpacity key={course.id} style={styles.courseCard}>
+                <View style={styles.courseImage}>
+                  {course.completed ? (
+                    <View style={styles.completedOverlay}>
+                      <Text style={styles.completedIcon}>✓</Text>
+                    </View>
+                  ) : course.progress && course.progress > 0 ? (
+                    <View style={styles.inProgressOverlay}>
+                      <Text style={styles.inProgressText}>{course.progress}%</Text>
+                    </View>
+                  ) : (
                     <View style={styles.playOverlay}>
                       <View style={styles.playButton}>
                         <Text style={styles.playIcon}>▶</Text>
                       </View>
                     </View>
-                    <Text style={styles.courseEmoji}>{course.emoji}</Text>
-                  </View>
-                  
-                  <View style={styles.courseInfo}>
+                  )}
+                  <Text style={styles.courseEmoji}>{course.emoji}</Text>
+                </View>
+                
+                <View style={styles.courseInfo}>
+                  <View style={styles.courseHeader}>
                     <Text style={styles.lessonNumber}>{course.lessonNumber}</Text>
-                    <Text style={styles.courseTitle}>{course.title}</Text>
-                    <Text style={styles.courseDescription}>{course.description}</Text>
+                    {course.duration && (
+                      <Text style={styles.courseDuration}>{course.duration}</Text>
+                    )}
                   </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+                  <Text style={styles.courseTitle}>{course.title}</Text>
+                  <Text style={styles.courseDescription} numberOfLines={2}>{course.description}</Text>
+                  {course.progress !== undefined && course.progress > 0 && !course.completed && (
+                    <View style={styles.courseProgressBar}>
+                      <View style={[styles.courseProgressFill, { width: `${course.progress}%` }]} />
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
-        ))}
+        </View>
 
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -169,6 +268,75 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     paddingBottom: 100,
   },
+  progressCard: {
+    backgroundColor: colors.background.card,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  progressTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  progressStats: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    fontWeight: typography.fontWeight.medium,
+  },
+  progressBarContainer: {
+    height: 8,
+    backgroundColor: colors.background.tertiary,
+    borderRadius: borderRadius.full,
+    overflow: 'hidden',
+    marginBottom: spacing.sm,
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: colors.success,
+    borderRadius: borderRadius.full,
+  },
+  progressPercent: {
+    fontSize: typography.fontSize.sm,
+    color: colors.success,
+    fontWeight: typography.fontWeight.semibold,
+    textAlign: 'right',
+  },
+  levelTabs: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  levelTab: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.background.secondary,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+    alignItems: 'center',
+  },
+  levelTabActive: {
+    backgroundColor: colors.primary.main,
+    borderColor: colors.primary.main,
+  },
+  levelTabText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    fontWeight: typography.fontWeight.medium,
+  },
+  levelTabTextActive: {
+    color: colors.primary.contrast,
+    fontWeight: typography.fontWeight.bold,
+  },
   categorySection: {
     marginBottom: spacing.xl,
   },
@@ -197,6 +365,62 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+  },
+  completedOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.success + 'CC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: borderRadius.md,
+    zIndex: 1,
+  },
+  completedIcon: {
+    fontSize: 32,
+    color: colors.text.inverse,
+  },
+  inProgressOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.warning + 'CC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: borderRadius.md,
+    zIndex: 1,
+  },
+  inProgressText: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.inverse,
+  },
+  courseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  courseDuration: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+    fontWeight: typography.fontWeight.medium,
+  },
+  courseProgressBar: {
+    height: 4,
+    backgroundColor: colors.background.tertiary,
+    borderRadius: borderRadius.full,
+    marginTop: spacing.sm,
+    overflow: 'hidden',
+  },
+  courseProgressFill: {
+    height: '100%',
+    backgroundColor: colors.warning,
+    borderRadius: borderRadius.full,
   },
   playOverlay: {
     position: 'absolute',
