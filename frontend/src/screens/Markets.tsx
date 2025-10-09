@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput as RNTextInput, Alert, Dimensions, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Alert, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { Card, Button, Input, Badge, LoadingState, FloatingAIButton } from '../components';
+import { Card, LoadingState, FloatingAIButton } from '../components';
 import { hapticFeedback } from '../utils/haptics';
 
 interface Instrument {
@@ -18,14 +19,12 @@ interface Instrument {
 }
 
 interface MarketSummary {
+  nse20: number;
+  nse20Change: number;
+  volume: number;
   totalGainers: number;
   totalLosers: number;
-  avgChange: number;
-  topGainer: Instrument | null;
-  topLoser: Instrument | null;
 }
-
-const { width } = Dimensions.get('window');
 
 export default function Markets() {
   const navigation = useNavigation();
@@ -34,17 +33,13 @@ export default function Markets() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'gainers' | 'losers'>('all');
-  const [recommendations, setRecommendations] = useState<Record<string, string>>({});
-  const [savingWatchlist, setSavingWatchlist] = useState<string | null>(null);
-  const [orderQuantities, setOrderQuantities] = useState<Record<string, string>>({});
-  const [placingOrder, setPlacingOrder] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 'gainers' | 'losers'>('all');
   const [marketSummary, setMarketSummary] = useState<MarketSummary>({
+    nse20: 1842.50,
+    nse20Change: 2.3,
+    volume: 28500000,
     totalGainers: 0,
     totalLosers: 0,
-    avgChange: 0,
-    topGainer: null,
-    topLoser: null,
   });
 
   useEffect(() => {
@@ -53,8 +48,7 @@ export default function Markets() {
 
   useEffect(() => {
     filterInstruments();
-    calculateMarketSummary();
-  }, [searchQuery, filterType, instruments]);
+  }, [searchQuery, activeTab, instruments]);
 
   const loadMarkets = async (isRefreshing = false) => {
     if (isRefreshing) {
@@ -65,7 +59,20 @@ export default function Markets() {
     
     try {
       const res = await api.get('/markets');
-      setInstruments(res.data.instruments || []);
+      const stocks = res.data.instruments || [];
+      setInstruments(stocks);
+      
+      // Calculate market summary
+      const gainers = stocks.filter((i: Instrument) => i.change_pct > 0);
+      const losers = stocks.filter((i: Instrument) => i.change_pct < 0);
+      const totalVolume = stocks.reduce((sum: number, i: Instrument) => sum + (i.volume || 0), 0);
+      
+      setMarketSummary(prev => ({
+        ...prev,
+        volume: totalVolume,
+        totalGainers: gainers.length,
+        totalLosers: losers.length,
+      }));
     } catch (error) {
       console.error('Failed to load markets:', error);
       if (!isRefreshing) {
@@ -93,10 +100,10 @@ export default function Markets() {
       );
     }
 
-    // Apply type filter
-    if (filterType === 'gainers') {
+    // Apply tab filter
+    if (activeTab === 'gainers') {
       filtered = filtered.filter(i => i.change_pct > 0).sort((a, b) => b.change_pct - a.change_pct);
-    } else if (filterType === 'losers') {
+    } else if (activeTab === 'losers') {
       filtered = filtered.filter(i => i.change_pct < 0).sort((a, b) => a.change_pct - b.change_pct);
     } else {
       filtered = filtered.sort((a, b) => Math.abs(b.change_pct) - Math.abs(a.change_pct));
@@ -105,306 +112,173 @@ export default function Markets() {
     setFilteredInstruments(filtered);
   };
 
-  const calculateMarketSummary = () => {
-    const gainers = instruments.filter(i => i.change_pct > 0);
-    const losers = instruments.filter(i => i.change_pct < 0);
-    const avgChange = instruments.length > 0 
-      ? instruments.reduce((sum, i) => sum + i.change_pct, 0) / instruments.length 
-      : 0;
-    
-    const topGainer = gainers.length > 0 
-      ? gainers.reduce((max, i) => i.change_pct > max.change_pct ? i : max, gainers[0])
-      : null;
-    
-    const topLoser = losers.length > 0 
-      ? losers.reduce((min, i) => i.change_pct < min.change_pct ? i : min, losers[0])
-      : null;
-
-    setMarketSummary({
-      totalGainers: gainers.length,
-      totalLosers: losers.length,
-      avgChange,
-      topGainer,
-      topLoser,
-    });
-  };
-
-  const getRecommendation = async (symbol: string) => {
-    try {
-      const res = await api.post('/markets/recommendation', { symbol });
-      setRecommendations(prev => ({ ...prev, [symbol]: res.data.recommendation }));
-    } catch (error) {
-      console.error('Failed to get recommendation:', error);
-    }
-  };
-
-  const addToWatchlist = async (symbol: string) => {
-    try {
-      setSavingWatchlist(symbol);
-      await api.post('/watchlist', { symbol });
-      Alert.alert('Success', `${symbol} added to watchlist`);
-    } catch (error: any) {
-      Alert.alert('Error', error?.response?.data?.detail || 'Failed to add to watchlist');
-    } finally {
-      setSavingWatchlist(null);
-    }
-  };
-
-  const placeOrder = async (symbol: string, side: 'buy' | 'sell') => {
-    try {
-      const quantity = parseInt(orderQuantities[symbol] || '0', 10);
-      if (!quantity || quantity <= 0) {
-        Alert.alert('Invalid Quantity', 'Please enter a valid quantity');
-        return;
-      }
-
-      setPlacingOrder(`${symbol}_${side}`);
-      const res = await api.post('/trades/orders', {
-        symbol,
-        side,
-        quantity,
-        order_type: 'market',
-      });
-      Alert.alert('Order Placed', `${res.data.status}: ${res.data.message}`);
-      setOrderQuantities(prev => ({ ...prev, [symbol]: '' }));
-    } catch (error: any) {
-      Alert.alert('Order Failed', error?.response?.data?.detail || 'Failed to place order');
-    } finally {
-      setPlacingOrder(null);
-    }
-  };
-
   if (loading) {
     return <LoadingState message="Loading markets..." />;
   }
 
   return (
     <View style={styles.container}>
-      {/* Header with Watchlist Button */}
-      <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>Markets</Text>
-        <TouchableOpacity 
-          style={styles.watchlistHeaderButton}
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>Markets</Text>
+          <Text style={styles.subtitle}>Nairobi Securities Exchange</Text>
+        </View>
+      </View>
+
+      {/* Search Container */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search-outline" size={20} color={colors.text.tertiary} style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search stocks..."
+          placeholderTextColor={colors.text.tertiary}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
+
+      {/* Tab Container */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'all' && styles.activeTab]}
           onPress={() => {
             hapticFeedback.light();
-            navigation.navigate('Watchlist' as never);
+            setActiveTab('all');
           }}
         >
-          <Text style={styles.watchlistHeaderIcon}>◆</Text>
-          <Text style={styles.watchlistHeaderText}>Watchlist</Text>
+          <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>
+            All Stocks
+          </Text>
         </TouchableOpacity>
-      </View>
 
-      {/* Compact Market Summary */}
-      <View style={styles.compactSummary}>
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Trend</Text>
-          <Text style={[styles.summaryValue, marketSummary.avgChange >= 0 ? styles.positiveText : styles.negativeText]}>
-            {marketSummary.avgChange >= 0 ? '▲' : '▼'} {Math.abs(marketSummary.avgChange).toFixed(1)}%
-          </Text>
-        </View>
-        
-        <View style={styles.summaryDivider} />
-        
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Gainer</Text>
-          <Text style={[styles.summaryValue, styles.positiveText]}>
-            {marketSummary.topGainer ? `+${marketSummary.topGainer.change_pct.toFixed(1)}%` : 'N/A'}
-          </Text>
-        </View>
-        
-        <View style={styles.summaryDivider} />
-        
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Loser</Text>
-          <Text style={[styles.summaryValue, styles.negativeText]}>
-            {marketSummary.topLoser ? `${marketSummary.topLoser.change_pct.toFixed(1)}%` : 'N/A'}
-          </Text>
-        </View>
-        
-        <View style={styles.summaryDivider} />
-        
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Total</Text>
-          <Text style={styles.summaryValue}>{instruments.length}</Text>
-        </View>
-      </View>
-
-      {/* Compact Search and Filter */}
-      <View style={styles.searchFilterBar}>
-        <View style={styles.searchBox}>
-          <RNTextInput
-            style={styles.searchInput}
-            placeholder="Search stocks..."
-            placeholderTextColor={colors.text.disabled}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'gainers' && styles.activeTab]}
+          onPress={() => {
+            hapticFeedback.light();
+            setActiveTab('gainers');
+          }}
+        >
+          <Ionicons 
+            name="trending-up" 
+            size={16} 
+            color={activeTab === 'gainers' ? colors.primary.contrast : colors.text.tertiary} 
           />
-        </View>
-        
-        <TouchableOpacity
-          style={[styles.filterBtn, filterType === 'all' && styles.filterBtnActive]}
-          onPress={() => setFilterType('all')}
-        >
-          <Text style={[styles.filterBtnText, filterType === 'all' && styles.filterBtnTextActive]}>All</Text>
+          <Text style={[styles.tabText, activeTab === 'gainers' && styles.activeTabText]}>
+            Gainers
+          </Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
-          style={[styles.filterBtn, filterType === 'gainers' && styles.filterBtnActive]}
-          onPress={() => setFilterType('gainers')}
+          style={[styles.tab, activeTab === 'losers' && styles.activeTab]}
+          onPress={() => {
+            hapticFeedback.light();
+            setActiveTab('losers');
+          }}
         >
-          <Text style={[styles.filterBtnText, filterType === 'gainers' && styles.filterBtnTextActive]}>▲</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.filterBtn, filterType === 'losers' && styles.filterBtnActive]}
-          onPress={() => setFilterType('losers')}
-        >
-          <Text style={[styles.filterBtnText, filterType === 'losers' && styles.filterBtnTextActive]}>▼</Text>
+          <Ionicons 
+            name="trending-down" 
+            size={16} 
+            color={activeTab === 'losers' ? colors.primary.contrast : colors.text.tertiary} 
+          />
+          <Text style={[styles.tabText, activeTab === 'losers' && styles.activeTabText]}>
+            Losers
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
-        style={styles.scrollView} 
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={true}
-        keyboardShouldPersistTaps="handled"
-        bounces={true}
-        scrollEventThrottle={16}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary.main}
+            colors={[colors.primary.main]}
+          />
+        }
       >
-        <Text style={styles.resultsText}>
-          {filteredInstruments.length} {filteredInstruments.length === 1 ? 'result' : 'results'}
-        </Text>
+        {/* Market Overview */}
+        <Card variant="glass" style={styles.marketOverview}>
+          <Text style={styles.overviewTitle}>Market Overview</Text>
+          <View style={styles.overviewRow}>
+            <View style={styles.overviewItem}>
+              <Text style={styles.overviewLabel}>NSE 20</Text>
+              <Text style={styles.overviewValue}>{marketSummary.nse20.toFixed(2)}</Text>
+              <Text style={[styles.overviewChange, { color: marketSummary.nse20Change >= 0 ? colors.success : colors.error }]}>
+                {marketSummary.nse20Change >= 0 ? '+' : ''}{marketSummary.nse20Change.toFixed(1)}%
+              </Text>
+            </View>
+            <View style={styles.overviewItem}>
+              <Text style={styles.overviewLabel}>Volume</Text>
+              <Text style={styles.overviewValue}>
+                {(marketSummary.volume / 1000000).toFixed(1)}M
+              </Text>
+              <Text style={styles.overviewSubtext}>shares traded</Text>
+            </View>
+          </View>
+        </Card>
 
-        {filteredInstruments.map(stock => (
-          <TouchableOpacity 
-            key={stock.symbol} 
+        {/* Stock List */}
+        {filteredInstruments.map((stock) => (
+          <TouchableOpacity
+            key={stock.symbol}
+            style={styles.stockCard}
             onPress={() => {
               hapticFeedback.impact();
               navigation.navigate('StockDetail' as never, { symbol: stock.symbol } as never);
             }}
             activeOpacity={0.7}
           >
-            <Card style={styles.stockCard} padding="md">
-              {/* Stock Header */}
-              <View style={styles.stockHeader}>
-              <View style={styles.stockIconContainer}>
-                <View style={[styles.stockIcon, stock.change_pct >= 0 ? styles.stockIconGreen : styles.stockIconRed]}>
-                  <Text style={styles.stockIconText}>{stock.symbol[0]}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.stockTitleSection}>
-                <Text style={styles.stockSymbol}>{stock.symbol}</Text>
-                <Text style={styles.stockName} numberOfLines={1}>{stock.name}</Text>
-                {stock.volume && (
-                  <Text style={styles.stockVolume}>Vol: {(stock.volume / 1000).toFixed(1)}K</Text>
-                )}
-              </View>
-              
-              <View style={styles.stockPriceSection}>
-                <Text style={styles.stockPrice}>KES {stock.last_price.toFixed(2)}</Text>
-                <View style={[styles.changeBadge, stock.change_pct >= 0 ? styles.changeBadgeGreen : styles.changeBadgeRed]}>
-                  <Text style={[styles.changeText, stock.change_pct >= 0 ? styles.changeTextGreen : styles.changeTextRed]}>
-                    {stock.change_pct >= 0 ? '▲' : '▼'} {Math.abs(stock.change_pct).toFixed(2)}%
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Mini Price Range Bar */}
-            {stock.high && stock.low && (
-              <View style={styles.priceRangeContainer}>
-                <Text style={styles.priceRangeLabel}>Day Range</Text>
-                <View style={styles.priceRangeBar}>
-                  <View 
-                    style={[
-                      styles.priceRangeFill, 
-                      { width: `${((stock.last_price - stock.low) / (stock.high - stock.low)) * 100}%` }
-                    ]} 
-                  />
-                </View>
-                <View style={styles.priceRangeValues}>
-                  <Text style={styles.priceRangeText}>L: {stock.low.toFixed(2)}</Text>
-                  <Text style={styles.priceRangeText}>H: {stock.high.toFixed(2)}</Text>
-                </View>
-              </View>
-            )}
-
-            {/* AI Recommendation */}
-            {recommendations[stock.symbol] && (
-              <View style={styles.recommendationBanner}>
-                <Text style={styles.recommendationText}>
-                  AI Recommendation: <Text style={styles.recommendationValue}>
-                    {recommendations[stock.symbol].toUpperCase()}
-                  </Text>
+            <View style={styles.stockIconContainer}>
+              <View style={[
+                styles.stockIcon,
+                { backgroundColor: stock.change_pct >= 0 ? colors.success + '20' : colors.error + '20' }
+              ]}>
+                <Text style={[
+                  styles.stockIconText,
+                  { color: stock.change_pct >= 0 ? colors.success : colors.error }
+                ]}>
+                  {stock.symbol.charAt(0)}
                 </Text>
               </View>
-            )}
-
-            {/* Action Buttons */}
-            <View style={styles.actionRow}>
-              <Button
-                title="AI Insight"
-                onPress={() => getRecommendation(stock.symbol)}
-                variant="ghost"
-                size="sm"
-                style={styles.actionButton}
-              />
-              <Button
-                title={savingWatchlist === stock.symbol ? 'Adding...' : 'Watchlist'}
-                onPress={() => addToWatchlist(stock.symbol)}
-                variant="outline"
-                size="sm"
-                disabled={savingWatchlist === stock.symbol}
-                style={styles.actionButton}
-              />
             </View>
 
-            {/* Quick Trade Panel */}
-            <View style={styles.tradePanel}>
-              <Text style={styles.tradePanelTitle}>Quick Trade</Text>
-              <View style={styles.tradeRow}>
-                <Input
-                  placeholder="Quantity"
-                  value={orderQuantities[stock.symbol] || ''}
-                  onChangeText={text =>
-                    setOrderQuantities(prev => ({ ...prev, [stock.symbol]: text }))
-                  }
-                  keyboardType="numeric"
-                  containerStyle={styles.qtyInput}
-                  style={styles.qtyInputField}
+            <View style={styles.stockInfo}>
+              <Text style={styles.stockSymbol}>{stock.symbol}</Text>
+              <Text style={styles.stockName} numberOfLines={1}>{stock.name}</Text>
+            </View>
+
+            <View style={styles.stockPriceContainer}>
+              <Text style={styles.stockPrice}>KES {stock.last_price.toFixed(2)}</Text>
+              <View style={styles.stockChangeContainer}>
+                <Ionicons 
+                  name={stock.change_pct >= 0 ? 'trending-up' : 'trending-down'} 
+                  size={12} 
+                  color={stock.change_pct >= 0 ? colors.success : colors.error} 
                 />
-                
-                <Button
-                  title={placingOrder === `${stock.symbol}_buy` ? '...' : 'Buy'}
-                  onPress={() => placeOrder(stock.symbol, 'buy')}
-                  variant="success"
-                  size="md"
-                  disabled={!!placingOrder}
-                  style={styles.tradeButton}
-                />
-                
-                <Button
-                  title={placingOrder === `${stock.symbol}_sell` ? '...' : 'Sell'}
-                  onPress={() => placeOrder(stock.symbol, 'sell')}
-                  variant="error"
-                  size="md"
-                  disabled={!!placingOrder}
-                  style={styles.tradeButton}
-                />
+                <Text style={[
+                  styles.stockChange,
+                  { color: stock.change_pct >= 0 ? colors.success : colors.error }
+                ]}>
+                  {stock.change_pct >= 0 ? '+' : ''}{stock.change_pct.toFixed(2)}%
+                </Text>
               </View>
             </View>
-          </Card>
           </TouchableOpacity>
         ))}
 
         {filteredInstruments.length === 0 && (
-          <View style={styles.emptyState}>
+          <Card variant="outline" style={styles.emptyState}>
+            <Ionicons name="search-outline" size={40} color={colors.text.tertiary} />
             <Text style={styles.emptyText}>No stocks found</Text>
             <Text style={styles.emptySubtext}>Try adjusting your search or filter</Text>
-          </View>
+          </Card>
         )}
+
+        <View style={{ height: 100 }} />
       </ScrollView>
 
       <FloatingAIButton />
@@ -417,311 +291,181 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.background.primary,
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
   },
-  headerTitle: {
-    fontSize: typography.fontSize.xl,
+  title: {
+    fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
+    marginBottom: 4,
   },
-  watchlistHeaderButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.background.card,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
-    gap: spacing.xs,
-  },
-  watchlistHeaderIcon: {
-    fontSize: 16,
-    color: colors.warning,
-  },
-  watchlistHeaderText: {
+  subtitle: {
     fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
+    color: colors.text.secondary,
   },
-  compactSummary: {
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.background.card,
-    marginHorizontal: spacing.md,
-    marginVertical: spacing.sm,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.md,
     borderRadius: borderRadius.md,
     borderWidth: 1,
     borderColor: colors.border.main,
   },
-  summaryItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: spacing.xs,
-  },
-  summaryDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: colors.border.light,
-  },
-  summaryLabel: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.secondary,
-    marginBottom: 2,
-    fontWeight: typography.fontWeight.medium,
-  },
-  summaryValue: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-  },
-  positiveText: {
-    color: colors.success,
-  },
-  negativeText: {
-    color: colors.error,
-  },
-  searchFilterBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    gap: spacing.xs,
-    backgroundColor: colors.background.primary,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.main,
-  },
-  searchBox: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border.light,
+  searchIcon: {
+    marginRight: spacing.sm,
   },
   searchInput: {
     flex: 1,
-    paddingVertical: spacing.sm,
+    height: 48,
+    fontSize: typography.fontSize.base,
     color: colors.text.primary,
-    fontSize: typography.fontSize.sm,
   },
-  filterBtn: {
+  tabContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  tab: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.full,
     backgroundColor: colors.background.card,
     borderWidth: 1,
-    borderColor: colors.border.light,
-    minWidth: 44,
-    alignItems: 'center',
+    borderColor: colors.border.main,
+    gap: 4,
   },
-  filterBtnActive: {
+  activeTab: {
     backgroundColor: colors.primary.main,
     borderColor: colors.primary.main,
   },
-  filterBtnText: {
+  tabText: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.secondary,
-    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.tertiary,
+    fontWeight: typography.fontWeight.medium,
   },
-  filterBtnTextActive: {
+  activeTabText: {
     color: colors.primary.contrast,
+    fontWeight: typography.fontWeight.semibold,
   },
   scrollView: {
     flex: 1,
   },
-  content: {
-    padding: spacing.base,
-    paddingBottom: 100,
-    minHeight: 1200,
+  scrollContent: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: 120,
   },
-  resultsText: {
+  marketOverview: {
+    marginBottom: spacing.md,
+  },
+  overviewTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: spacing.md,
+  },
+  overviewRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  overviewItem: {
+    flex: 1,
+  },
+  overviewLabel: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    marginBottom: spacing.sm,
+    color: colors.text.secondary,
+    marginBottom: 4,
+  },
+  overviewValue: {
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: 2,
+  },
+  overviewChange: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  overviewSubtext: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
   },
   stockCard: {
-    marginBottom: spacing.md,
-  },
-  stockHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+    marginBottom: spacing.sm,
   },
   stockIconContainer: {
-    marginRight: spacing.sm,
+    marginRight: spacing.md,
   },
   stockIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  stockIconGreen: {
-    backgroundColor: colors.success + '20',
-    borderWidth: 2,
-    borderColor: colors.success,
-  },
-  stockIconRed: {
-    backgroundColor: colors.error + '20',
-    borderWidth: 2,
-    borderColor: colors.error,
-  },
   stockIconText: {
-    fontSize: typography.fontSize.xl,
+    fontSize: 18,
     fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
   },
-  stockTitleSection: {
+  stockInfo: {
     flex: 1,
   },
   stockSymbol: {
-    fontSize: typography.fontSize.lg,
+    fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
     marginBottom: 2,
   },
   stockName: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    marginBottom: 2,
+    color: colors.text.secondary,
   },
-  stockVolume: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.disabled,
-  },
-  stockPriceSection: {
+  stockPriceContainer: {
     alignItems: 'flex-end',
   },
   stockPrice: {
-    fontSize: typography.fontSize.xl,
+    fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: spacing.xs,
+    marginBottom: 2,
   },
-  changeBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: borderRadius.sm,
-  },
-  changeBadgeGreen: {
-    backgroundColor: colors.success + '20',
-  },
-  changeBadgeRed: {
-    backgroundColor: colors.error + '20',
-  },
-  changeText: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.bold,
-  },
-  changeTextGreen: {
-    color: colors.success,
-  },
-  changeTextRed: {
-    color: colors.error,
-  },
-  priceRangeContainer: {
-    marginBottom: spacing.md,
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.main,
-  },
-  priceRangeLabel: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.disabled,
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase',
-  },
-  priceRangeBar: {
-    height: 6,
-    backgroundColor: colors.background.secondary,
-    borderRadius: borderRadius.sm,
-    marginBottom: spacing.xs,
-    overflow: 'hidden',
-  },
-  priceRangeFill: {
-    height: '100%',
-    backgroundColor: colors.primary.main,
-  },
-  priceRangeValues: {
+  stockChangeContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 2,
   },
-  priceRangeText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.secondary,
-  },
-  recommendationBanner: {
-    backgroundColor: colors.background.primary,
-    padding: spacing.sm,
-    borderRadius: borderRadius.sm,
-    marginBottom: spacing.sm,
-  },
-  recommendationText: {
+  stockChange: {
     fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-  },
-  recommendationValue: {
-    fontWeight: typography.fontWeight.bold,
-    color: colors.primary.main,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  actionButton: {
-    flex: 1,
-  },
-  tradePanel: {
-    backgroundColor: colors.background.primary,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border.main,
-  },
-  tradePanelTitle: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    marginBottom: spacing.sm,
-    fontWeight: typography.fontWeight.medium,
-  },
-  tradeRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    alignItems: 'flex-start',
-  },
-  qtyInput: {
-    flex: 1,
-    marginBottom: 0,
-  },
-  qtyInputField: {
-    paddingVertical: spacing.sm,
-  },
-  tradeButton: {
-    paddingHorizontal: spacing.base,
+    fontWeight: typography.fontWeight.semibold,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: spacing['3xl'],
   },
   emptyText: {
-    fontSize: typography.fontSize.lg,
+    fontSize: typography.fontSize.base,
     color: colors.text.secondary,
     fontWeight: typography.fontWeight.semibold,
-    marginBottom: spacing.xs,
+    marginTop: spacing.sm,
   },
   emptySubtext: {
     fontSize: typography.fontSize.sm,
     color: colors.text.tertiary,
+    marginTop: spacing.xs,
   },
 });
