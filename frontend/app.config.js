@@ -16,7 +16,13 @@ module.exports = {
 		assetBundlePatterns: ["**/*"],
 		ios: { 
 			supportsTablet: true,
-			bundleIdentifier: "com.stocksoko.app"
+			bundleIdentifier: "com.stocksoko.app",
+			infoPlist: {
+				NSAppTransportSecurity: {
+					NSAllowsArbitraryLoads: true,
+					NSAllowsLocalNetworking: true
+				}
+			}
 		},
 		android: {
 			adaptiveIcon: {

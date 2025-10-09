@@ -1,17 +1,25 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 import { getAccessToken, logout, setAccessToken } from '../store/auth';
 
-// Use localhost for web, local network IP for mobile devices
-const defaultBaseURL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-  ? 'http://localhost:8000'
-  : 'http://192.168.1.15:8000';
+// Determine the correct base URL based on platform
+const getDefaultBaseURL = () => {
+  // For web, use localhost
+  if (Platform.OS === 'web') {
+    return 'http://localhost:8000';
+  }
+  
+  // For iOS and Android, use the local network IP
+  // Make sure your computer and phone are on the same WiFi network
+  return 'http://192.168.1.15:8000';
+};
 
 const baseURL = (Constants?.expoConfig?.extra as any)?.apiBaseUrl || 
   process.env.EXPO_PUBLIC_API_URL || 
-  defaultBaseURL;
+  getDefaultBaseURL();
 
-console.log('[API Client] Using baseURL:', baseURL);
+console.log(`[API Client] Platform: ${Platform.OS}, Using baseURL: ${baseURL}`);
 
 export const api = axios.create({
 	baseURL,
