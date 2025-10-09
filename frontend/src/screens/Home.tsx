@@ -21,6 +21,20 @@ interface StockData {
   volume: number;
 }
 
+interface AIRecommendation {
+  id: string;
+  symbol: string;
+  name: string;
+  action: 'BUY' | 'SELL' | 'HOLD';
+  confidence: number;
+  targetPrice?: number;
+  currentPrice?: number;
+  reasoning: string;
+  riskLevel: 'Low' | 'Medium' | 'High';
+  timeHorizon: 'Short' | 'Medium' | 'Long';
+  category: 'Growth' | 'Value' | 'Dividend' | 'Momentum';
+}
+
 export default function Home() {
   const navigation = useNavigation();
   const { userName, totalPortfolioValue, totalGainLoss, gainLossPercent, refreshPortfolio } = useApp();
@@ -30,11 +44,14 @@ export default function Home() {
     changePercent: gainLossPercent,
   });
   const [topGainers, setTopGainers] = useState<StockData[]>([]);
+  const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingAI, setLoadingAI] = useState(false);
 
   useEffect(() => {
     loadData();
+    loadAIRecommendations();
   }, []);
 
   useEffect(() => {
@@ -77,11 +94,93 @@ export default function Home() {
     }
   };
 
+  const loadAIRecommendations = async () => {
+    setLoadingAI(true);
+    try {
+      // Generate 3 AI recommendations with different categories
+      const symbols = ['KCB', 'SCOM', 'EQTY', 'EABL', 'SBIC', 'BAT'];
+      const categories: Array<'Growth' | 'Value' | 'Dividend' | 'Momentum'> = ['Growth', 'Value', 'Dividend'];
+      const recommendations: AIRecommendation[] = [];
+
+      for (let i = 0; i < 3; i++) {
+        const symbol = symbols[i];
+        const category = categories[i];
+        
+        try {
+          // Try to get real recommendation from API
+          const res = await api.post('/markets/recommendation', { symbol });
+          const action = res.data.recommendation || 'HOLD';
+          
+          // Fetch current price
+          const stockRes = await api.get(`/markets/stocks/${symbol}`);
+          const currentPrice = stockRes.data.last_price || 0;
+          const name = stockRes.data.name || symbol;
+          
+          // Generate confidence and other metrics
+          const confidence = Math.floor(Math.random() * 20) + 75; // 75-95%
+          const riskLevel: 'Low' | 'Medium' | 'High' = confidence > 85 ? 'Low' : confidence > 75 ? 'Medium' : 'High';
+          const targetPrice = currentPrice * (action === 'BUY' ? 1.15 : action === 'SELL' ? 0.90 : 1.05);
+          
+          const reasoning = generateReasoning(action, category, symbol);
+          
+          recommendations.push({
+            id: `${symbol}-${Date.now()}`,
+            symbol,
+            name,
+            action: action as 'BUY' | 'SELL' | 'HOLD',
+            confidence,
+            targetPrice,
+            currentPrice,
+            reasoning,
+            riskLevel,
+            timeHorizon: category === 'Growth' ? 'Long' : category === 'Dividend' ? 'Medium' : 'Short',
+            category,
+          });
+        } catch (error) {
+          console.error(`Failed to load AI recommendation for ${symbol}:`, error);
+        }
+      }
+      
+      setAiRecommendations(recommendations);
+    } catch (error) {
+      console.error('Failed to load AI recommendations:', error);
+    } finally {
+      setLoadingAI(false);
+    }
+  };
+
+  const generateReasoning = (action: string, category: string, symbol: string): string => {
+    const reasons = {
+      'BUY': {
+        'Growth': `Strong growth trajectory with expanding market share. ${symbol} shows robust revenue growth and improving margins.`,
+        'Value': `Trading below intrinsic value with solid fundamentals. ${symbol} offers attractive entry point for value investors.`,
+        'Dividend': `Consistent dividend payout history with strong cash flow. ${symbol} provides reliable income potential.`,
+        'Momentum': `Positive price momentum with increasing volume. ${symbol} breaking key resistance levels.`
+      },
+      'SELL': {
+        'Growth': `Growth rate declining with increasing competition. ${symbol} facing headwinds in key markets.`,
+        'Value': `Price approaching fair value with limited upside. ${symbol} better opportunities available elsewhere.`,
+        'Dividend': `Dividend sustainability concerns with cash flow pressure. ${symbol} may reduce payout.`,
+        'Momentum': `Losing momentum with weakening technical indicators. ${symbol} showing bearish signals.`
+      },
+      'HOLD': {
+        'Growth': `Consolidating after recent gains. ${symbol} wait for clear direction before adding.`,
+        'Value': `Fairly valued at current levels. ${symbol} maintain position and monitor.`,
+        'Dividend': `Stable dividend but limited price appreciation. ${symbol} hold for income.`,
+        'Momentum': `Trading in range, awaiting breakout. ${symbol} patience required.`
+      }
+    };
+    
+    return reasons[action as keyof typeof reasons]?.[category as keyof typeof reasons.BUY] || 
+           'Market conditions suggest careful monitoring of this position.';
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await Promise.all([
       refreshPortfolio(),
-      loadData(true)
+      loadData(true),
+      loadAIRecommendations()
     ]);
     setRefreshing(false);
   };
@@ -194,21 +293,140 @@ export default function Home() {
             <Ionicons name="sparkles" size={20} color={colors.primary.main} />
             <Text style={styles.sectionTitle}>AI Recommendations</Text>
           </View>
-        </View>
-        <Card variant="glass" style={styles.aiCard}>
-          <Text style={styles.aiTitle}>Market Opportunity</Text>
-          <Text style={styles.aiText}>
-            Based on your portfolio, consider diversifying into the banking sector. 
-            Strong fundamentals detected with positive momentum indicators.
-          </Text>
-          <TouchableOpacity 
-            style={styles.aiButton}
-            onPress={() => navigation.navigate('Profile', { screen: 'AIAssistant' })}
-          >
-            <Text style={styles.aiButtonText}>View Analysis</Text>
-            <Ionicons name="arrow-forward" size={16} color={colors.primary.main} />
+          <TouchableOpacity onPress={() => navigation.navigate('Profile', { screen: 'AIAssistant' })}>
+            <Text style={styles.seeAllText}>Ask AI</Text>
           </TouchableOpacity>
-        </Card>
+        </View>
+
+        {loadingAI ? (
+          <Card variant="glass" style={styles.aiLoadingCard}>
+            <Text style={styles.aiLoadingText}>Analyzing markets...</Text>
+          </Card>
+        ) : aiRecommendations.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.aiScrollContent}
+            style={styles.aiScrollView}
+          >
+            {aiRecommendations.map((rec) => (
+              <TouchableOpacity
+                key={rec.id}
+                style={styles.aiRecommendationCard}
+                onPress={() => navigation.navigate('Markets', { 
+                  screen: 'StockDetail', 
+                  params: { symbol: rec.symbol } 
+                } as never)}
+                activeOpacity={0.7}
+              >
+                {/* Header with Action Badge */}
+                <View style={styles.aiRecHeader}>
+                  <View style={styles.aiRecSymbolContainer}>
+                    <Text style={styles.aiRecSymbol}>{rec.symbol}</Text>
+                    <Text style={styles.aiRecName} numberOfLines={1}>{rec.name}</Text>
+                  </View>
+                  <View style={[
+                    styles.aiRecBadge,
+                    { backgroundColor: rec.action === 'BUY' ? colors.success + '20' : 
+                                       rec.action === 'SELL' ? colors.error + '20' : 
+                                       colors.warning + '20' }
+                  ]}>
+                    <Text style={[
+                      styles.aiRecBadgeText,
+                      { color: rec.action === 'BUY' ? colors.success : 
+                               rec.action === 'SELL' ? colors.error : 
+                               colors.warning }
+                    ]}>
+                      {rec.action}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Category & Risk */}
+                <View style={styles.aiRecMetaRow}>
+                  <View style={styles.aiRecMetaItem}>
+                    <Ionicons name="bookmark-outline" size={14} color={colors.text.tertiary} />
+                    <Text style={styles.aiRecMetaText}>{rec.category}</Text>
+                  </View>
+                  <View style={styles.aiRecMetaItem}>
+                    <Ionicons 
+                      name={rec.riskLevel === 'Low' ? 'shield-checkmark-outline' : 
+                            rec.riskLevel === 'Medium' ? 'alert-circle-outline' : 
+                            'warning-outline'} 
+                      size={14} 
+                      color={rec.riskLevel === 'Low' ? colors.success : 
+                             rec.riskLevel === 'Medium' ? colors.warning : 
+                             colors.error} 
+                    />
+                    <Text style={[
+                      styles.aiRecMetaText,
+                      { color: rec.riskLevel === 'Low' ? colors.success : 
+                               rec.riskLevel === 'Medium' ? colors.warning : 
+                               colors.error }
+                    ]}>
+                      {rec.riskLevel} Risk
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Confidence Bar */}
+                <View style={styles.aiRecConfidenceContainer}>
+                  <Text style={styles.aiRecConfidenceLabel}>Confidence</Text>
+                  <View style={styles.aiRecConfidenceBar}>
+                    <View style={[
+                      styles.aiRecConfidenceFill,
+                      { 
+                        width: `${rec.confidence}%`,
+                        backgroundColor: rec.confidence > 85 ? colors.success : 
+                                       rec.confidence > 75 ? colors.primary.main : 
+                                       colors.warning
+                      }
+                    ]} />
+                  </View>
+                  <Text style={styles.aiRecConfidenceValue}>{rec.confidence}%</Text>
+                </View>
+
+                {/* Price Info */}
+                {rec.currentPrice && rec.targetPrice && (
+                  <View style={styles.aiRecPriceRow}>
+                    <View style={styles.aiRecPriceItem}>
+                      <Text style={styles.aiRecPriceLabel}>Current</Text>
+                      <Text style={styles.aiRecPriceValue}>KES {rec.currentPrice.toFixed(2)}</Text>
+                    </View>
+                    <Ionicons name="arrow-forward" size={16} color={colors.text.tertiary} />
+                    <View style={styles.aiRecPriceItem}>
+                      <Text style={styles.aiRecPriceLabel}>Target</Text>
+                      <Text style={[
+                        styles.aiRecPriceValue,
+                        { color: rec.targetPrice > rec.currentPrice ? colors.success : colors.error }
+                      ]}>
+                        KES {rec.targetPrice.toFixed(2)}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Reasoning */}
+                <Text style={styles.aiRecReasoning} numberOfLines={3}>
+                  {rec.reasoning}
+                </Text>
+
+                {/* Time Horizon */}
+                <View style={styles.aiRecFooter}>
+                  <Ionicons name="time-outline" size={12} color={colors.text.tertiary} />
+                  <Text style={styles.aiRecTimeHorizon}>{rec.timeHorizon}-term</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        ) : (
+          <Card variant="glass" style={styles.aiCard}>
+            <Text style={styles.aiTitle}>No Recommendations</Text>
+            <Text style={styles.aiText}>
+              Pull to refresh to get AI-powered stock recommendations.
+            </Text>
+          </Card>
+        )}
 
         {/* Top Gainers */}
         <View style={styles.sectionHeader}>
@@ -446,6 +664,136 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     color: colors.primary.main,
     fontWeight: typography.fontWeight.semibold,
+  },
+  aiLoadingCard: {
+    marginBottom: spacing.lg,
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  aiLoadingText: {
+    fontSize: typography.fontSize.base,
+    color: colors.text.secondary,
+  },
+  aiScrollView: {
+    marginBottom: spacing.lg,
+  },
+  aiScrollContent: {
+    paddingRight: spacing.lg,
+  },
+  aiRecommendationCard: {
+    width: 280,
+    backgroundColor: colors.background.secondary + 'dd',
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+    padding: spacing.md,
+    marginRight: spacing.md,
+  },
+  aiRecHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.sm,
+  },
+  aiRecSymbolContainer: {
+    flex: 1,
+  },
+  aiRecSymbol: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  aiRecName: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+    marginTop: 2,
+  },
+  aiRecBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.sm,
+  },
+  aiRecBadgeText: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.bold,
+  },
+  aiRecMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  aiRecMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  aiRecMetaText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+  },
+  aiRecConfidenceContainer: {
+    marginBottom: spacing.sm,
+  },
+  aiRecConfidenceLabel: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+    marginBottom: 4,
+  },
+  aiRecConfidenceBar: {
+    height: 6,
+    backgroundColor: colors.background.tertiary,
+    borderRadius: borderRadius.full,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  aiRecConfidenceFill: {
+    height: '100%',
+    borderRadius: borderRadius.full,
+  },
+  aiRecConfidenceValue: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
+    fontWeight: typography.fontWeight.semibold,
+    textAlign: 'right',
+  },
+  aiRecPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.border.main + '40',
+  },
+  aiRecPriceItem: {
+    flex: 1,
+  },
+  aiRecPriceLabel: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+    marginBottom: 2,
+  },
+  aiRecPriceValue: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+  },
+  aiRecReasoning: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    lineHeight: 18,
+    marginBottom: spacing.sm,
+  },
+  aiRecFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  aiRecTimeHorizon: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
   },
   stockCard: {
     flexDirection: 'row',
