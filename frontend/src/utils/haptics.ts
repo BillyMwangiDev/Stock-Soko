@@ -28,6 +28,13 @@ export const hapticFeedback = {
   },
 
   /**
+   * Impact - general impact feedback
+   */
+  impact: () => {
+    // Haptics disabled - expo-haptics not installed
+  },
+
+  /**
    * Selection - for picker/tab changes
    */
   selection: () => {

@@ -199,7 +199,7 @@ export default function Home() {
         <Text style={styles.headerTitle}>Stock Soko</Text>
         <TouchableOpacity 
           style={styles.notificationButton}
-          onPress={() => navigation.navigate('Profile', { screen: 'NotificationCenter' })}
+          onPress={() => (navigation as any).navigate('ProfileTab', { screen: 'NotificationCenter' })}
         >
           <Ionicons name="notifications-outline" size={24} color={colors.text.secondary} />
         </TouchableOpacity>
@@ -257,7 +257,7 @@ export default function Home() {
           <View style={styles.quickActions}>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}
+              onPress={() => (navigation as any).navigate('MarketsTab')}
             >
               <View style={styles.actionIcon}>
                 <Ionicons name="trending-up" size={24} color={colors.primary.main} />
@@ -267,7 +267,7 @@ export default function Home() {
 
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => navigation.navigate('Profile', { screen: 'Wallet' })}
+              onPress={() => (navigation as any).navigate('ProfileTab', { screen: 'Wallet' })}
             >
               <View style={styles.actionIcon}>
                 <Ionicons name="wallet-outline" size={24} color={colors.primary.main} />
@@ -277,7 +277,7 @@ export default function Home() {
 
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => navigation.navigate('Profile', { screen: 'EducationalContent' })}
+              onPress={() => (navigation as any).navigate('ProfileTab', { screen: 'EducationalContent' })}
             >
               <View style={styles.actionIcon}>
                 <Ionicons name="school-outline" size={24} color={colors.primary.main} />
@@ -293,7 +293,7 @@ export default function Home() {
             <Ionicons name="sparkles" size={20} color={colors.primary.main} />
             <Text style={styles.sectionTitle}>AI Recommendations</Text>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Profile', { screen: 'AIAssistant' })}>
+          <TouchableOpacity onPress={() => (navigation as any).navigate('ProfileTab', { screen: 'AIAssistant' })}>
             <Text style={styles.seeAllText}>Ask AI</Text>
           </TouchableOpacity>
         </View>
@@ -313,10 +313,10 @@ export default function Home() {
               <TouchableOpacity
                 key={rec.id}
                 style={styles.aiRecommendationCard}
-                onPress={() => navigation.navigate('Markets', { 
+                onPress={() => (navigation as any).navigate('MarketsTab', { 
                   screen: 'StockDetail', 
                   params: { symbol: rec.symbol } 
-                } as never)}
+                })}
                 activeOpacity={0.7}
               >
                 {/* Header with Action Badge */}
@@ -431,7 +431,7 @@ export default function Home() {
         {/* Top Gainers */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Top Gainers Today</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}>
+          <TouchableOpacity onPress={() => (navigation as any).navigate('MarketsTab')}>
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         </View>
@@ -441,7 +441,7 @@ export default function Home() {
             <TouchableOpacity
               key={stock.symbol}
               style={styles.stockCard}
-              onPress={() => navigation.navigate('Markets', { 
+              onPress={() => (navigation as any).navigate('MarketsTab', { 
                 screen: 'StockDetail', 
                 params: { symbol: stock.symbol } 
               })}
