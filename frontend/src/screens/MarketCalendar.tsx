@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.pill,
     backgroundColor: colors.background.secondary,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.main,
   },
   filterButtonActive: {
     backgroundColor: colors.primary.main,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.main,
   },
   eventHeader: {
     flexDirection: 'row',
