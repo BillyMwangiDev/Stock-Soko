@@ -130,8 +130,19 @@ export default function Portfolio() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Portfolio</Text>
-        <Text style={styles.subtitle}>Your investments</Text>
+        <View>
+          <Text style={styles.title}>Portfolio</Text>
+          <Text style={styles.subtitle}>Your investments</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() => {
+            hapticFeedback.impact();
+            (navigation as any).navigate('TradeHistory');
+          }}
+        >
+          <Ionicons name="receipt-outline" size={24} color={colors.primary.main} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -301,6 +312,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.primary + 'CC',
     borderBottomWidth: 1,
     borderBottomColor: colors.border.main + '80',
+  },
+  historyButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: borderRadius.full,
   },
   backButton: {
     width: 40,

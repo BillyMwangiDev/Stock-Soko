@@ -10,6 +10,7 @@ import { colors } from '../theme';
 // Import screens
 import Portfolio from '../screens/Portfolio';
 import HoldingDetail from '../screens/HoldingDetail';
+import TradeHistory from '../screens/TradeHistory';
 
 const Stack = createStackNavigator<PortfolioStackParamList>();
 
@@ -47,6 +48,14 @@ export default function PortfolioStack() {
           title: route.params.symbol,
           headerShown: true,
         })}
+      />
+      <Stack.Screen 
+        name="TradeHistory" 
+        component={TradeHistory}
+        options={{ 
+          title: 'Trade History',
+          headerShown: false,
+        }}
       />
     </Stack.Navigator>
   );

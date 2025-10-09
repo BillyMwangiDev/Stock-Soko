@@ -28,3 +28,4 @@ export { default as KYCUpload } from './KYCUpload';
 export { default as CustomerSupport } from './CustomerSupport';
 export { default as Watchlist } from './Watchlist';
 export { default as PriceAlerts } from './PriceAlerts';
+export { default as TradeHistory } from './TradeHistory';
