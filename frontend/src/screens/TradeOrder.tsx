@@ -11,14 +11,19 @@ import { api } from '../api/client';
 export interface OrderData {
   symbol: string;
   side: 'buy' | 'sell';
-  orderType: 'market' | 'limit' | 'stop';
+  orderType: 'market' | 'limit' | 'stop' | 'stop-limit' | 'trailing-stop';
   quantity: number;
   price?: number;
   limitPrice?: number;
+  stopPrice?: number;
+  trailingPercent?: number;
+  takeProfitPrice?: number;
+  stopLossPrice?: number;
   estimatedCost: number;
   fees: number;
   total: number;
   allowFractional?: boolean;
+  timeInForce?: 'day' | 'gtc' | 'ioc'; // Day, Good-Till-Cancelled, Immediate-or-Cancel
 }
 
 interface TradeOrderProps {
@@ -32,7 +37,12 @@ interface TradeOrderProps {
 export default function TradeOrder({ symbol, side, currentPrice: priceFromProps, onBack, onReview }: TradeOrderProps) {
   const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [orderType, setOrderType] = useState<'market' | 'limit' | 'stop'>('market');
+  const [orderType, setOrderType] = useState<'market' | 'limit' | 'stop' | 'stop-limit' | 'trailing-stop'>('market');
+  const [stopPrice, setStopPrice] = useState('');
+  const [trailingPercent, setTrailingPercent] = useState('');
+  const [stopLossPrice, setStopLossPrice] = useState('');
+  const [takeProfitPrice, setTakeProfitPrice] = useState('');
+  const [timeInForce, setTimeInForce] = useState<'day' | 'gtc' | 'ioc'>('day');
   const [allowFractional, setAllowFractional] = useState(false);
   const [loading, setLoading] = useState(true);
   const [availableBalance, setAvailableBalance] = useState(0);
@@ -92,11 +102,16 @@ export default function TradeOrder({ symbol, side, currentPrice: priceFromProps,
       orderType,
       quantity: parseFloat(quantity),
       price: orderType === 'market' ? currentPrice : parseFloat(price),
-      limitPrice: orderType === 'limit' ? parseFloat(price) : undefined,
+      limitPrice: orderType === 'limit' || orderType === 'stop-limit' ? parseFloat(price) : undefined,
+      stopPrice: orderType === 'stop' || orderType === 'stop-limit' ? parseFloat(stopPrice) : undefined,
+      trailingPercent: orderType === 'trailing-stop' ? parseFloat(trailingPercent) : undefined,
+      stopLossPrice: stopLossPrice ? parseFloat(stopLossPrice) : undefined,
+      takeProfitPrice: takeProfitPrice ? parseFloat(takeProfitPrice) : undefined,
       estimatedCost: totalCost,
       fees: estimatedFee,
       total: totalCost + estimatedFee,
       allowFractional,
+      timeInForce,
     };
 
     // Navigate to ReviewOrder if callback provided
