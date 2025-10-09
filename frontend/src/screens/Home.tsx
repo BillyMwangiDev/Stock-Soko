@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { LoadingState, FloatingAIButton, Card } from '../components';
+import { useApp } from '../contexts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface PortfolioData {
@@ -23,11 +24,11 @@ interface StockData {
 
 export default function Home() {
   const navigation = useNavigation();
-  const [userName, setUserName] = useState('Trader');
+  const { userName, totalPortfolioValue, totalGainLoss, gainLossPercent, refreshPortfolio } = useApp();
   const [portfolio, setPortfolio] = useState<PortfolioData>({
-    value: 12345.67,
-    change: 276.45,
-    changePercent: 2.3,
+    value: totalPortfolioValue,
+    change: totalGainLoss,
+    changePercent: gainLossPercent,
   });
   const [topGainers, setTopGainers] = useState<StockData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +38,15 @@ export default function Home() {
     loadData();
   }, []);
 
+  useEffect(() => {
+    // Update local portfolio state when context values change
+    setPortfolio({
+      value: totalPortfolioValue,
+      change: totalGainLoss,
+      changePercent: gainLossPercent,
+    });
+  }, [totalPortfolioValue, totalGainLoss, gainLossPercent]);
+
   const loadData = async (isRefreshing = false) => {
     if (isRefreshing) {
       setRefreshing(true);
@@ -45,30 +55,6 @@ export default function Home() {
     }
     
     try {
-      // Load user name
-      const email = await AsyncStorage.getItem('userEmail');
-      if (email) {
-        const name = email.split('@')[0];
-        setUserName(name.charAt(0).toUpperCase() + name.slice(1));
-      }
-
-      // Load portfolio data
-      const balanceRes = await api.get('/ledger/balance');
-      const positionsRes = await api.get('/ledger/positions');
-      
-      const balance = balanceRes.data.total || 0;
-      const positions = positionsRes.data.positions || [];
-      
-      const totalValue = balance + positions.reduce((sum: number, p: any) => sum + (p.market_value || 0), 0);
-      const totalGain = positions.reduce((sum: number, p: any) => sum + (p.unrealized_pl || 0), 0);
-      const changePercent = totalValue > 0 ? (totalGain / totalValue) * 100 : 0;
-
-      setPortfolio({
-        value: totalValue,
-        change: totalGain,
-        changePercent,
-      });
-
       // Load top gainers
       const marketsRes = await api.get('/markets');
       const instruments = marketsRes.data.instruments || [];
@@ -92,8 +78,13 @@ export default function Home() {
     }
   };
 
-  const onRefresh = () => {
-    loadData(true);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([
+      refreshPortfolio(),
+      loadData(true)
+    ]);
+    setRefreshing(false);
   };
 
   if (loading) {

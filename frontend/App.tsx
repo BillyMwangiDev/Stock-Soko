@@ -4,18 +4,19 @@
  */
 import 'react-native-gesture-handler';
 import React from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { ErrorBoundary } from './src/components';
 import { RootNavigator } from './src/navigation';
-import { colors } from './src/theme';
+import { AppProvider } from './src/contexts';
 
 export default function App() {
   return (
     <ErrorBoundary>
-      <NavigationContainer>
-        <RootNavigator />
-      </NavigationContainer>
+      <AppProvider>
+        <NavigationContainer>
+          <RootNavigator />
+        </NavigationContainer>
+      </AppProvider>
     </ErrorBoundary>
   );
 }
