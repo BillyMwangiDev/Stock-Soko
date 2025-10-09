@@ -1,6 +1,6 @@
 /**
  * News Stack Navigator
- * Handles news flow: News → NewsDetail
+ * Handles news flow: News  NewsDetail
  */
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';

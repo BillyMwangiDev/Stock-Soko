@@ -116,13 +116,10 @@ export default function Onboarding({ navigation }: Props) {
         {slides.map((slide) => (
           <View key={slide.id} style={styles.slide}>
             <View style={styles.content}>
-              {/* Icon Container */}
+              
               <View style={[styles.iconContainer, { backgroundColor: slide.iconBg }]}>
                 <Ionicons name={slide.icon as any} size={64} color={colors.text.primary} />
-              </View>
-              
-              {/* Content */}
-              <Text style={styles.title}>{slide.title}</Text>
+              </View>              <Text style={styles.title}>{slide.title}</Text>
               <Text style={styles.description}>{slide.description}</Text>
             </View>
           </View>

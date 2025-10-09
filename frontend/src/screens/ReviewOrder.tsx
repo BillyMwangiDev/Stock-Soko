@@ -47,9 +47,7 @@ export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: Review
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>      <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
@@ -58,7 +56,7 @@ export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: Review
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Warning Card */}
+        
         <Card variant="outlined" style={styles.warningCard}>
           <View style={styles.warningHeader}>
             <Ionicons name="alert-circle" size={20} color={colors.warning} />

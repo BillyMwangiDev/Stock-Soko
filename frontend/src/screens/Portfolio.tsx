@@ -127,9 +127,7 @@ export default function Portfolio() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>      <View style={styles.header}>
         <View>
           <Text style={styles.title}>Portfolio</Text>
           <Text style={styles.subtitle}>Your investments</Text>
@@ -158,7 +156,7 @@ export default function Portfolio() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Portfolio Summary Card */}
+        
         <Card variant="elevated" style={styles.summaryCard}>
           <Text style={styles.summaryLabel}>Total Portfolio Value</Text>
           <Text style={styles.summaryValue}>
@@ -203,7 +201,7 @@ export default function Portfolio() {
           <PortfolioChart currentValue={portfolioSummary.total_value} />
         </Card>
 
-        {/* Holdings Section */}
+        
         <Text style={styles.sectionTitle}>Holdings</Text>
 
         {holdings.length === 0 ? (

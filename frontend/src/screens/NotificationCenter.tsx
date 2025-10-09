@@ -190,9 +190,7 @@ export default function NotificationCenter({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>      <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
@@ -268,9 +266,7 @@ export default function NotificationCenter({ navigation }: Props) {
                   styles.notificationCard,
                   !notification.isRead && styles.notificationCardUnread,
                 ]}
-              >
-                {/* Header */}
-                <View style={styles.notificationHeader}>
+              >                <View style={styles.notificationHeader}>
                   <View style={styles.notificationLeft}>
                     <View style={[styles.iconContainer, { backgroundColor: notification.iconColor + '20' }]}>
                       <Ionicons name={notification.icon as any} size={20} color={notification.iconColor} />
@@ -320,7 +316,7 @@ export default function NotificationCenter({ navigation }: Props) {
                 {/* Description */}
                 <Text style={styles.notificationDescription}>{notification.description}</Text>
 
-                {/* Action Button */}
+                
                 {notification.actionLabel && (
                   <TouchableOpacity
                     style={styles.actionButton}

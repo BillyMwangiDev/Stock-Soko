@@ -296,11 +296,9 @@ export default function StockDetail() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>      <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
+          <Text style={styles.backIcon}></Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{stock.name}</Text>
         <TouchableOpacity 
@@ -309,7 +307,7 @@ export default function StockDetail() {
           disabled={watchlistLoading}
         >
           <Text style={[styles.watchlistIcon, isInWatchlist && styles.watchlistIconActive]}>
-            {isInWatchlist ? '◆' : '◇'}
+            {isInWatchlist ? '' : ''}
           </Text>
         </TouchableOpacity>
       </View>
@@ -319,7 +317,7 @@ export default function StockDetail() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Stock Price Section */}
+        
         <View style={[styles.priceSection, isPositive ? styles.sentimentPositive : styles.sentimentNegative]}>
           <View style={styles.priceInfo}>
             <Text style={styles.stockLabel}>{stock.name} ({stock.symbol})</Text>
@@ -547,7 +545,7 @@ export default function StockDetail() {
           </View>
         )}
 
-        {/* Key Metrics Card */}
+        
         <View style={styles.metricsCard}>
           <Text style={styles.metricsTitle}>Key Metrics</Text>
           <View style={styles.metricsGrid}>
@@ -570,7 +568,7 @@ export default function StockDetail() {
           </View>
         </View>
 
-        {/* Risk Profile Card */}
+        
         <View style={styles.riskCard}>
           <Text style={styles.riskTitle}>Risk Profile</Text>
           <View style={styles.riskHeader}>
@@ -643,7 +641,7 @@ export default function StockDetail() {
             </View>
           </View>
 
-          {/* Profitability Metrics Card */}
+          
           <View style={styles.fundamentalCard}>
             <View style={styles.fundamentalHeader}>
               <Text style={styles.fundamentalHeaderText}>Profitability Metrics</Text>
@@ -732,7 +730,7 @@ export default function StockDetail() {
             </View>
           </View>
 
-          {/* Market Context Card */}
+          
           <View style={styles.fundamentalCard}>
             <View style={styles.fundamentalHeader}>
               <Text style={styles.fundamentalHeaderText}>Market Analysis</Text>
@@ -771,7 +769,7 @@ export default function StockDetail() {
             </View>
           </View>
 
-          {/* Historical Performance Card */}
+          
           <View style={styles.fundamentalCard}>
             <View style={styles.fundamentalHeader}>
               <Text style={styles.fundamentalHeaderText}>Historical Performance (4 Years)</Text>
@@ -1044,7 +1042,7 @@ export default function StockDetail() {
           </View>
         </View>
 
-        {/* Fundamentals Card */}
+        
         <View style={styles.infoCard}>
           <View style={styles.cardContent}>
             <View style={styles.cardTextSection}>
@@ -1058,7 +1056,7 @@ export default function StockDetail() {
           </View>
         </View>
 
-        {/* News Card */}
+        
         <View style={styles.infoCard}>
           <View style={styles.cardContent}>
             <View style={styles.cardTextSection}>
@@ -1072,7 +1070,7 @@ export default function StockDetail() {
           </View>
         </View>
 
-        {/* Order Book Section */}
+        
         <TouchableOpacity
           style={styles.orderBookToggle}
           onPress={() => setShowOrderBook(!showOrderBook)}
@@ -1090,7 +1088,7 @@ export default function StockDetail() {
                 </View>
               )}
             </View>
-            <Text style={styles.orderBookToggleArrow}>{showOrderBook ? '▼' : '▶'}</Text>
+            <Text style={styles.orderBookToggleArrow}>{showOrderBook ? '' : ''}</Text>
           </View>
         </TouchableOpacity>
 
@@ -1144,7 +1142,7 @@ export default function StockDetail() {
               {/* Current Price Indicator */}
               <View style={styles.orderBookCurrentPrice}>
                 <Text style={[styles.orderBookCurrentPriceText, { color: isPositive ? colors.success : colors.error }]}>
-                  ← Current: KES {stock.last_price.toFixed(2)} →
+                   Current: KES {stock.last_price.toFixed(2)} 
                 </Text>
               </View>
 

@@ -23,9 +23,7 @@ export function GlassCard({
   ];
 
   return (
-    <View style={cardStyles}>
-      {/* Content */}
-      {children}
+    <View style={cardStyles}>      {children}
     </View>
   );
 }

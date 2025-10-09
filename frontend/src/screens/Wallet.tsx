@@ -194,7 +194,7 @@ export default function Wallet() {
       >
         {activeTab === 'overview' && (
           <>
-            {/* Balance Card */}
+            
             <Card variant="elevated" style={styles.balanceCard}>
               <Text style={styles.balanceLabel}>Available Balance</Text>
               <Text style={styles.balanceValue}>

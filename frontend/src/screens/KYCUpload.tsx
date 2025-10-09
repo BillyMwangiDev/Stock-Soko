@@ -108,9 +108,7 @@ export default function KYCUpload({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>      <View style={styles.header}>
         <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
           <Text style={styles.closeIcon}>✕</Text>
         </TouchableOpacity>
@@ -118,7 +116,7 @@ export default function KYCUpload({ navigation }: Props) {
         <View style={styles.headerSpacer} />
       </View>
 
-      {/* Progress Section */}
+      
       <View style={styles.progressSection}>
         <View style={styles.progressHeader}>
           <Text style={styles.progressLabel}>Step {currentStep} of {totalSteps}</Text>
@@ -157,16 +155,13 @@ export default function KYCUpload({ navigation }: Props) {
 
               {doc.uploaded && (
                 <View style={styles.uploadedBadge}>
-                  <Text style={styles.checkmark}>✓</Text>
+                  <Text style={styles.checkmark}></Text>
                 </View>
               )}
             </TouchableOpacity>
           ))}
         </View>
-      </ScrollView>
-
-      {/* Footer */}
-      <View style={styles.footer}>
+      </ScrollView>      <View style={styles.footer}>
         <Button
           title="Continue"
           onPress={handleContinue}

@@ -133,18 +133,13 @@ export default function EducationalContent({ navigation }: Props) {
   const overallProgress = (completedCount / totalCount) * 100;
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>      <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Text style={styles.backIcon}>←</Text>
+          <Text style={styles.backIcon}></Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Learn</Text>
         <View style={styles.headerSpacer} />
-      </View>
-
-      {/* Content */}
-      <ScrollView 
+      </View>      <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -184,7 +179,7 @@ export default function EducationalContent({ navigation }: Props) {
                 <View style={styles.courseImage}>
                   {course.completed ? (
                     <View style={styles.completedOverlay}>
-                      <Text style={styles.completedIcon}>✓</Text>
+                      <Text style={styles.completedIcon}></Text>
                     </View>
                   ) : course.progress && course.progress > 0 ? (
                     <View style={styles.inProgressOverlay}>
@@ -193,7 +188,7 @@ export default function EducationalContent({ navigation }: Props) {
                   ) : (
                     <View style={styles.playOverlay}>
                       <View style={styles.playButton}>
-                        <Text style={styles.playIcon}>▶</Text>
+                        <Text style={styles.playIcon}></Text>
                       </View>
                     </View>
                   )}

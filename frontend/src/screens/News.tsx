@@ -117,9 +117,7 @@ export default function News() {
   const filteredArticles = articles;
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>      <View style={styles.header}>
         <Text style={styles.headerTitle}>News</Text>
         <TouchableOpacity style={styles.settingsButton}>
           <Text style={styles.settingsIcon}>⋮</Text>

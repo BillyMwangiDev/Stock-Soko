@@ -108,7 +108,7 @@ export default function Settings() {
         />
       </Card>
 
-      {/* Security Section */}
+      
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Security</Text>
         <Card padding="sm">
@@ -134,7 +134,7 @@ export default function Settings() {
         </Card>
       </View>
 
-      {/* Preferences Section */}
+      
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Preferences</Text>
         <Card padding="sm">
@@ -161,7 +161,7 @@ export default function Settings() {
         </Card>
       </View>
 
-      {/* Support Section */}
+      
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Support & Legal</Text>
         <Card padding="sm">

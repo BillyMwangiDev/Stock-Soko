@@ -117,16 +117,14 @@ export default function Markets() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>      <View style={styles.header}>
         <View>
           <Text style={styles.title}>Markets</Text>
           <Text style={styles.subtitle}>Nairobi Securities Exchange</Text>
         </View>
       </View>
 
-      {/* Search Container */}
+      
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={20} color={colors.text.tertiary} style={styles.searchIcon} />
         <TextInput
@@ -138,7 +136,7 @@ export default function Markets() {
         />
       </View>
 
-      {/* Tab Container */}
+      
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'all' && styles.activeTab]}

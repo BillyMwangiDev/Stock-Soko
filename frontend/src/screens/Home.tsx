@@ -224,7 +224,7 @@ export default function Home() {
                   <Text style={styles.subtitle}>Stock Soko Trading Dashboard</Text>
                 </View>
 
-        {/* Enhanced Portfolio Summary Card */}
+        
         <Card variant="elevated" style={styles.portfolioCard}>
           <View style={styles.portfolioHeader}>
             <Text style={styles.portfolioLabel}>Portfolio Value</Text>

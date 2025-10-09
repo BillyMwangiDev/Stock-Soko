@@ -155,7 +155,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ symbol, currentPrice }) => {
           </Text>
           <View style={[styles.changeBadge, isPositive ? styles.changeBadgePositive : styles.changeBadgeNegative]}>
             <Text style={[styles.changeText, isPositive ? styles.changePositive : styles.changeNegative]}>
-              {isPositive ? '▲' : '▼'} {Math.abs(priceChangePercent).toFixed(2)}%
+              {isPositive ? '' : ''} {Math.abs(priceChangePercent).toFixed(2)}%
             </Text>
           </View>
         </View>
@@ -210,7 +210,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ symbol, currentPrice }) => {
           onPress={() => setShowIndicators(!showIndicators)}
         >
           <Text style={styles.indicatorToggleText}>
-            {showIndicators ? '▼' : '▶'} Indicators
+            {showIndicators ? '' : ''} Indicators
           </Text>
         </TouchableOpacity>
 

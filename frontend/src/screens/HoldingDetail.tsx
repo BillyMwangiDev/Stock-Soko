@@ -186,10 +186,7 @@ export default function HoldingDetail({ navigation, route }: Props) {
           ) : (
             <Text style={styles.noDividends}>No dividend payments recorded</Text>
           )}
-        </Card>
-
-        {/* Actions */}
-        <View style={styles.actions}>
+        </Card>        <View style={styles.actions}>
           <Button
             title="Sell Position"
             onPress={handleSell}

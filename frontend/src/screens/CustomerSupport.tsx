@@ -52,7 +52,7 @@ export default function CustomerSupport() {
     {
       id: '7',
       question: 'How do I withdraw my funds?',
-      answer: 'Navigate to Wallet → Withdraw, enter the amount, and confirm. Funds will be sent to your linked M-Pesa account within 1 business day.',
+      answer: 'Navigate to Wallet  Withdraw, enter the amount, and confirm. Funds will be sent to your linked M-Pesa account within 1 business day.',
     },
     {
       id: '8',
@@ -119,10 +119,7 @@ export default function CustomerSupport() {
             Contact
           </Text>
         </TouchableOpacity>
-      </View>
-
-      {/* Content */}
-      <ScrollView
+      </View>      <ScrollView
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
@@ -162,7 +159,7 @@ export default function CustomerSupport() {
             </Text>
 
             <View style={styles.chatPlaceholder}>
-              <Text style={styles.placeholderIcon}>💬</Text>
+              <Text style={styles.placeholderIcon}></Text>
               <Text style={styles.placeholderText}>Chat Coming Soon</Text>
               <Text style={styles.placeholderSubtext}>
                 We're working on bringing you real-time chat support. For now, please use email or phone support.

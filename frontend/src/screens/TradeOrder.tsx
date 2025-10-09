@@ -152,10 +152,7 @@ export default function TradeOrder({ symbol, side, currentPrice: priceFromProps,
         {/* Handle Bar */}
         <View style={styles.handleContainer}>
           <View style={styles.handle} />
-        </View>
-
-        {/* Header */}
-        <View style={styles.header}>
+        </View>        <View style={styles.header}>
           <Text style={styles.headerTitle}>Place {side === 'buy' ? 'Buy' : 'Sell'} Order</Text>
           <TouchableOpacity style={styles.closeButton} onPress={onBack}>
             <Text style={styles.closeIcon}>X</Text>
@@ -188,7 +185,7 @@ export default function TradeOrder({ symbol, side, currentPrice: priceFromProps,
             </View>
           )}
 
-          {/* Quantity Input */}
+          
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
               <Text style={styles.inputLabel}>Quantity</Text>
@@ -197,7 +194,7 @@ export default function TradeOrder({ symbol, side, currentPrice: priceFromProps,
                 onPress={() => setAllowFractional(!allowFractional)}
               >
                 <View style={[styles.checkbox, allowFractional && styles.checkboxActive]}>
-                  {allowFractional && <Text style={styles.checkmark}>✓</Text>}
+                  {allowFractional && <Text style={styles.checkmark}></Text>}
                 </View>
                 <Text style={styles.fractionalText}>Allow Fractional</Text>
               </TouchableOpacity>

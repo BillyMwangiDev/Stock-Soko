@@ -112,11 +112,9 @@ export default function AIAssistant({ navigation }: Props) {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
-      {/* Header */}
-      <View style={styles.header}>
+    >      <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Text style={styles.backIcon}>←</Text>
+          <Text style={styles.backIcon}></Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Stock Soko AI</Text>
         <View style={styles.headerSpacer} />
@@ -231,7 +229,7 @@ export default function AIAssistant({ navigation }: Props) {
         </View>
       )}
 
-      {/* Input Footer */}
+      
       <View style={styles.footer}>
         <View style={styles.inputContainer}>
           <TextInput

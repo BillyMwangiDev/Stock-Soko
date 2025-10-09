@@ -97,9 +97,7 @@ export default function Profile({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>      <View style={styles.header}>
         <Text style={styles.title}>Profile</Text>
       </View>
 
@@ -108,7 +106,7 @@ export default function Profile({ navigation }: Props) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Profile Card */}
+        
         <Card variant="elevated" style={styles.profileCard}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
@@ -131,7 +129,7 @@ export default function Profile({ navigation }: Props) {
           </View>
         </Card>
 
-        {/* Account Section */}
+        
         <Text style={styles.sectionTitle}>Account</Text>
         <Card variant="glass" style={styles.menuCard}>
           <MenuItem
@@ -176,7 +174,7 @@ export default function Profile({ navigation }: Props) {
           />
         </Card>
 
-        {/* Wallet Section */}
+        
         <Text style={styles.sectionTitle}>Wallet</Text>
         <Card variant="glass" style={styles.menuCard}>
           <MenuItem
@@ -200,7 +198,7 @@ export default function Profile({ navigation }: Props) {
           />
         </Card>
 
-        {/* Support Section */}
+        
         <Text style={styles.sectionTitle}>Support</Text>
         <Card variant="glass" style={styles.menuCard}>
           <MenuItem
@@ -234,7 +232,7 @@ export default function Profile({ navigation }: Props) {
           />
         </Card>
 
-        {/* Logout Button */}
+        
         <TouchableOpacity
           style={styles.logoutButton}
           onPress={() => {

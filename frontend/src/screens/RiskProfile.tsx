@@ -189,7 +189,7 @@ export default function RiskProfile({ navigation }: Props) {
         </View>
       </ScrollView>
 
-      {/* Footer with Next Button */}
+      
       <View style={styles.footer}>
         <Button
           title={currentQuestion === questions.length - 1 ? "Complete" : "Next"}

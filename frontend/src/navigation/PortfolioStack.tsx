@@ -1,6 +1,6 @@
 /**
  * Portfolio Stack Navigator
- * Handles portfolio flow: Portfolio → HoldingDetail
+ * Handles portfolio flow: Portfolio  HoldingDetail
  */
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';

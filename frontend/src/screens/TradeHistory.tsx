@@ -167,9 +167,7 @@ export default function TradeHistory({ navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>      <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
@@ -292,9 +290,7 @@ export default function TradeHistory({ navigation }: Props) {
                 }}
                 activeOpacity={0.7}
               >
-                <Card variant="glass" style={styles.tradeCard}>
-                  {/* Header */}
-                  <View style={styles.tradeHeader}>
+                <Card variant="glass" style={styles.tradeCard}>                  <View style={styles.tradeHeader}>
                     <View style={styles.tradeHeaderLeft}>
                       <View style={[
                         styles.tradeSideBadge,
@@ -377,10 +373,7 @@ export default function TradeHistory({ navigation }: Props) {
                         </View>
                       </View>
                     )}
-                  </View>
-
-                  {/* Footer */}
-                  <View style={styles.tradeFooter}>
+                  </View>                  <View style={styles.tradeFooter}>
                     <View style={styles.tradeFooterLeft}>
                       <Ionicons name="time-outline" size={12} color={colors.text.tertiary} />
                       <Text style={styles.tradeTime}>{getRelativeTime(trade.executed_at)}</Text>

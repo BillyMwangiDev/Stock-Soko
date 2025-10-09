@@ -66,9 +66,7 @@ export default function ChooseBroker({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>      <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Text style={styles.backIcon}>‹</Text>
         </TouchableOpacity>
@@ -114,10 +112,7 @@ export default function ChooseBroker({ navigation }: Props) {
             <Text style={styles.chevron}>›</Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
-
-      {/* Footer */}
-      <View style={styles.footer}>
+      </ScrollView>      <View style={styles.footer}>
         <Button
           title="Select Broker"
           onPress={handleContinue}
@@ -250,5 +245,4 @@ const styles = StyleSheet.create({
     borderTopColor: 'transparent',
   },
 });
-
 

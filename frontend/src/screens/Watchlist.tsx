@@ -190,7 +190,7 @@ export default function Watchlist() {
                 </View>
               </TouchableOpacity>
 
-              {/* Remove Button */}
+              
               <TouchableOpacity
                 style={styles.removeButton}
                 onPress={() => {

@@ -1,6 +1,6 @@
 /**
  * Auth Stack Navigator
- * Handles authentication flow: Splash → Onboarding → Login/Register → OTP
+ * Handles authentication flow: Splash  Onboarding  Login/Register  OTP
  */
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';

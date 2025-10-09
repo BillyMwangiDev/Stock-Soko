@@ -1,6 +1,6 @@
 /**
  * Trade Stack Navigator
- * Handles trading flow: Markets → StockDetail → TradeOrder → ReviewOrder → OrderStatus
+ * Handles trading flow: Markets  StockDetail  TradeOrder  ReviewOrder  OrderStatus
  */
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';

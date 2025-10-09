@@ -1,6 +1,6 @@
 /**
  * Profile Stack Navigator
- * Handles profile flow: Profile → Settings → Wallet → KYC → AIAssistant
+ * Handles profile flow: Profile  Settings  Wallet  KYC  AIAssistant
  */
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
