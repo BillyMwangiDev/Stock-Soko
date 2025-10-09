@@ -3,12 +3,14 @@
  * Bottom tab navigation with stack navigators for each tab
  */
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MainTabParamList } from './types';
 import { colors, typography } from '../theme';
 import { api } from '../api/client';
+import { getBottomSpace } from '../utils/responsive';
 
 // Import stack navigators
 import Home from '../screens/Home';
@@ -21,6 +23,7 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export default function MainTabs() {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     loadNotificationCount();
@@ -37,6 +40,8 @@ export default function MainTabs() {
     }
   };
 
+  const tabBarHeight = Platform.OS === 'ios' ? 60 + insets.bottom : 60;
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -48,8 +53,8 @@ export default function MainTabs() {
           borderTopWidth: 1,
           borderTopColor: colors.border.main,
           paddingTop: 8,
-          paddingBottom: 8,
-          height: 60,
+          paddingBottom: Platform.OS === 'ios' ? insets.bottom : 8,
+          height: tabBarHeight,
           elevation: 0,
           shadowOpacity: 0,
         },

@@ -6,6 +6,7 @@ module.exports = {
 		scheme: "stocksoko",
 		version: "1.0.0",
 		orientation: "portrait",
+		userInterfaceStyle: "dark",
 		icon: "./assets/images/logo.png",
 		splash: {
 			image: "./assets/images/splash.png",
@@ -14,6 +15,14 @@ module.exports = {
 		},
 		updates: { enabled: true },
 		assetBundlePatterns: ["**/*"],
+		androidStatusBar: {
+			backgroundColor: "#0D1117",
+			barStyle: "light-content"
+		},
+		androidNavigationBar: {
+			backgroundColor: "#161B22",
+			barStyle: "light-content"
+		},
 		ios: { 
 			supportsTablet: true,
 			bundleIdentifier: "com.stocksoko.app",

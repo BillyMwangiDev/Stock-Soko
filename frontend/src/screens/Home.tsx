@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, Alert, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/client';
@@ -202,7 +203,7 @@ export default function Home() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Enhanced Header with Logo */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
@@ -497,7 +498,7 @@ export default function Home() {
         <View style={{ height: 120 }} />
       </ScrollView>
 
-    </View>
+    </SafeAreaView>
   );
 }
 
