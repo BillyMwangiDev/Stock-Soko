@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { LoadingState, FloatingAIButton } from '../components';
+import { LoadingState, FloatingAIButton, Card } from '../components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface PortfolioData {
@@ -12,7 +13,13 @@ interface PortfolioData {
   changePercent: number;
 }
 
-const { width } = Dimensions.get('window');
+interface StockData {
+  symbol: string;
+  name: string;
+  last_price: number;
+  change_pct: number;
+  volume: number;
+}
 
 export default function Home() {
   const navigation = useNavigation();
@@ -22,6 +29,7 @@ export default function Home() {
     change: 276.45,
     changePercent: 2.3,
   });
+  const [topGainers, setTopGainers] = useState<StockData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -37,12 +45,14 @@ export default function Home() {
     }
     
     try {
+      // Load user name
       const email = await AsyncStorage.getItem('userEmail');
       if (email) {
         const name = email.split('@')[0];
         setUserName(name.charAt(0).toUpperCase() + name.slice(1));
       }
 
+      // Load portfolio data
       const balanceRes = await api.get('/ledger/balance');
       const positionsRes = await api.get('/ledger/positions');
       
@@ -58,6 +68,22 @@ export default function Home() {
         change: totalGain,
         changePercent,
       });
+
+      // Load top gainers
+      const marketsRes = await api.get('/markets');
+      const instruments = marketsRes.data.instruments || [];
+      const gainers = instruments
+        .filter((stock: any) => stock.change_pct > 0)
+        .sort((a: any, b: any) => b.change_pct - a.change_pct)
+        .slice(0, 3)
+        .map((stock: any) => ({
+          symbol: stock.symbol,
+          name: stock.name,
+          last_price: stock.last_price,
+          change_pct: stock.change_pct,
+          volume: stock.volume || 0,
+        }));
+      setTopGainers(gainers);
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -76,6 +102,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
+      {/* Enhanced Header with Logo */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Text style={styles.logoText}>SS</Text>
@@ -85,7 +112,7 @@ export default function Home() {
           style={styles.notificationButton}
           onPress={() => navigation.navigate('Profile', { screen: 'NotificationCenter' })}
         >
-          <Text style={styles.bellIcon}>○</Text>
+          <Ionicons name="notifications-outline" size={24} color={colors.text.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -102,110 +129,145 @@ export default function Home() {
           />
         }
       >
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeText}>Welcome back, {userName}</Text>
+        {/* Personalized Greeting */}
+        <View style={styles.greetingSection}>
+          <Text style={styles.greeting}>Karibu, {userName} 👋</Text>
+          <Text style={styles.subtitle}>Welcome to Stock Soko</Text>
         </View>
 
-        <View style={styles.portfolioCard}>
-          <View style={styles.portfolioInfo}>
+        {/* Enhanced Portfolio Summary Card */}
+        <Card variant="elevated" style={styles.portfolioCard}>
+          <View style={styles.portfolioHeader}>
             <Text style={styles.portfolioLabel}>Portfolio Value</Text>
-            <Text style={styles.portfolioValue}>
-              Ksh {portfolio.value.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <TouchableOpacity onPress={() => navigation.navigate('Portfolio', { screen: 'Portfolio' })}>
+              <Ionicons name="arrow-forward" size={20} color={colors.primary.main} />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.portfolioValue}>
+            KES {portfolio.value.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
+          <View style={styles.portfolioChange}>
+            <Ionicons 
+              name={portfolio.changePercent >= 0 ? 'trending-up' : 'trending-down'} 
+              size={16} 
+              color={portfolio.changePercent >= 0 ? colors.success : colors.error} 
+            />
+            <Text style={[styles.changeText, portfolio.changePercent >= 0 ? styles.changePositive : styles.changeNegative]}>
+              {portfolio.changePercent >= 0 ? '+' : ''}{portfolio.changePercent.toFixed(2)}%
             </Text>
-            <View style={styles.portfolioChange}>
-              <Text style={[styles.changeText, portfolio.changePercent >= 0 ? styles.changePositive : styles.changeNegative]}>
-                {portfolio.changePercent >= 0 ? '+' : ''}{portfolio.changePercent.toFixed(1)}% Today
-              </Text>
-            </View>
+            <Text style={styles.changePeriod}>Today</Text>
           </View>
-          <View style={styles.chartPlaceholder}>
-            <View style={styles.miniChart}>
-              <Text style={styles.chartLabel}>Chart</Text>
-            </View>
-          </View>
-        </View>
+          <Text style={[styles.changeAmount, portfolio.change >= 0 ? styles.changePositive : styles.changeNegative]}>
+            {portfolio.change >= 0 ? '+' : ''}KES {portfolio.change.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
+        </Card>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>AI Recommendations</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Profile', { screen: 'AIAssistant' })}>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.recommendationsGrid}>
-            <TouchableOpacity 
-              style={styles.recommendationCard}
-              onPress={() => navigation.navigate('Profile', { screen: 'AIAssistant' })}
-            >
-              <View style={[styles.recommendationIcon, {backgroundColor: colors.primary.main + '20'}]}>
-                <Text style={[styles.recommendationEmoji, {color: colors.primary.main}]}>★</Text>
-              </View>
-              <Text style={styles.recommendationTitle}>Top Picks</Text>
-              <Text style={styles.recommendationSubtitle}>AI selected</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.recommendationCard}
-              onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}
-            >
-              <View style={[styles.recommendationIcon, {backgroundColor: colors.success + '20'}]}>
-                <Text style={[styles.recommendationEmoji, {color: colors.success}]}>▲</Text>
-              </View>
-              <Text style={styles.recommendationTitle}>Trending</Text>
-              <Text style={styles.recommendationSubtitle}>Movers</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.recommendationCard}
-              onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}
-            >
-              <View style={[styles.recommendationIcon, {backgroundColor: colors.warning + '20'}]}>
-                <Text style={[styles.recommendationEmoji, {color: colors.warning}]}>◆</Text>
-              </View>
-              <Text style={styles.recommendationTitle}>Value</Text>
-              <Text style={styles.recommendationSubtitle}>Undervalued</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.section}>
+        {/* Quick Actions */}
+        <Card variant="glass" style={styles.quickActionsCard}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
-          
-          <View style={styles.actionsGrid}>
-            <TouchableOpacity 
-              style={styles.actionButtonPrimary}
+          <View style={styles.quickActions}>
+            <TouchableOpacity
+              style={styles.actionButton}
               onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}
             >
-              <View style={styles.actionIconContainerPrimary}>
-                <Text style={styles.actionIconPrimary}>↕</Text>
+              <View style={styles.actionIcon}>
+                <Ionicons name="trending-up" size={24} color={colors.primary.main} />
               </View>
-              <Text style={styles.actionTextPrimary}>Trade</Text>
+              <Text style={styles.actionText}>Trade</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.actionButtonSecondary}
+            <TouchableOpacity
+              style={styles.actionButton}
               onPress={() => navigation.navigate('Profile', { screen: 'Wallet' })}
             >
-              <View style={styles.actionIconContainerSecondary}>
-                <Text style={styles.actionIconSecondary}>+</Text>
+              <View style={styles.actionIcon}>
+                <Ionicons name="wallet-outline" size={24} color={colors.primary.main} />
               </View>
-              <Text style={styles.actionTextSecondary}>Deposit</Text>
+              <Text style={styles.actionText}>Deposit</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.actionButtonSecondary}
+            <TouchableOpacity
+              style={styles.actionButton}
               onPress={() => navigation.navigate('Profile', { screen: 'EducationalContent' })}
             >
-              <View style={styles.actionIconContainerSecondary}>
-                <Text style={styles.actionIconSecondary}>?</Text>
+              <View style={styles.actionIcon}>
+                <Ionicons name="school-outline" size={24} color={colors.primary.main} />
               </View>
-              <Text style={styles.actionTextSecondary}>Learn</Text>
+              <Text style={styles.actionText}>Learn</Text>
             </TouchableOpacity>
           </View>
+        </Card>
+
+        {/* AI Recommendations */}
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionTitleContainer}>
+            <Ionicons name="sparkles" size={20} color={colors.primary.main} />
+            <Text style={styles.sectionTitle}>AI Recommendations</Text>
+          </View>
+        </View>
+        <Card variant="glass" style={styles.aiCard}>
+          <Text style={styles.aiTitle}>Market Opportunity</Text>
+          <Text style={styles.aiText}>
+            Based on your portfolio, consider diversifying into the banking sector. 
+            Strong fundamentals detected with positive momentum indicators.
+          </Text>
+          <TouchableOpacity 
+            style={styles.aiButton}
+            onPress={() => navigation.navigate('Profile', { screen: 'AIAssistant' })}
+          >
+            <Text style={styles.aiButtonText}>View Analysis</Text>
+            <Ionicons name="arrow-forward" size={16} color={colors.primary.main} />
+          </TouchableOpacity>
+        </Card>
+
+        {/* Top Gainers */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Top Gainers Today</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Markets', { screen: 'Markets' })}>
+            <Text style={styles.seeAllText}>See All</Text>
+          </TouchableOpacity>
         </View>
 
-        <View style={{ height: 100 }} />
+        {topGainers.length > 0 ? (
+          topGainers.map((stock, index) => (
+            <TouchableOpacity
+              key={stock.symbol}
+              style={styles.stockCard}
+              onPress={() => navigation.navigate('Markets', { 
+                screen: 'StockDetail', 
+                params: { symbol: stock.symbol } 
+              })}
+            >
+              <View style={styles.stockIconContainer}>
+                <View style={styles.stockIcon}>
+                  <Text style={styles.stockIconText}>{stock.symbol.charAt(0)}</Text>
+                </View>
+              </View>
+              <View style={styles.stockInfo}>
+                <Text style={styles.stockSymbol}>{stock.symbol}</Text>
+                <Text style={styles.stockName} numberOfLines={1}>{stock.name}</Text>
+              </View>
+              <View style={styles.stockPriceContainer}>
+                <Text style={styles.stockPrice}>
+                  KES {stock.last_price.toFixed(2)}
+                </Text>
+                <View style={styles.stockChangeContainer}>
+                  <Ionicons name="trending-up" size={12} color={colors.success} />
+                  <Text style={[styles.stockChange, { color: colors.success }]}>
+                    +{stock.change_pct.toFixed(2)}%
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Card variant="outline" style={styles.emptyState}>
+            <Ionicons name="trending-up-outline" size={40} color={colors.text.tertiary} />
+            <Text style={styles.emptyStateText}>No gainers available</Text>
+          </Card>
+        )}
+
+        <View style={{ height: 120 }} />
       </ScrollView>
 
       <FloatingAIButton />
@@ -222,11 +284,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    backgroundColor: colors.background.primary + 'CC',
+    backgroundColor: colors.background.primary,
     borderBottomWidth: 1,
-    borderBottomColor: 'transparent',
+    borderBottomColor: colors.border.main + '40',
   },
   logoContainer: {
     width: 40,
@@ -255,57 +317,64 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  bellIcon: {
-    fontSize: 20,
-    color: colors.text.secondary,
-  },
   scrollView: {
     flex: 1,
   },
   content: {
-    paddingBottom: 120,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: 140,
   },
-  welcomeSection: {
-    paddingHorizontal: spacing.md,
+  greetingSection: {
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
   },
-  welcomeText: {
+  greeting: {
     fontSize: 28,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
   },
   portfolioCard: {
-    marginHorizontal: spacing.md,
     marginBottom: spacing.lg,
-    padding: spacing.md,
-    backgroundColor: colors.primary.main + '20',
-    borderRadius: borderRadius.md,
-    flexDirection: 'row',
-    alignItems: 'center',
   },
-  portfolioInfo: {
-    flex: 1,
+  portfolioHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
   },
   portfolioLabel: {
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
-    marginBottom: 4,
   },
   portfolioValue: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   portfolioChange: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    gap: 4,
+    marginBottom: spacing.xs,
   },
   changeText: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
+  },
+  changePeriod: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.tertiary,
+    marginLeft: spacing.xs,
+  },
+  changeAmount: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
   },
   changePositive: {
     color: colors.success,
@@ -313,40 +382,47 @@ const styles = StyleSheet.create({
   changeNegative: {
     color: colors.error,
   },
-  chartPlaceholder: {
-    width: 80,
-    height: 64,
-    marginLeft: spacing.sm,
-  },
-  miniChart: {
-    flex: 1,
-    backgroundColor: colors.success + '20',
-    borderRadius: borderRadius.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.success + '40',
-  },
-  chartLabel: {
-    fontSize: 10,
-    color: colors.success,
-    fontWeight: typography.fontWeight.medium,
-  },
-  chartIcon: {
-    fontSize: 32,
-  },
-  section: {
+  quickActionsCard: {
     marginBottom: spacing.lg,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: spacing.md,
+  },
+  actionButton: {
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  actionIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.background.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border.main,
+  },
+  actionText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.primary,
+    fontWeight: typography.fontWeight.medium,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
     marginBottom: spacing.md,
+    marginTop: spacing.sm,
+  },
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   sectionTitle: {
-    fontSize: typography.fontSize.xl,
+    fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
   },
@@ -355,89 +431,96 @@ const styles = StyleSheet.create({
     color: colors.primary.main,
     fontWeight: typography.fontWeight.medium,
   },
-  recommendationsGrid: {
-    flexDirection: 'row',
-    paddingHorizontal: spacing.md,
-    gap: spacing.sm,
+  aiCard: {
+    marginBottom: spacing.lg,
   },
-  recommendationCard: {
-    flex: 1,
+  aiTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
+  },
+  aiText: {
+    fontSize: typography.fontSize.base,
+    color: colors.text.secondary,
+    lineHeight: 22,
+    marginBottom: spacing.md,
+  },
+  aiButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xs,
+    gap: spacing.xs,
+    alignSelf: 'flex-start',
+  },
+  aiButtonText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.primary.main,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  stockCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
     backgroundColor: colors.background.card,
     borderRadius: borderRadius.md,
     borderWidth: 1,
     borderColor: colors.border.main,
+    marginBottom: spacing.sm,
   },
-  recommendationIcon: {
-    width: 48,
-    height: 48,
+  stockIconContainer: {
+    marginRight: spacing.md,
+  },
+  stockIcon: {
+    width: 44,
+    height: 44,
     borderRadius: borderRadius.sm,
+    backgroundColor: colors.success + '20',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.xs,
   },
-  recommendationEmoji: {
-    fontSize: 24,
+  stockIconText: {
+    fontSize: 18,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.success,
   },
-  recommendationTitle: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.semibold,
+  stockInfo: {
+    flex: 1,
+  },
+  stockSymbol: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
     marginBottom: 2,
-    textAlign: 'center',
   },
-  recommendationSubtitle: {
-    fontSize: typography.fontSize.xs,
+  stockName: {
+    fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
-    textAlign: 'center',
   },
-  actionsGrid: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    paddingHorizontal: spacing.md,
+  stockPriceContainer: {
+    alignItems: 'flex-end',
   },
-  actionButtonPrimary: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.lg,
-    backgroundColor: colors.primary.main,
-    borderRadius: borderRadius.md,
-  },
-  actionIconContainerPrimary: {
-    marginBottom: spacing.xs,
-  },
-  actionIconPrimary: {
-    fontSize: 28,
-  },
-  actionTextPrimary: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.primary.contrast,
-  },
-  actionButtonSecondary: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.lg,
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border.main,
-  },
-  actionIconContainerSecondary: {
-    marginBottom: spacing.xs,
-  },
-  actionIconSecondary: {
-    fontSize: 28,
-  },
-  actionTextSecondary: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.semibold,
+  stockPrice: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
+    marginBottom: 2,
+  },
+  stockChangeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  stockChange: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  emptyStateText: {
+    fontSize: typography.fontSize.base,
+    color: colors.text.tertiary,
+    marginTop: spacing.sm,
   },
 });
