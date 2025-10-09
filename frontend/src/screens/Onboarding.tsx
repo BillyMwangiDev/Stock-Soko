@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../navigation/types';
 import { colors, typography, spacing, borderRadius } from '../theme';
@@ -14,59 +14,93 @@ interface Props {
   navigation: OnboardingScreenProp;
 }
 
-const slides = [
+interface Slide {
+  id: number;
+  icon: string;
+  iconBg: string;
+  title: string;
+  description: string;
+}
+
+const slides: Slide[] = [
   {
-    emoji: 'I',
-    title: 'Invest Smarter',
-    subtitle: 'Trade stocks across Kenyan markets with confidence and ease',
+    id: 1,
+    icon: '↗',
+    iconBg: colors.success + '20',
+    title: 'Trade Kenyan Stocks Instantly',
+    description: 'Access the Nairobi Securities Exchange with minimal fees. Buy and sell stocks in real-time with our OKX-style trading interface.',
   },
   {
-    emoji: 'R',
-    title: 'Insights & Research',
-    subtitle: 'AI-backed analysis, sentiment tracking & fundamental insights',
+    id: 2,
+    icon: '✦',
+    iconBg: colors.primary.main + '20',
+    title: 'AI-Powered Insights',
+    description: 'Get personalized stock recommendations, detailed market analysis, and AI chat assistance powered by advanced algorithms.',
   },
   {
-    emoji: 'T',
-    title: 'Trade with Ease',
-    subtitle: 'One-click trades via integrated brokers with low fees',
+    id: 3,
+    icon: '$',
+    iconBg: colors.warning + '20',
+    title: 'M-Pesa Integration',
+    description: 'Seamlessly deposit and withdraw funds using M-Pesa. Fast, secure, and convenient payments at your fingertips.',
+  },
+  {
+    id: 4,
+    icon: '📊',
+    iconBg: colors.info + '20',
+    title: 'Real-Time Portfolio Tracking',
+    description: 'Monitor your investments with live P/L calculations, tax estimates, and performance analytics. Your complete financial dashboard.',
   },
 ];
 
 export default function Onboarding({ navigation }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  const scrollX = useRef(new Animated.Value(0)).current;
 
-  const handleNext = async () => {
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    {
+      useNativeDriver: false,
+      listener: (event: any) => {
+        const offsetX = event.nativeEvent.contentOffset.x;
+        const index = Math.round(offsetX / width);
+        setCurrentIndex(index);
+      },
+    }
+  );
+
+  const handleNext = () => {
     if (currentIndex < slides.length - 1) {
-      const nextIndex = currentIndex + 1;
-      setCurrentIndex(nextIndex);
-      scrollViewRef.current?.scrollTo({ x: width * nextIndex, animated: true });
+      scrollViewRef.current?.scrollTo({
+        x: width * (currentIndex + 1),
+        animated: true,
+      });
     } else {
-      // Mark onboarding as seen
-      await AsyncStorage.setItem('hasSeenOnboarding', 'true');
-      navigation.replace('Login');
+      handleGetStarted();
     }
   };
 
-  const handleSkip = async () => {
-    // Mark onboarding as seen
+  const handleGetStarted = async () => {
     await AsyncStorage.setItem('hasSeenOnboarding', 'true');
     navigation.replace('Login');
   };
 
-  const handleScroll = (event: any) => {
-    const slideIndex = Math.round(event.nativeEvent.contentOffset.x / width);
-    setCurrentIndex(slideIndex);
+  const handleSkip = async () => {
+    await AsyncStorage.setItem('hasSeenOnboarding', 'true');
+    navigation.replace('Login');
   };
 
   return (
     <View style={styles.container}>
-      {/* Skip button */}
-      {currentIndex < slides.length - 1 && (
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipText}>Skip</Text>
-        </TouchableOpacity>
-      )}
+      {/* Skip button - only show on non-final slides */}
+      <View style={styles.skipContainer}>
+        {currentIndex < slides.length - 1 && (
+          <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+            <Text style={styles.skipText}>Skip</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       {/* Slides */}
       <ScrollView
@@ -76,39 +110,48 @@ export default function Onboarding({ navigation }: Props) {
         showsHorizontalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        style={styles.scrollView}
       >
-        {slides.map((slide, index) => (
-          <View key={index} style={styles.slide}>
+        {slides.map((slide) => (
+          <View key={slide.id} style={styles.slide}>
             <View style={styles.content}>
-              <Text style={styles.emoji}>{slide.emoji}</Text>
+              {/* Icon Container */}
+              <View style={[styles.iconContainer, { backgroundColor: slide.iconBg }]}>
+                <Text style={styles.icon}>{slide.icon}</Text>
+              </View>
+              
+              {/* Content */}
               <Text style={styles.title}>{slide.title}</Text>
-              <Text style={styles.subtitle}>{slide.subtitle}</Text>
+              <Text style={styles.description}>{slide.description}</Text>
             </View>
           </View>
         ))}
       </ScrollView>
 
-      {/* Pagination dots */}
-      <View style={styles.pagination}>
-        {slides.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.dot,
-              index === currentIndex && styles.dotActive,
-            ]}
-          />
-        ))}
-      </View>
+      {/* Footer with pagination and button */}
+      <View style={styles.footer}>
+        {/* Pagination dots */}
+        <View style={styles.pagination}>
+          {slides.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                index === currentIndex && styles.dotActive,
+              ]}
+            />
+          ))}
+        </View>
 
-      {/* Next/Get Started button */}
-      <View style={styles.buttonContainer}>
-        <Button
-          title={currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}
-          onPress={handleNext}
-          variant="primary"
-          size="lg"
-        />
+        {/* Action button */}
+        <View style={styles.buttonContainer}>
+          <Button
+            title={currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}
+            onPress={handleNext}
+            variant="primary"
+            size="lg"
+          />
+        </View>
       </View>
     </View>
   );
@@ -119,32 +162,46 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
+  skipContainer: {
+    alignItems: 'flex-end',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
+    minHeight: 56,
+  },
   skipButton: {
-    position: 'absolute',
-    top: 50,
-    right: spacing.lg,
-    zIndex: 10,
     padding: spacing.sm,
   },
   skipText: {
     fontSize: typography.fontSize.base,
-    color: colors.text.tertiary,
+    color: colors.primary.main,
     fontWeight: typography.fontWeight.semibold,
+  },
+  scrollView: {
+    flex: 1,
   },
   slide: {
     width,
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing['2xl'],
+    paddingHorizontal: spacing['2xl'],
   },
   content: {
     alignItems: 'center',
-    maxWidth: 350,
+    maxWidth: 400,
   },
-  emoji: {
-    fontSize: 100,
+  iconContainer: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: spacing.xl,
+    borderWidth: 2,
+    borderColor: colors.border.main + '40',
+  },
+  icon: {
+    fontSize: 64,
+    textAlign: 'center',
   },
   title: {
     fontSize: typography.fontSize['3xl'],
@@ -152,32 +209,37 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     textAlign: 'center',
     marginBottom: spacing.md,
+    lineHeight: 36,
   },
-  subtitle: {
-    fontSize: typography.fontSize.lg,
-    color: colors.text.tertiary,
+  description: {
+    fontSize: typography.fontSize.base,
+    color: colors.text.secondary,
     textAlign: 'center',
-    lineHeight: 26,
+    lineHeight: 24,
+    paddingHorizontal: spacing.md,
+  },
+  footer: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing['2xl'],
   },
   pagination: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing['2xl'],
     gap: spacing.sm,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.background.elevated,
+    backgroundColor: colors.border.main,
   },
   dotActive: {
     width: 24,
     backgroundColor: colors.primary.main,
   },
   buttonContainer: {
-    padding: spacing.lg,
-    paddingBottom: spacing['2xl'],
+    width: '100%',
   },
 });
