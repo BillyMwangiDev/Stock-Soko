@@ -38,6 +38,24 @@ def decode_token(token: str) -> Optional[str]:
         return None
 
 
+def verify_token(token: str) -> Optional[str]:
+    """Verify a JWT token and return the email if valid"""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token"
+            )
+        return email
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
+
+
 def get_current_user(token: str = Depends(oauth2_scheme)) -> Dict[str, str]:
     email = decode_token(token)
     if not email:
