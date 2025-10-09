@@ -1,15 +1,30 @@
-from fastapi import APIRouter, Depends
-from typing import Dict
+from fastapi import APIRouter, Depends, Request
+from typing import Dict, Optional
 from ..routers.auth import current_user_email
+from ..utils.jwt import verify_token
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
 
 @router.get("/unread-count")
-def get_unread_count(email: str = Depends(current_user_email)) -> Dict[str, int]:
-    """Get count of unread notifications"""
-    # Mock count for now - in production this would query the database
-    return {"count": 3}
+def get_unread_count(request: Request) -> Dict[str, int]:
+    """Get count of unread notifications - works with or without authentication"""
+    # Try to get the token from Authorization header
+    auth_header = request.headers.get("Authorization", "")
+    
+    if auth_header.startswith("Bearer "):
+        token = auth_header.replace("Bearer ", "")
+        try:
+            # If token is valid, return actual count
+            verify_token(token)
+            # Mock count for authenticated users
+            return {"count": 3}
+        except:
+            # Invalid token, return 0
+            return {"count": 0}
+    
+    # No token provided, return 0
+    return {"count": 0}
 
 
 @router.get("")
