@@ -8,5 +8,6 @@ export { LoadingState } from './LoadingState';
 export { ErrorBoundary } from './ErrorBoundary';
 export { default as FloatingAIButton } from './FloatingAIButton';
 export { default as PriceChart } from './PriceChart';
+export { default as PortfolioChart } from './PortfolioChart';
 export { GlassCard } from './GlassCard';
 

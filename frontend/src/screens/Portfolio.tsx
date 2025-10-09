@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { LoadingState, FloatingAIButton, Card } from '../components';
+import { LoadingState, FloatingAIButton, Card, PortfolioChart } from '../components';
 import { hapticFeedback } from '../utils/haptics';
 
 interface Holding {
@@ -198,6 +198,11 @@ export default function Portfolio() {
           </View>
         </Card>
 
+        {/* Performance Chart */}
+        <Card variant="glass" style={styles.chartCard}>
+          <PortfolioChart currentValue={portfolioSummary.total_value} />
+        </Card>
+
         {/* Holdings Section */}
         <Text style={styles.sectionTitle}>Holdings</Text>
 
@@ -349,6 +354,9 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: spacing.xl,
+  },
+  chartCard: {
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
     fontSize: typography.fontSize.xl,
