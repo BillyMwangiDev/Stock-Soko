@@ -8,3 +8,5 @@ export * from './education';
 export * from './trades';
 export * from './tax';
 export * from './faq';
+export * from './dividends';
+export * from './calendar';

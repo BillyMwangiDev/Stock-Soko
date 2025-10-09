@@ -19,6 +19,7 @@ import NotificationCenter from '../screens/NotificationCenter';
 import FractionalShares from '../screens/FractionalShares';
 import CustomerSupport from '../screens/CustomerSupport';
 import PriceAlerts from '../screens/PriceAlerts';
+import MarketCalendar from '../screens/MarketCalendar';
 import ChooseBroker from '../screens/ChooseBroker';
 import EditProfile from '../screens/EditProfile';
 import ChangePassword from '../screens/ChangePassword';
@@ -145,6 +146,14 @@ export default function ProfileStack() {
         options={{
           title: 'Price Alerts',
           headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="MarketCalendar"
+        component={MarketCalendar}
+        options={{
+          title: 'Market Calendar',
+          headerShown: true,
         }}
       />
       <Stack.Screen

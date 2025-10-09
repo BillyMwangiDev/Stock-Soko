@@ -52,6 +52,7 @@ export type PortfolioStackParamList = {
   HoldingDetail: { symbol: string; quantity: number; avgPrice: number };
   TradeHistory: undefined;
   TaxReports: undefined;
+  DividendTracker: undefined;
 };
 
 export type ProfileStackParamList = {
@@ -67,6 +68,7 @@ export type ProfileStackParamList = {
   FractionalShares: undefined;
   CustomerSupport: undefined;
   PriceAlerts: undefined;
+  MarketCalendar: undefined;
   ChooseBroker: undefined;
   EditProfile: undefined;
   ChangePassword: undefined;

@@ -182,6 +182,17 @@ export default function Profile({ navigation }: Props) {
           />
           <View style={styles.divider} />
           <MenuItem
+            icon="calendar-outline"
+            title="Market Calendar"
+            subtitle="Events and important dates"
+            onPress={() => {
+              hapticFeedback.light();
+              handleNavigation('MarketCalendar');
+            }}
+            color={colors.info}
+          />
+          <View style={styles.divider} />
+          <MenuItem
             icon="shield-checkmark-outline"
             title="Security"
             subtitle="Password and authentication"

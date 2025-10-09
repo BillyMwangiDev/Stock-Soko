@@ -132,15 +132,25 @@ export default function Portfolio() {
           <Text style={styles.title}>Portfolio</Text>
           <Text style={styles.subtitle}>Your investments</Text>
         </View>
-        <TouchableOpacity
-          style={styles.historyButton}
-          onPress={() => {
-            hapticFeedback.impact();
-            (navigation as any).navigate('TradeHistory');
-          }}
-        >
-          <Ionicons name="receipt-outline" size={24} color={colors.primary.main} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: spacing.md }}>
+          <TouchableOpacity
+            onPress={() => {
+              hapticFeedback.light();
+              (navigation as any).navigate('DividendTracker');
+            }}
+          >
+            <Ionicons name="cash-outline" size={24} color={colors.primary.main} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.historyButton}
+            onPress={() => {
+              hapticFeedback.impact();
+              (navigation as any).navigate('TradeHistory');
+            }}
+          >
+            <Ionicons name="receipt-outline" size={24} color={colors.primary.main} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView

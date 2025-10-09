@@ -11,6 +11,7 @@ import Portfolio from '../screens/Portfolio';
 import HoldingDetail from '../screens/HoldingDetail';
 import TradeHistory from '../screens/TradeHistory';
 import TaxReports from '../screens/TaxReports';
+import DividendTracker from '../screens/DividendTracker';
 
 const Stack = createStackNavigator<PortfolioStackParamList>();
 
@@ -63,6 +64,14 @@ export default function PortfolioStack() {
         options={{ 
           title: 'Tax Reports',
           headerShown: false,
+        }}
+      />
+      <Stack.Screen 
+        name="DividendTracker" 
+        component={DividendTracker}
+        options={{ 
+          title: 'Dividend Tracker',
+          headerShown: true,
         }}
       />
     </Stack.Navigator>
