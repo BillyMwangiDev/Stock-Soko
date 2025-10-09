@@ -14,6 +14,7 @@ export interface BackgroundColors {
 	tertiary: ColorValue;
 	elevated: ColorValue;
 	surface: ColorValue;
+	card: ColorValue;
 }
 
 export interface TextColors {
@@ -90,6 +91,7 @@ export const colors: ColorTheme = {
     tertiary: '#1E2329',
     elevated: '#2B3139',
     surface: '#1E2329',
+    card: '#161B22',
   },
   text: {
     primary: '#EAECEF',

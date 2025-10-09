@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border.main,
-    backgroundColor: colors.background.card,
+    backgroundColor: colors.background.secondary,
     alignItems: 'center',
   },
   guestButtonText: {
