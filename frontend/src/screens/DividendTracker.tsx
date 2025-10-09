@@ -51,9 +51,9 @@ export default function DividendTracker({ navigation }: Props) {
       case 'monthly':
         return colors.info;
       case 'quarterly':
-        return colors.accent.purple;
+        return colors.primary.main;
       case 'semi-annual':
-        return colors.accent.gold;
+        return colors.warning;
       case 'annual':
         return colors.success;
     }
@@ -110,7 +110,7 @@ export default function DividendTracker({ navigation }: Props) {
           {payment.status === 'paid' ? (
             <Ionicons name="checkmark-circle" size={20} color={colors.success} />
           ) : (
-            <Ionicons name="time-outline" size={20} color={colors.accent.gold} />
+            <Ionicons name="time-outline" size={20} color={colors.warning} />
           )}
         </View>
         <View style={styles.paymentInfo}>
@@ -162,7 +162,7 @@ export default function DividendTracker({ navigation }: Props) {
         <View style={styles.summaryContainer}>
           <View style={styles.summaryCard}>
             <View style={styles.summaryIconContainer}>
-              <Ionicons name="time-outline" size={24} color={colors.accent.gold} />
+              <Ionicons name="time-outline" size={24} color={colors.warning} />
             </View>
             <Text style={styles.summaryLabel}>Upcoming</Text>
             <Text style={styles.summaryAmount}>KES {totalUpcomingAmount.toFixed(2)}</Text>
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success + '20',
   },
   statusPending: {
-    backgroundColor: colors.accent.gold + '20',
+    backgroundColor: colors.warning + '20',
   },
   statusText: {
     fontSize: typography.fontSize.xs,
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     color: colors.success,
   },
   statusTextPending: {
-    color: colors.accent.gold,
+    color: colors.warning,
   },
   emptyState: {
     alignItems: 'center',

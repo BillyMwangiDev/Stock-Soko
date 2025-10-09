@@ -51,7 +51,7 @@ export default function MarketCalendar({ navigation }: Props) {
       case 'high':
         return colors.error;
       case 'medium':
-        return colors.accent.gold;
+        return colors.warning;
       case 'low':
         return colors.text.secondary;
     }
