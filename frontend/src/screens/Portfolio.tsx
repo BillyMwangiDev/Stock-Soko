@@ -5,9 +5,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { LoadingState, FloatingAIButton } from '../components';
+import { LoadingState, FloatingAIButton, Card } from '../components';
+import { hapticFeedback } from '../utils/haptics';
 
 interface Holding {
   symbol: string;
@@ -128,128 +130,154 @@ export default function Portfolio() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Portfolio</Text>
-        <View style={styles.headerSpacer} />
+        <Text style={styles.title}>Portfolio</Text>
+        <Text style={styles.subtitle}>Your investments</Text>
       </View>
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary.main}
+            colors={[colors.primary.main]}
+          />
+        }
         showsVerticalScrollIndicator={false}
       >
-        {/* Portfolio Summary */}
-        <View style={styles.summarySection}>
-          <View style={styles.totalValueContainer}>
-            <Text style={styles.totalValueLabel}>Total Portfolio Value</Text>
-            <Text style={styles.totalValueAmount}>KES {portfolioSummary.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-            <View style={[styles.profitLossContainer, portfolioSummary.total_profit_loss >= 0 ? styles.profitContainer : styles.lossContainer]}>
-              <Text style={[styles.profitLossText, portfolioSummary.total_profit_loss >= 0 ? styles.profitText : styles.lossText]}>
-                {portfolioSummary.total_profit_loss >= 0 ? '+' : ''}KES {portfolioSummary.total_profit_loss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </Text>
-              <Text style={[styles.profitLossPctText, portfolioSummary.total_profit_loss >= 0 ? styles.profitText : styles.lossText]}>
-                ({portfolioSummary.total_profit_loss >= 0 ? '+' : ''}{portfolioSummary.total_profit_loss_percent.toFixed(2)}%)
-              </Text>
-            </View>
+        {/* Portfolio Summary Card */}
+        <Card variant="elevated" style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>Total Portfolio Value</Text>
+          <Text style={styles.summaryValue}>
+            KES {portfolioSummary.total_value.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
+          <View style={styles.changeContainer}>
+            <Ionicons 
+              name={portfolioSummary.total_profit_loss >= 0 ? 'trending-up' : 'trending-down'} 
+              size={16} 
+              color={portfolioSummary.total_profit_loss >= 0 ? colors.success : colors.error} 
+            />
+            <Text style={[styles.changeText, portfolioSummary.total_profit_loss >= 0 ? styles.profitText : styles.lossText]}>
+              {portfolioSummary.total_profit_loss >= 0 ? '+' : ''}
+              {portfolioSummary.total_profit_loss_percent.toFixed(2)}%
+            </Text>
+            <Text style={styles.changePeriod}>Overall</Text>
           </View>
+          <Text style={[styles.changeAmount, portfolioSummary.total_profit_loss >= 0 ? styles.profitText : styles.lossText]}>
+            {portfolioSummary.total_profit_loss >= 0 ? '+' : ''}KES {portfolioSummary.total_profit_loss.toLocaleString('en-KE', { minimumFractionDigits: 2 })}
+          </Text>
           
-          <View style={styles.balanceBreakdown}>
+          {/* Breakdown */}
+          <View style={styles.breakdown}>
             <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownLabel}>Cash Balance</Text>
-              <Text style={styles.breakdownValue}>KES {portfolioSummary.cash_balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+              <Text style={styles.breakdownLabel}>Cash</Text>
+              <Text style={styles.breakdownValue}>
+                KES {portfolioSummary.cash_balance.toLocaleString('en-KE', { minimumFractionDigits: 2 })}
+              </Text>
             </View>
+            <View style={styles.breakdownDivider} />
             <View style={styles.breakdownItem}>
               <Text style={styles.breakdownLabel}>Invested</Text>
-              <Text style={styles.breakdownValue}>KES {portfolioSummary.total_invested.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+              <Text style={styles.breakdownValue}>
+                KES {portfolioSummary.total_invested.toLocaleString('en-KE', { minimumFractionDigits: 2 })}
+              </Text>
             </View>
           </View>
-        </View>
+        </Card>
 
-        {/* Current Holdings Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Current Holdings</Text>
-          
-          {holdings.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No holdings yet</Text>
-              <Text style={styles.emptySubtext}>Start trading to build your portfolio</Text>
-            </View>
-          ) : (
-            <View style={styles.holdingsContainer}>
-              {holdings.map((holding) => (
-                <TouchableOpacity 
-                  key={holding.symbol} 
-                  style={styles.holdingCard}
-                  onPress={() => navigation.navigate('HoldingDetail' as never, { symbol: holding.symbol, quantity: holding.quantity, avgPrice: holding.avg_price } as never)}
-                >
-                  <View style={styles.holdingInfo}>
-                    <View style={styles.holdingDetails}>
-                      <View style={styles.holdingIconContainer}>
-                        <View style={[styles.holdingIcon, holding.profit_loss >= 0 ? styles.holdingIconGreen : styles.holdingIconRed]}>
-                          <Text style={styles.holdingIconText}>{holding.symbol[0]}</Text>
-                        </View>
-                      </View>
-                      <View style={styles.holdingTextInfo}>
-                        <Text style={styles.holdingSymbol}>{holding.symbol}</Text>
-                        <Text style={styles.holdingName}>{holding.name}</Text>
-                        <Text style={styles.holdingQuantity}>{holding.quantity} shares @ KES {holding.avg_price.toFixed(2)}</Text>
+        {/* Holdings Section */}
+        <Text style={styles.sectionTitle}>Holdings</Text>
+
+        {holdings.length === 0 ? (
+          <Card variant="outline" style={styles.emptyState}>
+            <Ionicons name="pie-chart-outline" size={40} color={colors.text.tertiary} />
+            <Text style={styles.emptyText}>No holdings yet</Text>
+            <Text style={styles.emptySubtext}>Start trading to build your portfolio</Text>
+          </Card>
+        ) : (
+          holdings.map((holding) => {
+            const isPositive = holding.profit_loss >= 0;
+            const changeColor = isPositive ? colors.success : colors.error;
+
+            return (
+              <TouchableOpacity
+                key={holding.symbol}
+                onPress={() => {
+                  hapticFeedback.impact();
+                  navigation.navigate('Markets', { 
+                    screen: 'StockDetail', 
+                    params: { symbol: holding.symbol } 
+                  } as never);
+                }}
+                activeOpacity={0.7}
+              >
+                <Card variant="glass" style={styles.holdingCard}>
+                  <View style={styles.holdingHeader}>
+                    <View style={styles.holdingInfo}>
+                      <Text style={styles.holdingTicker}>{holding.symbol}</Text>
+                      <Text style={styles.holdingName}>{holding.name}</Text>
+                    </View>
+                    <View style={styles.holdingValue}>
+                      <Text style={styles.holdingPrice}>
+                        KES {holding.total_value.toLocaleString('en-KE', { minimumFractionDigits: 2 })}
+                      </Text>
+                      <View style={styles.holdingChangeContainer}>
+                        <Ionicons 
+                          name={isPositive ? 'trending-up' : 'trending-down'} 
+                          size={14} 
+                          color={changeColor} 
+                        />
+                        <Text style={[styles.holdingChange, { color: changeColor }]}>
+                          {isPositive ? '+' : ''}
+                          {holding.profit_loss_percent.toFixed(2)}%
+                        </Text>
                       </View>
                     </View>
-                    
-                    <View style={styles.holdingValue}>
-                      <Text style={styles.valueText}>KES {holding.total_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-                      <Text style={[styles.holdingProfitLoss, holding.profit_loss >= 0 ? styles.profitText : styles.lossText]}>
-                        {holding.profit_loss >= 0 ? '+' : ''}KES {holding.profit_loss.toFixed(2)}
+                  </View>
+                  
+                  <View style={styles.holdingDetails}>
+                    <View style={styles.detailItem}>
+                      <Text style={styles.detailLabel}>Quantity</Text>
+                      <Text style={styles.detailValue}>{holding.quantity}</Text>
+                    </View>
+                    <View style={styles.detailItem}>
+                      <Text style={styles.detailLabel}>Avg. Buy</Text>
+                      <Text style={styles.detailValue}>
+                        KES {holding.avg_price.toFixed(2)}
                       </Text>
-                      <Text style={[styles.holdingProfitLossPct, holding.profit_loss >= 0 ? styles.profitText : styles.lossText]}>
-                        ({holding.profit_loss >= 0 ? '+' : ''}{holding.profit_loss_percent.toFixed(2)}%)
+                    </View>
+                    <View style={styles.detailItem}>
+                      <Text style={styles.detailLabel}>Gain/Loss</Text>
+                      <Text style={[styles.detailValue, { color: changeColor }]}>
+                        {isPositive ? '+' : ''}KES {holding.profit_loss.toFixed(2)}
                       </Text>
                     </View>
                   </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
+                </Card>
+              </TouchableOpacity>
+            );
+          })
+        )}
 
-        {/* Tax Summary */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tax Estimate</Text>
-          
-          <View style={styles.taxCard}>
-            <View style={styles.taxRow}>
-              <Text style={styles.taxLabel}>Estimated CGT (5%)</Text>
-              <Text style={styles.taxValue}>
-                KES {portfolioSummary.total_profit_loss > 0 ? (portfolioSummary.total_profit_loss * 0.05).toFixed(2) : '0.00'}
+        {/* Tax Estimate */}
+        {portfolioSummary.total_profit_loss > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Tax Estimate</Text>
+            <Card variant="glass" style={styles.taxCard}>
+              <View style={styles.taxRow}>
+                <Text style={styles.taxLabel}>Capital Gains Tax (5%)</Text>
+                <Text style={styles.taxValue}>
+                  KES {(portfolioSummary.total_profit_loss * 0.05).toFixed(2)}
+                </Text>
+              </View>
+              <Text style={styles.taxNote}>
+                Note: Tax applies only on realized gains when you sell
               </Text>
-            </View>
-            <Text style={styles.taxSubtext}>
-              Note: Tax applies only on realized gains when you sell. Capital Gains Tax in Kenya is 5% on net gains.
-            </Text>
-          </View>
-        </View>
-
-        {/* Performance */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Performance</Text>
-          
-          <View style={styles.performanceCard}>
-            <Text style={styles.performanceLabel}>Total Returns</Text>
-            <Text style={[styles.performanceValue, portfolioSummary.total_profit_loss >= 0 ? styles.profitText : styles.lossText]}>
-              {portfolioSummary.total_profit_loss >= 0 ? '+' : ''}KES {portfolioSummary.total_profit_loss.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            </Text>
-            
-            <View style={styles.performanceChange}>
-              <Text style={styles.performanceChangeLabel}>Since Inception</Text>
-              <Text style={[styles.performanceChangeValue, portfolioSummary.total_profit_loss >= 0 ? styles.profitText : styles.lossText]}>
-                {portfolioSummary.total_profit_loss >= 0 ? '+' : ''}{portfolioSummary.total_profit_loss_percent.toFixed(2)}%
-              </Text>
-            </View>
-          </View>
-        </View>
+            </Card>
+          </>
+        )}
 
         <View style={{ height: 100 }} />
       </ScrollView>
