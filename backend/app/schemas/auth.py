@@ -22,6 +22,7 @@ class TokenResponse(BaseModel):
 class UserPublic(BaseModel):
 	email: EmailStr
 	full_name: Optional[str] = None
+	phone: Optional[str] = None
 	two_fa_enabled: bool = False
 
 

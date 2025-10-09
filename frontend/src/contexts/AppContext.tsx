@@ -80,6 +80,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const loadPortfolioData = async () => {
     try {
+      console.log('[AppContext] Loading portfolio data...');
+      
       // Load wallet balance
       const balanceRes = await api.get('/ledger/balance');
       const balance = balanceRes.data.available_balance || 0;
@@ -116,8 +118,20 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setTotalPortfolioValue(totalValue);
       setTotalGainLoss(totalPL);
       setGainLossPercent(plPercent);
-    } catch (error) {
-      console.error('Error loading portfolio data:', error);
+      
+      console.log('[AppContext] Portfolio data loaded successfully');
+    } catch (error: any) {
+      // Silently handle auth errors - user just needs to login
+      if (error.response?.status === 401) {
+        console.log('[AppContext] User not authenticated - portfolio data skipped');
+      } else {
+        console.error('[AppContext] Error loading portfolio data:', error.message);
+      }
+      // Set defaults for unauthenticated users
+      setCashBalance(0);
+      setTotalPortfolioValue(0);
+      setTotalGainLoss(0);
+      setGainLossPercent(0);
     }
   };
 

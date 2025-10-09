@@ -91,9 +91,9 @@ All passwords must have:
 ### 2. Email Validation
 
 **Valid Emails:**
-- `user@example.com` ✅
-- `test.user@company.co.ke` ✅
-- `trader123@gmail.com` ✅
+- `user@example.com` 
+- `test.user@company.co.ke` 
+- `trader123@gmail.com` 
 
 **Invalid Emails (Should Reject):**
 - `notanemail` - No @ symbol
@@ -236,7 +236,7 @@ Expected: Stock quote with price and sparkline
 
 ## Security Features Verification
 
-### ✅ What to Verify
+###  What to Verify
 
 1. **No OTP Exposure**
    - Request OTP via `/auth/otp/request`
@@ -462,30 +462,30 @@ Browser: Chrome 120.0
 ## Success Criteria
 
 ### Registration & Authentication
-- ✅ Can register with valid credentials
-- ✅ Weak passwords rejected
-- ✅ Can login with registered credentials
-- ✅ Invalid credentials rejected
-- ✅ JWT token received on login
-- ✅ Protected routes require authentication
+-  Can register with valid credentials
+-  Weak passwords rejected
+-  Can login with registered credentials
+-  Invalid credentials rejected
+-  JWT token received on login
+-  Protected routes require authentication
 
 ### Data Display
-- ✅ Markets list loads successfully
-- ✅ Stock details show correct data
-- ✅ Charts render properly
-- ✅ Portfolio data displays
+-  Markets list loads successfully
+-  Stock details show correct data
+-  Charts render properly
+-  Portfolio data displays
 
 ### Security
-- ✅ No sensitive data in responses
-- ✅ All validation rules enforced
-- ✅ Security headers present
-- ✅ Request tracking working
+-  No sensitive data in responses
+-  All validation rules enforced
+-  Security headers present
+-  Request tracking working
 
 ### Performance
-- ✅ API responses < 200ms
-- ✅ Frontend loads < 5 seconds
-- ✅ No memory leaks
-- ✅ Smooth navigation
+-  API responses < 200ms
+-  Frontend loads < 5 seconds
+-  No memory leaks
+-  Smooth navigation
 
 ---
 
@@ -498,7 +498,7 @@ Browser: Chrome 120.0
 
 ---
 
-**Happy Testing! 🚀**
+**Happy Testing! **
 
 *For questions or issues, check the documentation or contact the development team.*
 

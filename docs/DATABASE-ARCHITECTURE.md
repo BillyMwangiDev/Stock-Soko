@@ -1,12 +1,12 @@
 ## Stock Soko - Database Architecture Implementation
 
-## 🎯 Overview
+##  Overview
 
 Complete implementation of the YAML architecture specification with PostgreSQL database, 20 NSE seed stocks, and production-ready data model.
 
 ---
 
-## 📊 Database Schema
+##  Database Schema
 
 ### Implemented Tables (11 Total)
 
@@ -35,7 +35,7 @@ Complete implementation of the YAML architecture specification with PostgreSQL d
 
 ---
 
-## 🌱 Seed Data
+##  Seed Data
 
 ### 20 NSE Stocks Included
 
@@ -74,7 +74,7 @@ Complete implementation of the YAML architecture specification with PostgreSQL d
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Install Dependencies
 
@@ -116,30 +116,30 @@ curl http://localhost:8000/news
 
 ---
 
-## 📁 File Structure
+##  File Structure
 
 ```
 STOCK SOKO/
-├── backend/
-│   ├── app/
-│   │   ├── database/
-│   │   │   ├── __init__.py       ✅ Session management
-│   │   │   └── models.py         ✅ SQLAlchemy models
-│   │   ├── config.py             ✅ Updated with DATABASE_URL
-│   │   └── ...
-│   └── ...
-├── scripts/
-│   ├── __init__.py
-│   ├── seed_stocks.py            ✅ 20 NSE stocks seeder
-│   └── seed_users.py             ✅ Test users seeder
-├── requirements.txt              ✅ Updated dependencies
-└── docs/
-    └── DATABASE-ARCHITECTURE.md  ✅ This file
+ backend/
+    app/
+       database/
+          __init__.py        Session management
+          models.py          SQLAlchemy models
+       config.py              Updated with DATABASE_URL
+       ...
+    ...
+ scripts/
+    __init__.py
+    seed_stocks.py             20 NSE stocks seeder
+    seed_users.py              Test users seeder
+ requirements.txt               Updated dependencies
+ docs/
+     DATABASE-ARCHITECTURE.md   This file
 ```
 
 ---
 
-## 🔧 Database Models (SQLAlchemy)
+##  Database Models (SQLAlchemy)
 
 ### Example: Stock Model
 
@@ -170,16 +170,16 @@ class Stock(Base):
 
 ### Key Features
 
-- ✅ UUID primary keys for security
-- ✅ Proper indexes on frequently queried fields
-- ✅ Foreign key relationships
-- ✅ JSONB for flexible metadata
-- ✅ Timezone-aware timestamps
-- ✅ Cascade deletes where appropriate
+-  UUID primary keys for security
+-  Proper indexes on frequently queried fields
+-  Foreign key relationships
+-  JSONB for flexible metadata
+-  Timezone-aware timestamps
+-  Cascade deletes where appropriate
 
 ---
 
-## 🔄 Migrations (Future)
+##  Migrations (Future)
 
 ### Alembic Setup
 
@@ -202,7 +202,7 @@ alembic upgrade head
 
 ---
 
-## 📊 Data Flow
+##  Data Flow
 
 ### Order Placement Flow
 
@@ -238,15 +238,15 @@ alembic upgrade head
 
 ---
 
-## 🔐 Security Considerations
+##  Security Considerations
 
 ### Implemented
 
-- ✅ UUID primary keys (prevents enumeration)
-- ✅ Password hashing (bcrypt via passlib)
-- ✅ Indexed email/phone for fast lookups
-- ✅ Foreign key constraints
-- ✅ Timestamp tracking (audit trail)
+-  UUID primary keys (prevents enumeration)
+-  Password hashing (bcrypt via passlib)
+-  Indexed email/phone for fast lookups
+-  Foreign key constraints
+-  Timestamp tracking (audit trail)
 
 ### Production Requirements
 
@@ -258,7 +258,7 @@ alembic upgrade head
 
 ---
 
-## 📈 Performance Optimizations
+##  Performance Optimizations
 
 ### Implemented Indexes
 
@@ -282,15 +282,15 @@ CREATE HYPERTABLE market_ticks ON time;
 
 ### Query Optimization
 
-- ✅ Composite indexes for common filters
-- ✅ Eager loading via `joinedload()`
-- ✅ Connection pooling (10-20 connections)
+-  Composite indexes for common filters
+-  Eager loading via `joinedload()`
+-  Connection pooling (10-20 connections)
 - ⏳ Read replicas for heavy queries
 - ⏳ Materialized views for dashboards
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 ### Seed Data Validation
 
@@ -332,7 +332,7 @@ def test_create_order(db_session):
 
 ---
 
-## 🌐 Production Deployment
+##  Production Deployment
 
 ### PostgreSQL Setup
 
@@ -366,15 +366,15 @@ DEBUG=false
 
 ---
 
-## 📚 Next Steps
+##  Next Steps
 
 ### Immediate (Completed)
 
-- ✅ Database models defined
-- ✅ Seed scripts created
-- ✅ 20 NSE stocks loaded
-- ✅ Test users created
-- ✅ SQLAlchemy setup
+-  Database models defined
+-  Seed scripts created
+-  20 NSE stocks loaded
+-  Test users created
+-  SQLAlchemy setup
 
 ### Short-term
 
@@ -394,21 +394,21 @@ DEBUG=false
 
 ---
 
-## 🆘 Troubleshooting
+##  Troubleshooting
 
 ### SQLite vs PostgreSQL
 
 **SQLite (Development)**:
-- ✅ No setup required
-- ✅ File-based: `stocksoko.db`
-- ⚠️ Limited concurrent writes
-- ⚠️ No UUID type (uses strings)
+-  No setup required
+-  File-based: `stocksoko.db`
+-  Limited concurrent writes
+-  No UUID type (uses strings)
 
 **PostgreSQL (Production)**:
-- ✅ True UUID type
-- ✅ JSONB with GIN indexes
-- ✅ Concurrent connections
-- ✅ TimescaleDB support
+-  True UUID type
+-  JSONB with GIN indexes
+-  Concurrent connections
+-  TimescaleDB support
 
 ### Common Issues
 
@@ -431,25 +431,25 @@ python -m scripts.seed_stocks
 
 ---
 
-## ✅ Architecture Compliance
+##  Architecture Compliance
 
 | Specification | Status |
 |---------------|--------|
-| PostgreSQL schema | ✅ Complete |
-| UUID primary keys | ✅ Implemented |
-| JSONB metadata | ✅ Implemented |
-| Relationships | ✅ Implemented |
-| Indexes | ✅ Implemented |
-| 20 NSE stocks | ✅ Seeded |
-| Test users | ✅ Seeded |
-| News articles | ✅ Seeded |
-| TimescaleDB ready | ✅ Schema ready |
+| PostgreSQL schema |  Complete |
+| UUID primary keys |  Implemented |
+| JSONB metadata |  Implemented |
+| Relationships |  Implemented |
+| Indexes |  Implemented |
+| 20 NSE stocks |  Seeded |
+| Test users |  Seeded |
+| News articles |  Seeded |
+| TimescaleDB ready |  Schema ready |
 
-**Database implementation: 100% complete! 🎉**
+**Database implementation: 100% complete! **
 
 ---
 
-## 📞 Support
+##  Support
 
 For questions or issues:
 1. Check this documentation

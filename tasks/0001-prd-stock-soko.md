@@ -1,4 +1,4 @@
-# Stock Soko — Product Requirements Document (PRD)
+# Stock Soko - Product Requirements Document (PRD)
 
 Wireframes: [Stitch project](https://stitch.withgoogle.com/projects/2721751293655150395)
 

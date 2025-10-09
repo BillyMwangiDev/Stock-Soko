@@ -84,7 +84,8 @@ export default function CustomerSupport() {
   const handleSendMessage = () => {
     if (chatMessage.trim()) {
       hapticFeedback.success();
-      alert('Chat feature coming soon! For now, please use email or phone support.');
+      hapticFeedback.impact();
+      (navigation as any).navigate('LiveChat');
       setChatMessage('');
     }
   };

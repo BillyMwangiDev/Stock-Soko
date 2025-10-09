@@ -99,6 +99,7 @@ def me(email: str = Depends(current_user_email)) -> UserPublic:
     return UserPublic(
         email=user.email,
         full_name=user.full_name,
+        phone=user.phone,
         two_fa_enabled=user.two_fa_enabled
     )
 

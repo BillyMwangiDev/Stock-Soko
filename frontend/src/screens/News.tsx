@@ -5,7 +5,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { FloatingAIButton } from '../components';
 import { api } from '../api/client';
 
 interface NewsArticle {
@@ -239,7 +238,6 @@ export default function News() {
         </ScrollView>
       )}
 
-      <FloatingAIButton />
     </View>
   );
 }

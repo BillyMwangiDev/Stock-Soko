@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { LoadingState, FloatingAIButton, Card, PortfolioChart } from '../components';
+import { LoadingState, Card, PortfolioChart } from '../components';
 import { hapticFeedback } from '../utils/haptics';
 
 interface Holding {
@@ -317,7 +317,6 @@ export default function Portfolio() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      <FloatingAIButton />
     </View>
   );
 }

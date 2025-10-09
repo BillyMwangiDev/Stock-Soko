@@ -62,34 +62,34 @@ curl http://localhost:8000/health
 
 ```
 STOCK SOKO/
-├── backend/
-│   ├── app/
-│   │   ├── routers/       # 15 API endpoint modules
-│   │   ├── services/      # Business logic
-│   │   ├── schemas/       # Pydantic models
-│   │   ├── utils/         # JWT, logging, middleware
-│   │   ├── ai/            # Recommendation engine
-│   │   ├── config.py      # Environment config
-│   │   └── main.py        # FastAPI app
-│   └── ...
-│
-├── frontend/
-│   ├── src/
-│   │   ├── api/           # API client
-│   │   ├── components/    # Reusable components
-│   │   ├── navigation/    # Navigation stacks
-│   │   ├── screens/       # Screen components
-│   │   ├── store/         # State management
-│   │   └── theme/         # Design tokens
-│   ├── App.tsx            # Root component
-│   └── package.json
-│
-├── tests/                 # Backend tests
-├── docs/                  # Documentation
-├── tasks/                 # PRD & planning
-├── requirements.txt
-├── docker-compose.yml
-└── README.md
+ backend/
+    app/
+       routers/       # 15 API endpoint modules
+       services/      # Business logic
+       schemas/       # Pydantic models
+       utils/         # JWT, logging, middleware
+       ai/            # Recommendation engine
+       config.py      # Environment config
+       main.py        # FastAPI app
+    ...
+
+ frontend/
+    src/
+       api/           # API client
+       components/    # Reusable components
+       navigation/    # Navigation stacks
+       screens/       # Screen components
+       store/         # State management
+       theme/         # Design tokens
+    App.tsx            # Root component
+    package.json
+
+ tests/                 # Backend tests
+ docs/                  # Documentation
+ tasks/                 # PRD & planning
+ requirements.txt
+ docker-compose.yml
+ README.md
 ```
 
 ## Common Commands

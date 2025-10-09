@@ -169,7 +169,7 @@ export default function Profile({ navigation }: Props) {
             subtitle="Password and authentication"
             onPress={() => {
               hapticFeedback.light();
-              Alert.alert('Security', 'Password change coming soon');
+              handleNavigation('ChangePassword');
             }}
           />
         </Card>

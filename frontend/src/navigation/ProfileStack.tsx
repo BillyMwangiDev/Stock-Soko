@@ -15,10 +15,21 @@ import Wallet from '../screens/Wallet';
 import KYCUpload from '../screens/KYCUpload';
 import AIAssistant from '../screens/AIAssistant';
 import EducationalContent from '../screens/EducationalContent';
+import LessonDetail from '../screens/LessonDetail';
 import NotificationCenter from '../screens/NotificationCenter';
 import FractionalShares from '../screens/FractionalShares';
 import CustomerSupport from '../screens/CustomerSupport';
 import PriceAlerts from '../screens/PriceAlerts';
+import ChooseBroker from '../screens/ChooseBroker';
+import EditProfile from '../screens/EditProfile';
+import ChangePassword from '../screens/ChangePassword';
+import TwoFactorSetup from '../screens/TwoFactorSetup';
+import PaymentMethods from '../screens/PaymentMethods';
+import PrivacyPolicy from '../screens/PrivacyPolicy';
+import TermsConditions from '../screens/TermsConditions';
+import LanguageSelection from '../screens/LanguageSelection';
+import DeleteAccount from '../screens/DeleteAccount';
+import LiveChat from '../screens/LiveChat';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
 
@@ -42,90 +53,178 @@ export default function ProfileStack() {
         },
       }}
     >
-      <Stack.Screen 
-        name="Profile" 
+      <Stack.Screen
+        name="Profile"
         component={Profile}
-        options={{ 
+        options={{
           headerShown: false, // Using tab navigator header
         }}
       />
-      <Stack.Screen 
-        name="Settings" 
+      <Stack.Screen
+        name="Settings"
         component={Settings}
-        options={{ 
+        options={{
           title: 'Settings',
           headerShown: true,
         }}
       />
-      <Stack.Screen 
-        name="Wallet" 
+      <Stack.Screen
+        name="Wallet"
         component={Wallet}
-        options={{ 
+        options={{
           title: 'Wallet',
           headerShown: true,
         }}
       />
-      <Stack.Screen 
-        name="KYCUpload" 
+      <Stack.Screen
+        name="KYCUpload"
         component={KYCUpload}
-        options={{ 
+        options={{
           title: 'KYC Verification',
           headerShown: true,
         }}
       />
-      <Stack.Screen 
-        name="AIAssistant" 
+      <Stack.Screen
+        name="AIAssistant"
         component={AIAssistant}
-        options={{ 
+        options={{
           title: 'AI Assistant',
           headerShown: true,
         }}
       />
-      <Stack.Screen 
-        name="Dashboard" 
+      <Stack.Screen
+        name="Dashboard"
         component={Dashboard}
-        options={{ 
+        options={{
           title: 'Investment Dashboard',
           headerShown: true,
         }}
       />
-      <Stack.Screen 
-        name="EducationalContent" 
+      <Stack.Screen
+        name="EducationalContent"
         component={EducationalContent}
-        options={{ 
+        options={{
           title: 'Learning Center',
           headerShown: true,
         }}
       />
-      <Stack.Screen 
-        name="NotificationCenter" 
+      <Stack.Screen
+        name="LessonDetail"
+        component={LessonDetail}
+        options={{
+          title: 'Lesson',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="NotificationCenter"
         component={NotificationCenter}
-        options={{ 
+        options={{
           title: 'Notifications',
           headerShown: true,
         }}
       />
-      <Stack.Screen 
-        name="FractionalShares" 
+      <Stack.Screen
+        name="FractionalShares"
         component={FractionalShares}
-        options={{ 
+        options={{
           title: 'Fractional Shares',
           headerShown: true,
         }}
       />
-      <Stack.Screen 
-        name="CustomerSupport" 
+      <Stack.Screen
+        name="CustomerSupport"
         component={CustomerSupport}
-        options={{ 
+        options={{
           title: 'Customer Support',
           headerShown: true,
         }}
       />
-      <Stack.Screen 
-        name="PriceAlerts" 
+      <Stack.Screen
+        name="PriceAlerts"
         component={PriceAlerts}
-        options={{ 
+        options={{
           title: 'Price Alerts',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="ChooseBroker"
+        component={ChooseBroker}
+        options={{
+          title: 'Change Broker',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfile}
+        options={{
+          title: 'Edit Profile',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="ChangePassword"
+        component={ChangePassword}
+        options={{
+          title: 'Change Password',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="TwoFactorSetup"
+        component={TwoFactorSetup}
+        options={{
+          title: 'Two-Factor Authentication',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="PaymentMethods"
+        component={PaymentMethods}
+        options={{
+          title: 'Payment Methods',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="PrivacyPolicy"
+        component={PrivacyPolicy}
+        options={{
+          title: 'Privacy Policy',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="TermsConditions"
+        component={TermsConditions}
+        options={{
+          title: 'Terms & Conditions',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="LanguageSelection"
+        component={LanguageSelection}
+        options={{
+          title: 'Language',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="DeleteAccount"
+        component={DeleteAccount}
+        options={{
+          title: 'Delete Account',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="LiveChat"
+        component={LiveChat}
+        options={{
+          title: 'Live Chat',
           headerShown: false,
         }}
       />

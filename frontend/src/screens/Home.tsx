@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { LoadingState, FloatingAIButton, Card } from '../components';
+import { LoadingState, Card } from '../components';
 import { useApp } from '../contexts';
 
 interface PortfolioData {
@@ -48,11 +48,23 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     loadData();
     loadAIRecommendations();
+    loadNotificationCount();
   }, []);
+
+  const loadNotificationCount = async () => {
+    try {
+      const response = await api.get('/notifications/unread-count');
+      setUnreadNotifications(response.data.count || 0);
+    } catch (error) {
+      // Set mock count for demo
+      setUnreadNotifications(3);
+    }
+  };
 
   useEffect(() => {
     // Update local portfolio state when context values change
@@ -202,6 +214,13 @@ export default function Home() {
           onPress={() => (navigation as any).navigate('ProfileTab', { screen: 'NotificationCenter' })}
         >
           <Ionicons name="notifications-outline" size={24} color={colors.text.secondary} />
+          {unreadNotifications > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>
+                {unreadNotifications > 9 ? '9+' : unreadNotifications}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -478,7 +497,6 @@ export default function Home() {
         <View style={{ height: 120 }} />
       </ScrollView>
 
-      <FloatingAIButton />
     </View>
   );
 }
@@ -524,6 +542,26 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: colors.error,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: colors.background.primary,
+  },
+  notificationBadgeText: {
+    color: colors.primary.contrast,
+    fontSize: 11,
+    fontWeight: typography.fontWeight.bold,
   },
   scrollView: {
     flex: 1,

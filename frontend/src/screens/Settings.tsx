@@ -1,14 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { Card, Button } from '../components';
 import { setAccessToken } from '../store/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { hapticFeedback } from '../utils/haptics';
+import { api } from '../api/client';
 
 export default function Settings() {
+  const navigation = useNavigation();
   const [notifications, setNotifications] = useState(true);
   const [biometric, setBiometric] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
+  const [selectedBroker, setSelectedBroker] = useState<string>('Not selected');
+
+  useEffect(() => {
+    loadSettings();
+    
+    // Reload settings when screen comes into focus (e.g., after choosing broker)
+    const unsubscribe = (navigation as any).addListener('focus', () => {
+      loadSettings();
+    });
+    
+    return unsubscribe;
+  }, [navigation]);
+
+  const loadSettings = async () => {
+    try {
+      // Load broker info
+      const broker = await AsyncStorage.getItem('selectedBroker');
+      if (broker) {
+        const brokerNames: Record<string, string> = {
+          'genghis': 'Genghis Capital',
+          'faida': 'Faida Investment Bank',
+          'dyer': 'Dyer & Blair',
+          'direct': 'Stock Soko Direct',
+        };
+        setSelectedBroker(brokerNames[broker] || broker);
+      }
+
+      // Load preferences
+      const savedNotifications = await AsyncStorage.getItem('notifications_enabled');
+      if (savedNotifications !== null) {
+        setNotifications(savedNotifications === 'true');
+      }
+
+      const savedBiometric = await AsyncStorage.getItem('biometric_enabled');
+      if (savedBiometric !== null) {
+        setBiometric(savedBiometric === 'true');
+      }
+
+      const savedDarkMode = await AsyncStorage.getItem('dark_mode_enabled');
+      if (savedDarkMode !== null) {
+        setDarkMode(savedDarkMode === 'true');
+      }
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+    }
+  };
+
+  const handleChangeBroker = () => {
+    try {
+      hapticFeedback.impact();
+      console.log('[Settings] Navigating to ChooseBroker...');
+      (navigation as any).navigate('ChooseBroker');
+    } catch (error) {
+      console.error('[Settings] Navigation error:', error);
+      Alert.alert('Error', 'Failed to open broker selection. Please check console for details.');
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -29,18 +91,64 @@ export default function Settings() {
   };
 
   const handleDeleteAccount = () => {
+    hapticFeedback.impact();
+    (navigation as any).navigate('DeleteAccount');
+  };
+
+  const handleNotificationsToggle = async (value: boolean) => {
+    setNotifications(value);
+    await AsyncStorage.setItem('notifications_enabled', value.toString());
+    hapticFeedback.light();
+  };
+
+  const handleBiometricToggle = async (value: boolean) => {
+    setBiometric(value);
+    await AsyncStorage.setItem('biometric_enabled', value.toString());
+    hapticFeedback.light();
+    
+    if (value) {
+      Alert.alert(
+        'Biometric Authentication',
+        'Biometric authentication will be used for login and sensitive actions.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
+  const handleDarkModeToggle = async (value: boolean) => {
+    setDarkMode(value);
+    await AsyncStorage.setItem('dark_mode_enabled', value.toString());
+    hapticFeedback.light();
+    
     Alert.alert(
-      'Delete Account',
-      'This action is irreversible. All your data will be permanently deleted. Are you sure?',
+      'Theme Changed',
+      'Dark mode preference saved. Theme changes will be applied in a future update.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleKYCStatus = () => {
+    hapticFeedback.light();
+    (navigation as any).navigate('KYCUpload');
+  };
+
+  const handleHelpSupport = () => {
+    hapticFeedback.light();
+    (navigation as any).navigate('CustomerSupport');
+  };
+
+  const handleAbout = () => {
+    hapticFeedback.light();
+    Alert.alert(
+      'About Stock Soko',
+      'Stock Soko - Your Gateway to Kenyan Markets\n\n' +
+      'Version: 1.0.0\n' +
+      'Build: 2025.10.09\n\n' +
+      'Trade Kenyan stocks with zero commissions, AI-powered insights, and M-Pesa integration.\n\n' +
+      '© 2025 Stock Soko Ltd. All rights reserved.',
       [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert('Account Deletion', 'Account deletion feature coming soon');
-          },
-        },
+        { text: 'Visit Website', onPress: () => console.log('Open website') },
+        { text: 'OK', style: 'cancel' }
       ]
     );
   };
@@ -79,8 +187,8 @@ export default function Settings() {
   );
 
   return (
-    <ScrollView 
-      style={styles.container} 
+    <ScrollView
+      style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={true}
       bounces={true}
@@ -101,14 +209,43 @@ export default function Settings() {
         </View>
         <Button
           title="Edit Profile"
-          onPress={() => Alert.alert('Edit Profile', 'Profile editing coming soon')}
+          onPress={() => {
+            hapticFeedback.impact();
+            (navigation as any).navigate('EditProfile');
+          }}
           variant="outline"
           size="sm"
           fullWidth
         />
       </Card>
 
-      
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Account</Text>
+        <Card padding="sm">
+          <SettingItem
+            icon="business-outline"
+            title="Broker"
+            subtitle={selectedBroker}
+            onPress={handleChangeBroker}
+          />
+          <SettingItem
+            icon="card-outline"
+            title="Payment Methods"
+            subtitle="Manage M-Pesa and bank accounts"
+            onPress={() => {
+              hapticFeedback.impact();
+              (navigation as any).navigate('PaymentMethods');
+            }}
+          />
+          <SettingItem
+            icon="document-text-outline"
+            title="KYC Status"
+            subtitle="Verified"
+            onPress={handleKYCStatus}
+          />
+        </Card>
+      </View>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Security</Text>
         <Card padding="sm">
@@ -116,25 +253,30 @@ export default function Settings() {
             icon="lock-closed-outline"
             title="Change Password"
             subtitle="Update your password"
-            onPress={() => Alert.alert('Change Password', 'Feature coming soon')}
+            onPress={() => {
+              hapticFeedback.impact();
+              (navigation as any).navigate('ChangePassword');
+            }}
           />
           <ToggleItem
             icon="finger-print-outline"
             title="Biometric Authentication"
             subtitle="Use fingerprint or face ID"
             value={biometric}
-            onValueChange={setBiometric}
+            onValueChange={handleBiometricToggle}
           />
           <SettingItem
             icon="shield-checkmark-outline"
             title="Two-Factor Authentication"
             subtitle="Add an extra layer of security"
-            onPress={() => Alert.alert('2FA', 'Feature coming soon')}
+            onPress={() => {
+              hapticFeedback.impact();
+              (navigation as any).navigate('TwoFactorSetup');
+            }}
           />
         </Card>
       </View>
 
-      
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Preferences</Text>
         <Card padding="sm">
@@ -143,48 +285,56 @@ export default function Settings() {
             title="Push Notifications"
             subtitle="Receive alerts and updates"
             value={notifications}
-            onValueChange={setNotifications}
+            onValueChange={handleNotificationsToggle}
           />
           <ToggleItem
             icon="moon-outline"
             title="Dark Mode"
             subtitle="Use dark theme"
             value={darkMode}
-            onValueChange={setDarkMode}
+            onValueChange={handleDarkModeToggle}
           />
           <SettingItem
             icon="language-outline"
             title="Language"
             subtitle="English"
-            onPress={() => Alert.alert('Language', 'Feature coming soon')}
+            onPress={() => {
+              hapticFeedback.impact();
+              (navigation as any).navigate('LanguageSelection');
+            }}
           />
         </Card>
       </View>
 
-      
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Support & Legal</Text>
         <Card padding="sm">
           <SettingItem
             icon="help-circle-outline"
             title="Help & Support"
-            onPress={() => Alert.alert('Support', 'Contact support@stocksoko.com')}
+            onPress={handleHelpSupport}
           />
           <SettingItem
             icon="document-text-outline"
             title="Privacy Policy"
-            onPress={() => Alert.alert('Privacy Policy', 'Feature coming soon')}
+            onPress={() => {
+              hapticFeedback.impact();
+              (navigation as any).navigate('PrivacyPolicy');
+            }}
           />
           <SettingItem
             icon="shield-outline"
             title="Terms & Conditions"
-            onPress={() => Alert.alert('Terms', 'Feature coming soon')}
+            onPress={() => {
+              hapticFeedback.impact();
+              (navigation as any).navigate('TermsConditions');
+            }}
           />
           <SettingItem
             icon="information-circle-outline"
             title="About Stock Soko"
             subtitle="Version 1.0.0"
-            onPress={() => Alert.alert('About', 'Stock Soko v1.0.0')}
+            onPress={handleAbout}
           />
         </Card>
       </View>

@@ -116,12 +116,86 @@ export default function TaxReports({ navigation }: Props) {
     }
   };
 
-  const handleExportPDF = () => {
-    Alert.alert('Export PDF', 'Tax report export feature coming soon!');
+  const handleExportPDF = async () => {
+    try {
+      hapticFeedback.impact();
+      
+      Alert.alert(
+        'Export as PDF',
+        `Generating tax report for ${selectedYear}...`,
+        [{ text: 'OK' }]
+      );
+
+      const response = await api.post('/tax/export/pdf', {
+        year: selectedYear,
+        cost_basis_method: costBasisMethod,
+      }, {
+        responseType: 'blob',
+      });
+
+      const blob = response.data;
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `StockSoko_TaxReport_${selectedYear}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      hapticFeedback.success();
+      Alert.alert('Success', `Tax report for ${selectedYear} has been downloaded as PDF.`);
+    } catch (error: any) {
+      console.error('Failed to export PDF:', error);
+      hapticFeedback.error();
+      
+      Alert.alert(
+        'Export Failed',
+        'PDF export is not yet available. This feature requires backend implementation.\n\nYou can screenshot the report for now.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
-  const handleExportExcel = () => {
-    Alert.alert('Export Excel', 'Excel export feature coming soon!');
+  const handleExportExcel = async () => {
+    try {
+      hapticFeedback.impact();
+      
+      Alert.alert(
+        'Export as Excel',
+        `Generating spreadsheet for ${selectedYear}...`,
+        [{ text: 'OK' }]
+      );
+
+      const response = await api.post('/tax/export/excel', {
+        year: selectedYear,
+        cost_basis_method: costBasisMethod,
+      }, {
+        responseType: 'blob',
+      });
+
+      const blob = response.data;
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `StockSoko_TaxReport_${selectedYear}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      hapticFeedback.success();
+      Alert.alert('Success', `Tax report for ${selectedYear} has been downloaded as Excel.`);
+    } catch (error: any) {
+      console.error('Failed to export Excel:', error);
+      hapticFeedback.error();
+      
+      Alert.alert(
+        'Export Failed',
+        'Excel export is not yet available. This feature requires backend implementation.\n\nYou can screenshot the report for now.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   const fifoVsLifo = {

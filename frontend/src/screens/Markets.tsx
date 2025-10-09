@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { Card, LoadingState, FloatingAIButton } from '../components';
+import { Card, LoadingState } from '../components';
 import { hapticFeedback } from '../utils/haptics';
 
 interface Instrument {
@@ -58,8 +58,13 @@ export default function Markets() {
     }
     
     try {
+      console.log('[Markets] Fetching from /markets endpoint...');
       const res = await api.get('/markets');
+      console.log('[Markets] Response received:', res.data);
+      
       const stocks = res.data.instruments || [];
+      console.log('[Markets] Total stocks loaded:', stocks.length);
+      
       setInstruments(stocks);
       
       // Calculate market summary
@@ -73,10 +78,20 @@ export default function Markets() {
         totalGainers: gainers.length,
         totalLosers: losers.length,
       }));
-    } catch (error) {
-      console.error('Failed to load markets:', error);
+      
+      console.log('[Markets] Market summary updated:', { totalStocks: stocks.length, gainers: gainers.length, losers: losers.length });
+    } catch (error: any) {
+      console.error('[Markets] Error loading markets:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        config: error.config?.url
+      });
       if (!isRefreshing) {
-        Alert.alert('Error', 'Failed to load market data');
+        Alert.alert(
+          'Connection Error', 
+          `Failed to load market data. Make sure the backend server is running on port 5000.\n\nError: ${error.message}`
+        );
       }
     } finally {
       setLoading(false);
@@ -279,7 +294,6 @@ export default function Markets() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      <FloatingAIButton />
     </View>
   );
 }

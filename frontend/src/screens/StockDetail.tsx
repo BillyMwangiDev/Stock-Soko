@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, TextInput as RNTextInput, Modal } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { LoadingState } from '../components';
 import PriceChart from '../components/PriceChart';
@@ -104,11 +105,25 @@ export default function StockDetail() {
       const res = await api.post('/markets/recommendation', { symbol });
       const recommendation = res.data.recommendation || 'HOLD';
       
+      // Get current stock price safely
+      let currentPrice = 0;
+      if (stock?.last_price) {
+        currentPrice = stock.last_price;
+      } else {
+        // If stock not loaded yet, fetch it
+        try {
+          const stockRes = await api.get(`/markets/stocks/${symbol}`);
+          currentPrice = stockRes.data.last_price || 0;
+        } catch (e) {
+          console.error('Failed to fetch stock price for AI:', e);
+        }
+      }
+      
       // Generate detailed analysis
       const analysis = {
         recommendation,
-        confidence: Math.floor(Math.random() * 30) + 70, // 70-100%
-        targetPrice: stock?.last_price ? (stock.last_price * (1 + (Math.random() * 0.2 - 0.1))).toFixed(2) : 'N/A',
+        confidence: Math.floor(Math.random() * 30) + 70,
+        targetPrice: currentPrice > 0 ? (currentPrice * (1 + (Math.random() * 0.2 - 0.1))).toFixed(2) : 'N/A',
         reasoning: generateAIReasoning(recommendation, symbol),
         technicalSignals: generateTechnicalSignals(),
         fundamentalFactors: generateFundamentalFactors(),
@@ -297,7 +312,7 @@ export default function StockDetail() {
 
   return (
     <View style={styles.container}>      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backIcon}></Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{stock.name}</Text>

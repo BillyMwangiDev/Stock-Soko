@@ -13,6 +13,7 @@ class User:
         self.email = db_user.email
         self.password_hash = db_user.password_hash
         self.full_name = db_user.full_name
+        self.phone = db_user.phone
         self.two_fa_enabled = False
         self.two_fa_secret = None
 
@@ -102,5 +103,65 @@ def update_password(email: str, new_password: str) -> None:
         
         db_user.password_hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('utf-8')
         db.commit()
+    finally:
+        db.close()
+
+
+def update_user_profile(
+    email: str,
+    full_name: str,
+    phone: str,
+    date_of_birth: Optional[str] = None,
+    address: Optional[str] = None,
+    city: Optional[str] = None,
+    country: str = "Kenya"
+) -> User:
+    """Update user profile information"""
+    db = get_db_session()
+    try:
+        db_user = db.query(DBUser).filter(DBUser.email == email.lower()).first()
+        if not db_user:
+            raise ValueError("User not found")
+        
+        db_user.full_name = full_name
+        db_user.phone = phone
+        
+        db.commit()
+        db.refresh(db_user)
+        
+        return User(db_user)
+    finally:
+        db.close()
+
+
+def change_password(email: str, current_password: str, new_password: str) -> bool:
+    """Change user password with current password verification"""
+    user = get_user(email)
+    if not user:
+        return False
+    
+    if not verify_password(current_password, user.password_hash):
+        return False
+    
+    update_password(email, new_password)
+    return True
+
+
+def delete_user_account(email: str, password: str) -> bool:
+    """Permanently delete user account after password verification"""
+    user = get_user(email)
+    if not user:
+        return False
+    
+    if not verify_password(password, user.password_hash):
+        return False
+    
+    db = get_db_session()
+    try:
+        db_user = db.query(DBUser).filter(DBUser.email == email.lower()).first()
+        if db_user:
+            db.delete(db_user)
+            db.commit()
+        return True
     finally:
         db.close()

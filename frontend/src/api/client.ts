@@ -2,9 +2,11 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import Constants from 'expo-constants';
 import { getAccessToken, logout, setAccessToken } from '../store/auth';
 
-// Use local network IP for mobile devices, localhost for web
-const baseURL = (Constants?.expoConfig?.extra as any)?.apiBaseUrl || 
-  (typeof window !== 'undefined' ? 'http://localhost:8000' : 'http://192.168.10.25:8000');
+// Use localhost for all platforms (works with Expo tunneling and web)
+// For physical device testing on local network, update this to your machine's IP
+const baseURL = 'http://localhost:5000';
+
+console.log('[API Client] Using baseURL:', baseURL);
 
 export const api = axios.create({
 	baseURL,
@@ -37,30 +39,29 @@ api.interceptors.response.use(
 	},
 	async (error: AxiosError) => {
 		const originalRequest = error.config as any;
+		const requestUrl = originalRequest?.url || '';
 
 		// Handle 401 unauthorized errors (token expired)
 		if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
 			originalRequest._retry = true;
 
-			try {
-				// Try to refresh token or logout user
-				await logout();
-				// Redirect to login or show auth error
-				console.warn('Authentication failed - user logged out');
-			} catch (logoutError) {
-				console.error('Error during logout:', logoutError);
+			// Only logout if this was an auth request (login/register)
+			// For other requests, just let the error propagate
+			if (requestUrl.includes('/auth/')) {
+				console.warn('[API] Authentication failed on auth endpoint');
+			} else {
+				console.log('[API] 401 on', requestUrl, '- User needs to login');
 			}
 		}
 
 		// Handle network errors
 		if (!error.response) {
-			console.error('Network error:', error.message);
-			// Could show offline indicator here
+			console.error('[API] Network error:', error.message, 'on', requestUrl);
 		}
 
 		// Handle server errors
 		if (error.response?.status >= 500) {
-			console.error('Server error:', error.response.status, error.response.data);
+			console.error('[API] Server error:', error.response.status, error.response.data);
 		}
 
 		return Promise.reject(error);

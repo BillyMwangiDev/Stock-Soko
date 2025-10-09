@@ -2,7 +2,7 @@
 
 A modern, feature-rich React Native application for stock trading in African markets, built with Expo.
 
-## 🎨 Features
+##  Features
 
 ### Implemented Screens (14 Total)
 
@@ -37,7 +37,7 @@ A modern, feature-rich React Native application for stock trading in African mar
 - **Spacing** - 8px grid system
 - **Design Tokens** - Centralized styling
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -70,7 +70,7 @@ Create a `.env` file in the frontend directory:
 EXPO_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
 
-## 📱 Screen Navigation
+##  Screen Navigation
 
 Current structure uses bottom tabs:
 - Home
@@ -86,7 +86,7 @@ Additional screens accessible through user actions:
 - Settings (from Profile)
 - Wallet (from Profile)
 
-## 🎨 Design System
+##  Design System
 
 ### Color Palette
 
@@ -122,50 +122,50 @@ xl: 20px
 4xl: 36px
 ```
 
-## 🔧 Project Structure
+##  Project Structure
 
 ```
 frontend/
-├── src/
-│   ├── components/       # Reusable UI components
-│   │   ├── Button.tsx
-│   │   ├── Card.tsx
-│   │   ├── Input.tsx
-│   │   ├── Badge.tsx
-│   │   ├── EmptyState.tsx
-│   │   ├── LoadingState.tsx
-│   │   └── index.ts
-│   ├── screens/          # App screens
-│   │   ├── Splash.tsx
-│   │   ├── Onboarding.tsx
-│   │   ├── Home.tsx
-│   │   ├── Markets.tsx
-│   │   ├── StockDetail.tsx
-│   │   ├── TradeOrder.tsx
-│   │   ├── ReviewOrder.tsx
-│   │   ├── OrderStatus.tsx
-│   │   ├── Portfolio.tsx
-│   │   ├── News.tsx
-│   │   ├── Profile.tsx
-│   │   ├── AIAssistant.tsx
-│   │   ├── Settings.tsx
-│   │   ├── Wallet.tsx
-│   │   └── index.ts
-│   ├── theme/            # Design system
-│   │   ├── colors.ts
-│   │   ├── typography.ts
-│   │   ├── spacing.ts
-│   │   └── index.ts
-│   ├── api/              # API client
-│   │   └── client.ts
-│   └── store/            # State management
-│       └── auth.ts
-├── App.tsx               # Root component
-├── package.json
-└── tsconfig.json
+ src/
+    components/       # Reusable UI components
+       Button.tsx
+       Card.tsx
+       Input.tsx
+       Badge.tsx
+       EmptyState.tsx
+       LoadingState.tsx
+       index.ts
+    screens/          # App screens
+       Splash.tsx
+       Onboarding.tsx
+       Home.tsx
+       Markets.tsx
+       StockDetail.tsx
+       TradeOrder.tsx
+       ReviewOrder.tsx
+       OrderStatus.tsx
+       Portfolio.tsx
+       News.tsx
+       Profile.tsx
+       AIAssistant.tsx
+       Settings.tsx
+       Wallet.tsx
+       index.ts
+    theme/            # Design system
+       colors.ts
+       typography.ts
+       spacing.ts
+       index.ts
+    api/              # API client
+       client.ts
+    store/            # State management
+        auth.ts
+ App.tsx               # Root component
+ package.json
+ tsconfig.json
 ```
 
-## 🔌 API Integration
+##  API Integration
 
 The app integrates with the FastAPI backend:
 
@@ -176,63 +176,63 @@ The app integrates with the FastAPI backend:
 - **Payments** - `/payments/mpesa/deposit`
 - **Auth** - `/auth/register`, `/auth/login`
 
-## 📱 Features by Screen
+##  Features by Screen
 
 ### Markets
-- ✅ Search stocks by symbol/name
-- ✅ Filter by gainers/losers
-- ✅ Quick trade panel
-- ✅ AI recommendations
-- ✅ Add to watchlist
+-  Search stocks by symbol/name
+-  Filter by gainers/losers
+-  Quick trade panel
+-  AI recommendations
+-  Add to watchlist
 
 ### Stock Detail
-- ✅ Price chart (placeholder for Victory Native)
-- ✅ Tabs: Overview, Fundamentals, News
-- ✅ Buy/Sell buttons
-- ✅ Watchlist toggle
-- ✅ Set price alerts
+-  Price chart (placeholder for Victory Native)
+-  Tabs: Overview, Fundamentals, News
+-  Buy/Sell buttons
+-  Watchlist toggle
+-  Set price alerts
 
 ### Trade Flow
-- ✅ Market and limit orders
-- ✅ Cost breakdown with fees
-- ✅ Order review screen
-- ✅ Order status tracking
-- ✅ Success/failure handling
+-  Market and limit orders
+-  Cost breakdown with fees
+-  Order review screen
+-  Order status tracking
+-  Success/failure handling
 
 ### Portfolio
-- ✅ Total portfolio value
-- ✅ Unrealized P/L
-- ✅ Holdings with detailed stats
-- ✅ Watchlist management
-- ✅ Pull-to-refresh
+-  Total portfolio value
+-  Unrealized P/L
+-  Holdings with detailed stats
+-  Watchlist management
+-  Pull-to-refresh
 
 ### Wallet
-- ✅ Balance overview
-- ✅ M-Pesa deposits
-- ✅ Withdrawal requests
-- ✅ Transaction history
-- ✅ Tab navigation
+-  Balance overview
+-  M-Pesa deposits
+-  Withdrawal requests
+-  Transaction history
+-  Tab navigation
 
 ### AI Assistant
-- ✅ Chat interface
-- ✅ Suggested questions
-- ✅ Message history
-- ✅ Typing indicators
+-  Chat interface
+-  Suggested questions
+-  Message history
+-  Typing indicators
 
 ### Settings
-- ✅ Profile management
-- ✅ Security settings
-- ✅ Preferences (notifications, theme)
-- ✅ Support links
-- ✅ Account actions
+-  Profile management
+-  Security settings
+-  Preferences (notifications, theme)
+-  Support links
+-  Account actions
 
-## 🎯 Roadmap
+##  Roadmap
 
 ### Phase 1 (Current)
-- ✅ Core screens
-- ✅ UI components
-- ✅ Theme system
-- ✅ Basic API integration
+-  Core screens
+-  UI components
+-  Theme system
+-  Basic API integration
 
 ### Phase 2 (Next)
 - ⏳ Stack navigation setup
@@ -246,7 +246,7 @@ The app integrates with the FastAPI backend:
 - ⏳ Dark/light mode toggle
 - ⏳ Swahili language support
 
-## 🧪 Testing
+##  Testing
 
 ```bash
 # Run tests (when implemented)
@@ -259,13 +259,13 @@ npx tsc --noEmit
 npm run lint
 ```
 
-## 📚 Documentation
+##  Documentation
 
 - [Component Library](src/components/README.md)
 - [Implementation Status](../docs/IMPLEMENTATION-STATUS.md)
 - [UI Improvements Summary](../docs/UI-IMPROVEMENTS-SUMMARY.md)
 
-## 🤝 Contributing
+##  Contributing
 
 1. Follow the established coding style
 2. Use TypeScript for all new code
@@ -273,15 +273,15 @@ npm run lint
 4. Test on both iOS and Android
 5. Update documentation
 
-## 📄 License
+##  License
 
 Proprietary - Stock Soko Team
 
-## 📧 Support
+##  Support
 
 For support, email support@stocksoko.com
 
 ---
 
-**Built with ❤️ using React Native & Expo**
+**Built with  using React Native & Expo**
 

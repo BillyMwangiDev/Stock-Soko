@@ -66,6 +66,14 @@ export default function Login({ navigation }: Props) {
         <Text style={styles.title}>Welcome Back</Text>
         <Text style={styles.subtitle}>Sign in to continue trading</Text>
 
+        <View style={styles.testCredentialsHint}>
+          <Text style={styles.testCredentialsTitle}>Test Credentials:</Text>
+          <TouchableOpacity onPress={() => { setEmail('test@example.com'); setPassword('Test123!'); }}>
+            <Text style={styles.testCredentialsText}>Email: test@example.com | Password: Test123!</Text>
+            <Text style={styles.testCredentialsTap}>(Tap to autofill)</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.form}>
           <Input
             label="Email"
@@ -106,6 +114,13 @@ export default function Login({ navigation }: Props) {
               <Text style={styles.signupLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>
+
+          <TouchableOpacity 
+            style={styles.guestButton}
+            onPress={() => (navigation as any).navigate('MainTabs')}
+          >
+            <Text style={styles.guestButtonText}>Browse Markets as Guest</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -162,6 +177,47 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.base,
     color: colors.primary.main,
     fontWeight: typography.fontWeight.semibold,
+  },
+  testCredentialsHint: {
+    backgroundColor: colors.warning + '15',
+    borderLeftWidth: 3,
+    borderLeftColor: colors.warning,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    borderRadius: 8,
+  },
+  testCredentialsTitle: {
+    fontSize: typography.fontSize.xs,
+    color: colors.warning,
+    fontWeight: typography.fontWeight.bold,
+    marginBottom: spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  testCredentialsText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.primary,
+    fontWeight: typography.fontWeight.medium,
+  },
+  testCredentialsTap: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+    marginTop: spacing.xs,
+    fontStyle: 'italic',
+  },
+  guestButton: {
+    marginTop: spacing.xl,
+    padding: spacing.md,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+    backgroundColor: colors.background.card,
+    alignItems: 'center',
+  },
+  guestButtonText: {
+    fontSize: typography.fontSize.base,
+    color: colors.text.secondary,
+    fontWeight: typography.fontWeight.medium,
   },
 });
 

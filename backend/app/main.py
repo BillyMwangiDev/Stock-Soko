@@ -11,7 +11,7 @@ from .config import APP_NAME, ALLOWED_ORIGINS
 from .database import init_db
 from .routers import (
     health, markets, trades, payments, kyc, watchlist, ledger,
-    cds, auth, news, ai_chat, settings, dashboard, charts, alerts
+    cds, auth, news, ai_chat, settings, dashboard, charts, alerts, profile, broker
 )
 from .utils.middleware import RequestIdMiddleware, RateLimitMiddleware
 from .utils.error_handlers import (
@@ -80,6 +80,8 @@ async def metrics() -> PlainTextResponse:
 
 app.include_router(health.router)
 app.include_router(auth.router)
+app.include_router(profile.router)
+app.include_router(broker.router)
 app.include_router(dashboard.router)
 app.include_router(markets.router)
 app.include_router(trades.router)
