@@ -280,7 +280,17 @@ export default function Portfolio() {
         {/* Tax Estimate */}
         {portfolioSummary.total_profit_loss > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Tax Estimate</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Tax Estimate</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  hapticFeedback.impact();
+                  (navigation as any).navigate('TaxReports');
+                }}
+              >
+                <Text style={styles.seeAllText}>Full Report</Text>
+              </TouchableOpacity>
+            </View>
             <Card variant="glass" style={styles.taxCard}>
               <View style={styles.taxRow}>
                 <Text style={styles.taxLabel}>Capital Gains Tax (5%)</Text>
@@ -291,6 +301,17 @@ export default function Portfolio() {
               <Text style={styles.taxNote}>
                 Note: Tax applies only on realized gains when you sell
               </Text>
+              <TouchableOpacity
+                style={styles.viewReportButton}
+                onPress={() => {
+                  hapticFeedback.impact();
+                  (navigation as any).navigate('TaxReports');
+                }}
+              >
+                <Ionicons name="document-text-outline" size={16} color={colors.primary.main} />
+                <Text style={styles.viewReportText}>View Detailed Tax Report</Text>
+                <Ionicons name="arrow-forward" size={16} color={colors.primary.main} />
+              </TouchableOpacity>
             </Card>
           </>
         )}
@@ -358,12 +379,22 @@ const styles = StyleSheet.create({
   chartCard: {
     marginBottom: spacing.lg,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.xs,
+  },
   sectionTitle: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: spacing.md,
-    paddingHorizontal: spacing.xs,
+  },
+  seeAllText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.primary.main,
+    fontWeight: typography.fontWeight.medium,
   },
   holdingsContainer: {
     gap: spacing.md,
@@ -480,6 +511,21 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.card,
     borderRadius: borderRadius.md,
     padding: spacing.md,
+  },
+  viewReportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.main + '40',
+  },
+  viewReportText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.primary.main,
+    fontWeight: typography.fontWeight.semibold,
   },
   taxContent: {
     flexDirection: 'row',
@@ -719,5 +765,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: spacing.sm,
+  },
+  taxNote: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+    marginTop: spacing.sm,
+    lineHeight: 16,
   },
 });

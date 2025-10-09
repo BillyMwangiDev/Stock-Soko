@@ -51,6 +51,7 @@ export type PortfolioStackParamList = {
   Portfolio: undefined;
   HoldingDetail: { symbol: string; quantity: number; avgPrice: number };
   TradeHistory: undefined;
+  TaxReports: undefined;
 };
 
 export type ProfileStackParamList = {

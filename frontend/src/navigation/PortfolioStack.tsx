@@ -11,6 +11,7 @@ import { colors } from '../theme';
 import Portfolio from '../screens/Portfolio';
 import HoldingDetail from '../screens/HoldingDetail';
 import TradeHistory from '../screens/TradeHistory';
+import TaxReports from '../screens/TaxReports';
 
 const Stack = createStackNavigator<PortfolioStackParamList>();
 
@@ -54,6 +55,14 @@ export default function PortfolioStack() {
         component={TradeHistory}
         options={{ 
           title: 'Trade History',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen 
+        name="TaxReports" 
+        component={TaxReports}
+        options={{ 
+          title: 'Tax Reports',
           headerShown: false,
         }}
       />
