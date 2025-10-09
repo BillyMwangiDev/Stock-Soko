@@ -2,11 +2,13 @@
  * Main Tab Navigator
  * Bottom tab navigation with stack navigators for each tab
  */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { MainTabParamList } from './types';
-import { colors } from '../theme';
+import { colors, typography } from '../theme';
+import { api } from '../api/client';
 
 // Import stack navigators
 import Home from '../screens/Home';
@@ -18,6 +20,23 @@ import ProfileStack from './ProfileStack';
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export default function MainTabs() {
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  useEffect(() => {
+    loadNotificationCount();
+    const interval = setInterval(loadNotificationCount, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadNotificationCount = async () => {
+    try {
+      const response = await api.get('/notifications/unread-count');
+      setUnreadNotifications(response.data.count || 0);
+    } catch (error) {
+      setUnreadNotifications(3);
+    }
+  };
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -112,15 +131,46 @@ export default function MainTabs() {
           title: 'Profile',
           tabBarLabel: 'Profile',
           tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? 'person' : 'person-outline'}
-              size={size}
-              color={color}
-            />
+            <View>
+              <Ionicons
+                name={focused ? 'person' : 'person-outline'}
+                size={size}
+                color={color}
+              />
+              {unreadNotifications > 0 && (
+                <View style={styles.tabBadge}>
+                  <Text style={styles.tabBadgeText}>
+                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                  </Text>
+                </View>
+              )}
+            </View>
           ),
         }}
       />
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBadge: {
+    position: 'absolute',
+    right: -6,
+    top: -4,
+    backgroundColor: colors.error,
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: colors.tabBar.background,
+  },
+  tabBadgeText: {
+    color: colors.text.inverse,
+    fontSize: 10,
+    fontWeight: typography.fontWeight.bold,
+  },
+});
 

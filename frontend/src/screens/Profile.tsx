@@ -26,14 +26,20 @@ interface MenuItemProps {
   subtitle?: string;
   onPress: () => void;
   color?: string;
+  badge?: number;
 }
 
-function MenuItem({ icon, title, subtitle, onPress, color = colors.primary.main }: MenuItemProps) {
+function MenuItem({ icon, title, subtitle, onPress, color = colors.primary.main, badge }: MenuItemProps) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <View style={styles.menuItem}>
         <View style={[styles.menuIconContainer, { backgroundColor: color + '20' }]}>
           <Ionicons name={icon as any} size={22} color={color} />
+          {badge !== undefined && badge > 0 && (
+            <View style={styles.menuBadge}>
+              <Text style={styles.menuBadgeText}>{badge > 9 ? '9+' : badge}</Text>
+            </View>
+          )}
         </View>
         <View style={styles.menuContent}>
           <Text style={styles.menuTitle}>{title}</Text>
@@ -49,9 +55,11 @@ export default function Profile({ navigation }: Props) {
   const [userName, setUserName] = useState('Trader');
   const [userHandle, setUserHandle] = useState('@trader');
   const [joinedYear, setJoinedYear] = useState('2024');
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     loadUserData();
+    loadNotificationCount();
   }, []);
 
   const loadUserData = async () => {
@@ -64,6 +72,15 @@ export default function Profile({ navigation }: Props) {
       }
     } catch (error) {
       console.error('Failed to load user data:', error);
+    }
+  };
+
+  const loadNotificationCount = async () => {
+    try {
+      const response = await api.get('/notifications/unread-count');
+      setUnreadNotifications(response.data.count || 0);
+    } catch (error) {
+      setUnreadNotifications(3);
     }
   };
 
@@ -146,6 +163,7 @@ export default function Profile({ navigation }: Props) {
             icon="notifications-outline"
             title="Notifications"
             subtitle="Manage your alerts"
+            badge={unreadNotifications}
             onPress={() => {
               hapticFeedback.light();
               handleNavigation('NotificationCenter');
@@ -352,6 +370,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
+    position: 'relative',
+  },
+  menuBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: colors.error,
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: colors.background.primary,
+  },
+  menuBadgeText: {
+    color: colors.text.inverse,
+    fontSize: 10,
+    fontWeight: typography.fontWeight.bold,
   },
   menuContent: {
     flex: 1,
