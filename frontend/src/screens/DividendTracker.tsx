@@ -259,13 +259,13 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
   headerTitle: {
-    fontSize: typography.sizes.h2,
+    fontSize: typography.fontSize['3xl'],
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
     marginBottom: spacing.sm,
   },
   headerSubtitle: {
-    fontSize: typography.sizes.md,
+    fontSize: typography.fontSize.base,
     color: colors.text.secondary,
     lineHeight: 22,
   },
@@ -294,18 +294,18 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   summaryLabel: {
-    fontSize: typography.sizes.sm,
+    fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
     marginBottom: spacing.xs,
   },
   summaryAmount: {
-    fontSize: typography.sizes.xl,
+    fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
     marginBottom: spacing.xs,
   },
   summaryCount: {
-    fontSize: typography.sizes.xs,
+    fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
   },
   tabsContainer: {
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     borderColor: colors.primary.main,
   },
   tabText: {
-    fontSize: typography.sizes.md,
+    fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
     color: colors.text.secondary,
   },
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxl,
   },
   sectionTitle: {
-    fontSize: typography.sizes.lg,
+    fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
     marginBottom: spacing.lg,
@@ -373,24 +373,24 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   tickerText: {
-    fontSize: typography.sizes.sm,
+    fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.bold,
     color: colors.primary.main,
   },
   stockName: {
-    fontSize: typography.sizes.md,
+    fontSize: typography.fontSize.base,
     color: colors.text.secondary,
   },
   amountContainer: {
     alignItems: 'flex-end',
   },
   amountLabel: {
-    fontSize: typography.sizes.xs,
+    fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
     marginBottom: spacing.xs,
   },
   amount: {
-    fontSize: typography.sizes.xl,
+    fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     color: colors.success,
   },
@@ -408,11 +408,11 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   detailLabel: {
-    fontSize: typography.sizes.xs,
+    fontSize: typography.fontSize.xs,
     color: colors.text.secondary,
   },
   detailValue: {
-    fontSize: typography.sizes.sm,
+    fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
     color: colors.text.primary,
   },
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   yieldText: {
-    fontSize: typography.sizes.sm,
+    fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
     color: colors.success,
   },
@@ -474,17 +474,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   paymentTicker: {
-    fontSize: typography.sizes.lg,
+    fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
   },
   paymentAmount: {
-    fontSize: typography.sizes.lg,
+    fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold,
     color: colors.success,
   },
   paymentStockName: {
-    fontSize: typography.sizes.sm,
+    fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
   },
   paymentDetails: {
@@ -497,11 +497,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   paymentDetailLabel: {
-    fontSize: typography.sizes.sm,
+    fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
   },
   paymentDetailValue: {
-    fontSize: typography.sizes.sm,
+    fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
     color: colors.text.primary,
   },
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent.gold + '20',
   },
   statusText: {
-    fontSize: typography.sizes.xs,
+    fontSize: typography.fontSize.xs,
     fontWeight: typography.fontWeight.bold,
   },
   statusTextPaid: {
@@ -533,14 +533,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyStateTitle: {
-    fontSize: typography.sizes.xl,
+    fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
   },
   emptyStateText: {
-    fontSize: typography.sizes.md,
+    fontSize: typography.fontSize.base,
     color: colors.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
