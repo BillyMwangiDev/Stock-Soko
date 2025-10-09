@@ -43,8 +43,11 @@ export default function Login({ navigation }: Props) {
       await setAccessToken(res.data.access_token);
       await AsyncStorage.setItem('userEmail', email);
       
-      if (typeof window !== 'undefined') {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
         window.location.reload();
+      } else {
+        // For mobile, navigation will be handled by RootNavigator
+        // The token change will trigger a re-render
       }
     } catch (error: any) {
       console.error('Login error:', error);

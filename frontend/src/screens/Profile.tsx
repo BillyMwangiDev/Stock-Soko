@@ -3,7 +3,7 @@
  * User profile, account settings, and logout
  */
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity, Platform } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { ProfileStackParamList } from '../navigation/types';
@@ -100,7 +100,7 @@ export default function Profile({ navigation }: Props) {
             await setAccessToken('');
             await AsyncStorage.removeItem('userEmail');
             
-            if (typeof window !== 'undefined') {
+            if (Platform.OS === 'web' && typeof window !== 'undefined') {
               window.location.reload();
             }
           },

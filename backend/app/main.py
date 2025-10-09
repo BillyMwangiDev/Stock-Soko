@@ -11,7 +11,7 @@ from .config import APP_NAME, ALLOWED_ORIGINS
 from .database import init_db
 from .routers import (
     health, markets, trades, payments, kyc, watchlist, ledger,
-    cds, auth, news, ai_chat, settings, dashboard, charts, alerts, profile, broker
+    cds, auth, news, ai_chat, settings, dashboard, charts, alerts, profile, broker, notifications
 )
 from .utils.middleware import RequestIdMiddleware, RateLimitMiddleware
 from .utils.error_handlers import (
@@ -95,3 +95,4 @@ app.include_router(ai_chat.router)
 app.include_router(settings.router)
 app.include_router(charts.router)
 app.include_router(alerts.router)
+app.include_router(notifications.router)
