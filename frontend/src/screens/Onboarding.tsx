@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 import { AuthStackParamList } from '../navigation/types';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { Button } from '../components';
@@ -25,28 +26,28 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: 1,
-    icon: '↗',
+    icon: 'trending-up',
     iconBg: colors.success + '20',
     title: 'Trade Kenyan Stocks Instantly',
     description: 'Access the Nairobi Securities Exchange with minimal fees. Buy and sell stocks in real-time with our OKX-style trading interface.',
   },
   {
     id: 2,
-    icon: '✦',
+    icon: 'sparkles',
     iconBg: colors.primary.main + '20',
     title: 'AI-Powered Insights',
     description: 'Get personalized stock recommendations, detailed market analysis, and AI chat assistance powered by advanced algorithms.',
   },
   {
     id: 3,
-    icon: '$',
+    icon: 'wallet',
     iconBg: colors.warning + '20',
     title: 'M-Pesa Integration',
     description: 'Seamlessly deposit and withdraw funds using M-Pesa. Fast, secure, and convenient payments at your fingertips.',
   },
   {
     id: 4,
-    icon: '📊',
+    icon: 'pie-chart',
     iconBg: colors.info + '20',
     title: 'Real-Time Portfolio Tracking',
     description: 'Monitor your investments with live P/L calculations, tax estimates, and performance analytics. Your complete financial dashboard.',
@@ -117,7 +118,7 @@ export default function Onboarding({ navigation }: Props) {
             <View style={styles.content}>
               {/* Icon Container */}
               <View style={[styles.iconContainer, { backgroundColor: slide.iconBg }]}>
-                <Text style={styles.icon}>{slide.icon}</Text>
+                <Ionicons name={slide.icon as any} size={64} color={colors.text.primary} />
               </View>
               
               {/* Content */}
@@ -198,10 +199,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
     borderWidth: 2,
     borderColor: colors.border.main + '40',
-  },
-  icon: {
-    fontSize: 64,
-    textAlign: 'center',
   },
   title: {
     fontSize: typography.fontSize['3xl'],

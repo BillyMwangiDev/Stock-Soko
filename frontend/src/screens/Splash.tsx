@@ -27,10 +27,6 @@ export default function Splash({ navigation }: Props) {
       
       // Check if user is logged in
       if (isAuthenticated()) {
-        // User is logged in, should go to main app
-        // But we're in Auth stack, so this will be handled by RootNavigator
-        // For now, just show a message
-        console.log('User already logged in, RootNavigator should show Main stack');
         return;
       }
       

@@ -19,7 +19,6 @@ export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: Review
   const handleConfirm = async () => {
     setConfirming(true);
     try {
-      // Execute order via API
       const orderPayload = {
         symbol: order.symbol,
         side: order.side,
@@ -28,11 +27,8 @@ export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: Review
         price: order.limitPrice || order.price,
       };
 
-      console.log('Executing order:', orderPayload);
-      const response = await api.post('/trades', orderPayload);
-      console.log('Order executed:', response.data);
+      await api.post('/trades', orderPayload);
 
-      // Show success message
       Alert.alert(
         'Order Placed',
         `Your ${order.side} order for ${order.quantity} shares of ${order.symbol} has been placed successfully.`,

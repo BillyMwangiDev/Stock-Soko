@@ -24,8 +24,6 @@ export default function Login({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    console.log('Login button clicked', { email, password: '***' });
-    
     if (!email || !password) {
       Alert.alert('Error', 'Please enter email and password');
       return;
@@ -33,33 +31,23 @@ export default function Login({ navigation }: Props) {
 
     try {
       setLoading(true);
-      console.log('Sending login request...');
       
       const formBody = new URLSearchParams();
       formBody.append('username', email);
       formBody.append('password', password);
       
-      console.log('Form body:', formBody.toString());
-      
       const res = await api.post('/auth/login', formBody.toString(), {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
       
-      console.log('Login successful, token received');
-      
-      // Save token using auth store (updates both AsyncStorage and memory)
       await setAccessToken(res.data.access_token);
       await AsyncStorage.setItem('userEmail', email);
       
-      console.log('Token saved, reloading to trigger navigation');
-      
-      // Reload immediately to trigger RootNavigator re-check
       if (typeof window !== 'undefined') {
         window.location.reload();
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      console.error('Error response:', error?.response?.data);
       Alert.alert('Login Failed', error?.response?.data?.detail || error?.message || 'Invalid credentials');
     } finally {
       setLoading(false);

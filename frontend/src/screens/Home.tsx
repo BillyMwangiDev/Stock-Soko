@@ -6,7 +6,6 @@ import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { LoadingState, FloatingAIButton, Card } from '../components';
 import { useApp } from '../contexts';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface PortfolioData {
   value: number;
@@ -120,11 +119,11 @@ export default function Home() {
           />
         }
       >
-        {/* Personalized Greeting */}
-        <View style={styles.greetingSection}>
-          <Text style={styles.greeting}>Karibu, {userName} 👋</Text>
-          <Text style={styles.subtitle}>Welcome to Stock Soko</Text>
-        </View>
+                {/* Personalized Greeting */}
+                <View style={styles.greetingSection}>
+                  <Text style={styles.greeting}>Welcome, {userName}</Text>
+                  <Text style={styles.subtitle}>Stock Soko Trading Dashboard</Text>
+                </View>
 
         {/* Enhanced Portfolio Summary Card */}
         <Card variant="elevated" style={styles.portfolioCard}>

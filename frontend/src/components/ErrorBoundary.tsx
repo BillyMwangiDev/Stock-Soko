@@ -106,7 +106,6 @@ export class ErrorBoundary extends Component<Props, State> {
           text: 'Yes',
           onPress: () => {
             // In a real app, you would send the error report here
-            console.log('Error report:', { errorId, error: error?.message });
             Alert.alert('Thank you!', 'Error report sent. We appreciate your help!');
           }
         }

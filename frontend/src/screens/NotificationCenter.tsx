@@ -120,7 +120,6 @@ export default function NotificationCenter({ navigation }: Props) {
 
   const handleNotificationPress = (notification: Notification) => {
     // Navigate to relevant screen or show details
-    console.log('Notification pressed:', notification.title);
   };
 
   return (
