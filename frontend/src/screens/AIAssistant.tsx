@@ -22,6 +22,17 @@ interface Message {
   hasChart?: boolean;
 }
 
+const SUGGESTED_QUESTIONS = [
+  "Analyze KCB stock",
+  "Compare Safaricom vs Equity",
+  "What to buy with 10,000 KES?",
+  "Best dividend stocks",
+  "Market outlook for 2025",
+  "Explain P/E ratio",
+  "How to diversify portfolio?",
+  "Banking sector analysis",
+];
+
 export default function AIAssistant({ navigation }: Props) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -32,10 +43,16 @@ export default function AIAssistant({ navigation }: Props) {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const handleBack = () => {
     navigation.goBack();
+  };
+
+  const handleSuggestionPress = (question: string) => {
+    setInput(question);
+    setShowSuggestions(false);
   };
 
   const handleSend = async () => {
@@ -50,6 +67,7 @@ export default function AIAssistant({ navigation }: Props) {
     const userInput = input;
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setShowSuggestions(false);
     setLoading(true);
 
     try {
@@ -190,6 +208,28 @@ export default function AIAssistant({ navigation }: Props) {
 
         <View style={{ height: 20 }} />
       </ScrollView>
+
+      {/* Suggested Questions */}
+      {showSuggestions && messages.length <= 1 && (
+        <View style={styles.suggestionsContainer}>
+          <Text style={styles.suggestionsTitle}>Suggested Questions:</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.suggestionsScroll}
+          >
+            {SUGGESTED_QUESTIONS.map((question, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.suggestionChip}
+                onPress={() => handleSuggestionPress(question)}
+              >
+                <Text style={styles.suggestionText}>{question}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       {/* Input Footer */}
       <View style={styles.footer}>
@@ -357,6 +397,36 @@ const styles = StyleSheet.create({
   chartText: {
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
+  },
+  suggestionsContainer: {
+    backgroundColor: colors.background.secondary + 'dd',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.main,
+  },
+  suggestionsTitle: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+    marginBottom: spacing.sm,
+    fontWeight: typography.fontWeight.medium,
+  },
+  suggestionsScroll: {
+    paddingRight: spacing.lg,
+  },
+  suggestionChip: {
+    backgroundColor: colors.background.tertiary,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    marginRight: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+  },
+  suggestionText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    fontWeight: typography.fontWeight.medium,
   },
   footer: {
     paddingHorizontal: spacing.md,
