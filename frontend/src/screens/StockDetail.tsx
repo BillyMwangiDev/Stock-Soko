@@ -49,6 +49,15 @@ export default function StockDetail() {
   const [aiRecommendation, setAiRecommendation] = useState<any>(null);
   const [loadingAI, setLoadingAI] = useState(false);
   
+  // Order Book states
+  const [showOrderBook, setShowOrderBook] = useState(false);
+  const [orderBook, setOrderBook] = useState<{
+    bids: Array<{ price: number; quantity: number; total: number }>;
+    asks: Array<{ price: number; quantity: number; total: number }>;
+    spread: number;
+    spreadPercent: number;
+  } | null>(null);
+  
   // Order flow states
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -63,6 +72,12 @@ export default function StockDetail() {
     checkWatchlist();
     loadAIRecommendation();
   }, [symbol]);
+
+  useEffect(() => {
+    if (stock) {
+      loadOrderBook();
+    }
+  }, [stock]);
 
   const loadAIRecommendation = async () => {
     setLoadingAI(true);
@@ -192,6 +207,43 @@ export default function StockDetail() {
       console.error('Failed to load stock:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadOrderBook = async () => {
+    try {
+      // In production: const res = await api.get(`/markets/orderbook/${symbol}`);
+      // For now, generate realistic mock data
+      if (!stock) return;
+      
+      const basePrice = stock?.last_price || 100;
+      const bids: Array<{ price: number; quantity: number; total: number }> = [];
+      const asks: Array<{ price: number; quantity: number; total: number }> = [];
+      
+      // Generate 5 bid levels (buy orders below current price)
+      let totalBidQty = 0;
+      for (let i = 0; i < 5; i++) {
+        const price = basePrice * (1 - (i + 1) * 0.002); // 0.2% steps
+        const quantity = Math.floor(Math.random() * 5000) + 1000;
+        totalBidQty += quantity;
+        bids.push({ price, quantity, total: totalBidQty });
+      }
+      
+      // Generate 5 ask levels (sell orders above current price)
+      let totalAskQty = 0;
+      for (let i = 0; i < 5; i++) {
+        const price = basePrice * (1 + (i + 1) * 0.002); // 0.2% steps
+        const quantity = Math.floor(Math.random() * 5000) + 1000;
+        totalAskQty += quantity;
+        asks.push({ price, quantity, total: totalAskQty });
+      }
+      
+      const spread = asks[0].price - bids[0].price;
+      const spreadPercent = (spread / basePrice) * 100;
+      
+      setOrderBook({ bids, asks, spread, spreadPercent });
+    } catch (error) {
+      console.error('Failed to load order book:', error);
     }
   };
 
@@ -574,6 +626,119 @@ export default function StockDetail() {
             </View>
           </View>
         </View>
+
+        {/* Order Book Section */}
+        <TouchableOpacity
+          style={styles.orderBookToggle}
+          onPress={() => setShowOrderBook(!showOrderBook)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.orderBookToggleHeader}>
+            <View style={styles.orderBookToggleLeft}>
+              <Text style={styles.orderBookToggleIcon}>📊</Text>
+              <Text style={styles.orderBookToggleTitle}>Order Book</Text>
+              {orderBook && (
+                <View style={styles.spreadBadge}>
+                  <Text style={styles.spreadBadgeText}>
+                    Spread: {orderBook.spreadPercent.toFixed(2)}%
+                  </Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.orderBookToggleArrow}>{showOrderBook ? '▼' : '▶'}</Text>
+          </View>
+        </TouchableOpacity>
+
+        {showOrderBook && orderBook && (
+          <View style={styles.orderBookContainer}>
+            {/* Spread Info */}
+            <View style={styles.orderBookSpreadInfo}>
+              <Text style={styles.orderBookSpreadLabel}>Best Bid-Ask Spread</Text>
+              <Text style={styles.orderBookSpreadValue}>
+                KES {orderBook.spread.toFixed(2)} ({orderBook.spreadPercent.toFixed(3)}%)
+              </Text>
+            </View>
+
+            {/* Order Book Table */}
+            <View style={styles.orderBookTable}>
+              {/* Headers */}
+              <View style={styles.orderBookRow}>
+                <View style={styles.orderBookCol}>
+                  <Text style={styles.orderBookHeader}>Price (KES)</Text>
+                </View>
+                <View style={styles.orderBookCol}>
+                  <Text style={styles.orderBookHeader}>Quantity</Text>
+                </View>
+                <View style={styles.orderBookCol}>
+                  <Text style={styles.orderBookHeader}>Total</Text>
+                </View>
+              </View>
+
+              {/* Asks (Sell Orders) - Red */}
+              <Text style={styles.orderBookSectionTitle}>SELL ORDERS</Text>
+              {[...orderBook.asks].reverse().map((ask, index) => {
+                const depthPercent = (ask.total / orderBook.asks[orderBook.asks.length - 1].total) * 100;
+                return (
+                  <View key={`ask-${index}`} style={styles.orderBookRow}>
+                    <View style={[styles.depthBar, styles.depthBarAsk, { width: `${depthPercent}%` }]} />
+                    <View style={styles.orderBookCol}>
+                      <Text style={[styles.orderBookPrice, styles.orderBookPriceAsk]}>
+                        {ask.price.toFixed(2)}
+                      </Text>
+                    </View>
+                    <View style={styles.orderBookCol}>
+                      <Text style={styles.orderBookQty}>{ask.quantity.toLocaleString()}</Text>
+                    </View>
+                    <View style={styles.orderBookCol}>
+                      <Text style={styles.orderBookTotal}>{ask.total.toLocaleString()}</Text>
+                    </View>
+                  </View>
+                );
+              })}
+
+              {/* Current Price Indicator */}
+              <View style={styles.orderBookCurrentPrice}>
+                <Text style={[styles.orderBookCurrentPriceText, { color: isPositive ? colors.success : colors.error }]}>
+                  ← Current: KES {stock.last_price.toFixed(2)} →
+                </Text>
+              </View>
+
+              {/* Bids (Buy Orders) - Green */}
+              <Text style={styles.orderBookSectionTitle}>BUY ORDERS</Text>
+              {orderBook.bids.map((bid, index) => {
+                const depthPercent = (bid.total / orderBook.bids[orderBook.bids.length - 1].total) * 100;
+                return (
+                  <View key={`bid-${index}`} style={styles.orderBookRow}>
+                    <View style={[styles.depthBar, styles.depthBarBid, { width: `${depthPercent}%` }]} />
+                    <View style={styles.orderBookCol}>
+                      <Text style={[styles.orderBookPrice, styles.orderBookPriceBid]}>
+                        {bid.price.toFixed(2)}
+                      </Text>
+                    </View>
+                    <View style={styles.orderBookCol}>
+                      <Text style={styles.orderBookQty}>{bid.quantity.toLocaleString()}</Text>
+                    </View>
+                    <View style={styles.orderBookCol}>
+                      <Text style={styles.orderBookTotal}>{bid.total.toLocaleString()}</Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+
+            {/* Order Book Legend */}
+            <View style={styles.orderBookLegend}>
+              <View style={styles.orderBookLegendItem}>
+                <View style={[styles.orderBookLegendDot, { backgroundColor: colors.error }]} />
+                <Text style={styles.orderBookLegendText}>Sell Orders (Asks)</Text>
+              </View>
+              <View style={styles.orderBookLegendItem}>
+                <View style={[styles.orderBookLegendDot, { backgroundColor: colors.success }]} />
+                <Text style={styles.orderBookLegendText}>Buy Orders (Bids)</Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -1352,5 +1517,161 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     color: colors.text.primary,
     fontWeight: typography.fontWeight.semibold,
+  },
+  orderBookToggle: {
+    backgroundColor: colors.background.secondary,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+  },
+  orderBookToggleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: spacing.md,
+  },
+  orderBookToggleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  orderBookToggleIcon: {
+    fontSize: 20,
+  },
+  orderBookToggleTitle: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+  },
+  spreadBadge: {
+    backgroundColor: colors.info + '20',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  spreadBadgeText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.info,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  orderBookToggleArrow: {
+    fontSize: 16,
+    color: colors.text.secondary,
+  },
+  orderBookContainer: {
+    backgroundColor: colors.background.secondary,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.main,
+    padding: spacing.md,
+  },
+  orderBookSpreadInfo: {
+    backgroundColor: colors.background.tertiary,
+    padding: spacing.md,
+    borderRadius: borderRadius.sm,
+    marginBottom: spacing.md,
+  },
+  orderBookSpreadLabel: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+    marginBottom: 2,
+  },
+  orderBookSpreadValue: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  orderBookTable: {
+    marginTop: spacing.sm,
+  },
+  orderBookRow: {
+    flexDirection: 'row',
+    paddingVertical: spacing.xs,
+    position: 'relative',
+  },
+  orderBookCol: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  orderBookHeader: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  orderBookSectionTitle: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  orderBookPrice: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  orderBookPriceAsk: {
+    color: colors.error,
+  },
+  orderBookPriceBid: {
+    color: colors.success,
+  },
+  orderBookQty: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+  },
+  orderBookTotal: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.tertiary,
+  },
+  depthBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: '100%',
+    opacity: 0.15,
+  },
+  depthBarAsk: {
+    backgroundColor: colors.error,
+  },
+  depthBarBid: {
+    backgroundColor: colors.success,
+  },
+  orderBookCurrentPrice: {
+    backgroundColor: colors.background.tertiary,
+    padding: spacing.sm,
+    marginVertical: spacing.sm,
+    borderRadius: borderRadius.sm,
+    alignItems: 'center',
+  },
+  orderBookCurrentPriceText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.bold,
+  },
+  orderBookLegend: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.lg,
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.main,
+  },
+  orderBookLegendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  orderBookLegendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  orderBookLegendText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.secondary,
   },
 });
