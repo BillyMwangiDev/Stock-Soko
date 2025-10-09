@@ -16,6 +16,10 @@ interface NewsArticle {
   source?: string;
   published_at?: string;
   url?: string;
+  aiSummary?: string;
+  sentiment?: 'Bullish' | 'Bearish' | 'Neutral';
+  impactStocks?: string[];
+  impactDirection?: 'positive' | 'negative' | 'neutral';
 }
 
 export default function News() {
@@ -36,21 +40,57 @@ export default function News() {
     loadNews();
   }, [activeCategory]);
 
+  const generateAISummary = (title: string, description: string): string => {
+    // In production, call AI API. For now, intelligent extraction
+    const words = description.split(' ').slice(0, 20).join(' ');
+    return words.length < description.length ? words + '...' : words;
+  };
+
+  const detectSentiment = (title: string, description: string): 'Bullish' | 'Bearish' | 'Neutral' => {
+    const text = (title + ' ' + description).toLowerCase();
+    const bullishWords = ['gains', 'growth', 'surge', 'positive', 'up', 'rise', 'strong', 'profit'];
+    const bearishWords = ['loss', 'decline', 'drop', 'negative', 'down', 'fall', 'weak', 'concern'];
+    
+    const bullishCount = bullishWords.filter(word => text.includes(word)).length;
+    const bearishCount = bearishWords.filter(word => text.includes(word)).length;
+    
+    if (bullishCount > bearishCount) return 'Bullish';
+    if (bearishCount > bullishCount) return 'Bearish';
+    return 'Neutral';
+  };
+
+  const extractImpactStocks = (title: string, description: string): string[] => {
+    const text = title + ' ' + description;
+    const stockSymbols = ['SCOM', 'KCB', 'EQTY', 'EABL', 'SBIC', 'BAT', 'COOP', 'NBK'];
+    return stockSymbols.filter(symbol => text.includes(symbol));
+  };
+
   const loadNews = async () => {
     try {
       const params = activeCategory !== 'all' ? { category: activeCategory } : {};
       const response = await api.get('/news', { params });
       
       const newsData = response.data.news || response.data.articles || [];
-      setArticles(newsData.map((item: any) => ({
-        id: item.id || item.article_id || Math.random().toString(),
-        category: item.category || 'Markets',
-        title: item.title || '',
-        description: item.description || item.summary || item.content || '',
-        source: item.source || 'Stock Soko',
-        published_at: item.published_at || item.date || new Date().toISOString(),
-        url: item.url || '',
-      })));
+      setArticles(newsData.map((item: any) => {
+        const title = item.title || '';
+        const description = item.description || item.summary || item.content || '';
+        const sentiment = detectSentiment(title, description);
+        const impactStocks = extractImpactStocks(title, description);
+        
+        return {
+          id: item.id || item.article_id || Math.random().toString(),
+          category: item.category || 'Markets',
+          title,
+          description,
+          source: item.source || 'Stock Soko',
+          published_at: item.published_at || item.date || new Date().toISOString(),
+          url: item.url || '',
+          aiSummary: generateAISummary(title, description),
+          sentiment,
+          impactStocks: impactStocks.length > 0 ? impactStocks : undefined,
+          impactDirection: sentiment === 'Bullish' ? 'positive' : sentiment === 'Bearish' ? 'negative' : 'neutral',
+        };
+      }));
     } catch (error) {
       console.error('Failed to load news:', error);
       // Fallback to mock data if API fails
@@ -135,11 +175,57 @@ export default function News() {
               activeOpacity={0.7}
             >
               <View style={styles.articleContent}>
-                <Text style={styles.categoryLabel}>{article.category.toUpperCase()}</Text>
+                <View style={styles.articleHeader}>
+                  <Text style={styles.categoryLabel}>{article.category.toUpperCase()}</Text>
+                  {article.sentiment && (
+                    <View style={[
+                      styles.sentimentBadge,
+                      { backgroundColor: article.sentiment === 'Bullish' ? colors.success + '20' : 
+                                        article.sentiment === 'Bearish' ? colors.error + '20' : 
+                                        colors.text.tertiary + '20' }
+                    ]}>
+                      <Text style={[
+                        styles.sentimentText,
+                        { color: article.sentiment === 'Bullish' ? colors.success : 
+                                 article.sentiment === 'Bearish' ? colors.error : 
+                                 colors.text.tertiary }
+                      ]}>
+                        {article.sentiment}
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={styles.articleTitle}>{article.title}</Text>
-                <Text style={styles.articleDescription} numberOfLines={3}>
-                  {article.description}
-                </Text>
+                {article.aiSummary && (
+                  <View style={styles.aiSummaryContainer}>
+                    <Text style={styles.aiSummaryLabel}>AI Summary:</Text>
+                    <Text style={styles.aiSummaryText} numberOfLines={2}>
+                      {article.aiSummary}
+                    </Text>
+                  </View>
+                )}
+                {article.impactStocks && article.impactStocks.length > 0 && (
+                  <View style={styles.impactStocks}>
+                    <Text style={styles.impactLabel}>Impact: </Text>
+                    {article.impactStocks.slice(0, 3).map((stock, idx) => (
+                      <View key={stock} style={[
+                        styles.impactStockBadge,
+                        { backgroundColor: article.impactDirection === 'positive' ? colors.success + '20' : 
+                                           article.impactDirection === 'negative' ? colors.error + '20' : 
+                                           colors.text.tertiary + '20' }
+                      ]}>
+                        <Text style={[
+                          styles.impactStockText,
+                          { color: article.impactDirection === 'positive' ? colors.success : 
+                                   article.impactDirection === 'negative' ? colors.error : 
+                                   colors.text.tertiary }
+                        ]}>
+                          {stock}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
               
               <View style={styles.articleImage}>
@@ -234,12 +320,26 @@ const styles = StyleSheet.create({
   articleContent: {
     flex: 2,
   },
+  articleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+  },
   categoryLabel: {
     fontSize: 10,
     fontWeight: typography.fontWeight.semibold,
     letterSpacing: 1.2,
     color: colors.primary.main,
-    marginBottom: spacing.xs,
+  },
+  sentimentBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  sentimentText: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.bold,
   },
   articleTitle: {
     fontSize: typography.fontSize.lg,
@@ -252,6 +352,46 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
     lineHeight: 20,
+  },
+  aiSummaryContainer: {
+    backgroundColor: colors.primary.main + '10',
+    padding: spacing.sm,
+    borderRadius: borderRadius.sm,
+    marginTop: spacing.sm,
+    borderLeftWidth: 2,
+    borderLeftColor: colors.primary.main,
+  },
+  aiSummaryLabel: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.primary.main,
+    marginBottom: 2,
+  },
+  aiSummaryText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    lineHeight: 18,
+  },
+  impactStocks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  impactLabel: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+    fontWeight: typography.fontWeight.medium,
+  },
+  impactStockBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  impactStockText: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.bold,
   },
   articleImage: {
     flex: 1,
