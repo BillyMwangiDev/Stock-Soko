@@ -30,6 +30,7 @@ import TermsConditions from '../screens/TermsConditions';
 import LanguageSelection from '../screens/LanguageSelection';
 import DeleteAccount from '../screens/DeleteAccount';
 import LiveChat from '../screens/LiveChat';
+import FeesDisclosure from '../screens/FeesDisclosure';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
 
@@ -40,7 +41,7 @@ export default function ProfileStack() {
         headerStyle: {
           backgroundColor: colors.background.primary,
           elevation: 0,
-          shadowOpacity: 0,
+          boxShadow: 'none',
           borderBottomWidth: 1,
           borderBottomColor: colors.border.main,
         },
@@ -233,6 +234,14 @@ export default function ProfileStack() {
         component={LiveChat}
         options={{
           title: 'Live Chat',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="FeesDisclosure"
+        component={FeesDisclosure}
+        options={{
+          title: 'Fees & Charges',
           headerShown: false,
         }}
       />

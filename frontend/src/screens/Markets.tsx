@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Alert, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { Card, LoadingState } from '../components';
 import { hapticFeedback } from '../utils/haptics';
+import { mockStocks } from '../mocks/stocks';
 
 interface Instrument {
   symbol: string;
@@ -30,10 +31,11 @@ export default function Markets() {
   const navigation = useNavigation();
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [filteredInstruments, setFilteredInstruments] = useState<Instrument[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Changed to false - load mocks instantly
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'gainers' | 'losers'>('all');
+  const [dataSource, setDataSource] = useState<'mock' | 'api'>('mock');
   const [marketSummary, setMarketSummary] = useState<MarketSummary>({
     nse20: 1842.50,
     nse20Change: 2.3,
@@ -42,65 +44,84 @@ export default function Markets() {
     totalLosers: 0,
   });
 
+  // Load mock data immediately on mount, then try API in background
   useEffect(() => {
-    loadMarkets();
+    loadMockData();
+    loadMarketsFromAPI();
   }, []);
 
   useEffect(() => {
     filterInstruments();
   }, [searchQuery, activeTab, instruments]);
 
-  const loadMarkets = async (isRefreshing = false) => {
+  const loadMockData = () => {
+    // Convert mock stocks to Instrument format instantly
+    const mockInstruments: Instrument[] = mockStocks.map(stock => ({
+      symbol: stock.symbol,
+      name: stock.name,
+      last_price: stock.price,
+      change_pct: stock.changePercent,
+      volume: stock.volume,
+      market_cap: stock.marketCap,
+    }));
+    
+    setInstruments(mockInstruments);
+    setDataSource('mock');
+    
+    // Calculate mock market summary
+    const gainers = mockInstruments.filter(i => i.change_pct > 0);
+    const losers = mockInstruments.filter(i => i.change_pct < 0);
+    const totalVolume = mockInstruments.reduce((sum, i) => sum + (i.volume || 0), 0);
+    
+    setMarketSummary(prev => ({
+      ...prev,
+      volume: totalVolume,
+      totalGainers: gainers.length,
+      totalLosers: losers.length,
+    }));
+  };
+
+  const loadMarketsFromAPI = async (isRefreshing = false) => {
     if (isRefreshing) {
       setRefreshing(true);
-    } else {
-      setLoading(true);
     }
     
     try {
-      console.log('[Markets] Fetching from /markets endpoint...');
-      const res = await api.get('/markets');
-      console.log('[Markets] Response received:', res.data);
+      console.log('[Markets] Fetching stocks from API in background...');
+      const res = await api.get('/markets/stocks', { timeout: 5000 }); // 5s timeout
       
-      const stocks = res.data.instruments || [];
-      console.log('[Markets] Total stocks loaded:', stocks.length);
-      
-      setInstruments(stocks);
-      
-      // Calculate market summary
-      const gainers = stocks.filter((i: Instrument) => i.change_pct > 0);
-      const losers = stocks.filter((i: Instrument) => i.change_pct < 0);
-      const totalVolume = stocks.reduce((sum: number, i: Instrument) => sum + (i.volume || 0), 0);
-      
-      setMarketSummary(prev => ({
-        ...prev,
-        volume: totalVolume,
-        totalGainers: gainers.length,
-        totalLosers: losers.length,
+      const stocks = (res.data.stocks || []).map((s: any) => ({
+        ...s,
+        change_pct: s.change_percent
       }));
       
-      console.log('[Markets] Market summary updated:', { totalStocks: stocks.length, gainers: gainers.length, losers: losers.length });
-    } catch (error: any) {
-      console.error('[Markets] Error loading markets:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        config: error.config?.url
-      });
-      if (!isRefreshing) {
-        Alert.alert(
-          'Connection Error', 
-          `Failed to load market data. Make sure the backend server is running on port 5000.\n\nError: ${error.message}`
-        );
+      if (stocks.length > 0) {
+        console.log('[Markets] ✓ API data loaded:', stocks.length, 'stocks');
+        setInstruments(stocks);
+        setDataSource('api');
+        
+        // Calculate market summary from API data
+        const gainers = stocks.filter((i: Instrument) => i.change_pct > 0);
+        const losers = stocks.filter((i: Instrument) => i.change_pct < 0);
+        const totalVolume = stocks.reduce((sum: number, i: Instrument) => sum + (i.volume || 0), 0);
+        
+        setMarketSummary(prev => ({
+          ...prev,
+          volume: totalVolume,
+          totalGainers: gainers.length,
+          totalLosers: losers.length,
+        }));
       }
+    } catch (error: any) {
+      console.log('[Markets] API unavailable, using mock data');
+      // Silently fail and keep using mock data - no alerts or errors shown
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
   };
 
   const onRefresh = () => {
-    loadMarkets(true);
+    loadMarketsFromAPI(true);
   };
 
   const filterInstruments = () => {
@@ -127,15 +148,19 @@ export default function Markets() {
     setFilteredInstruments(filtered);
   };
 
-  if (loading) {
-    return <LoadingState message="Loading markets..." />;
-  }
-
   return (
-    <View style={styles.container}>      <View style={styles.header}>
+    <View style={styles.container}>
+      <View style={styles.header}>
         <View>
           <Text style={styles.title}>Markets</Text>
-          <Text style={styles.subtitle}>Nairobi Securities Exchange</Text>
+          <View style={styles.subtitleRow}>
+            <Text style={styles.subtitle}>Nairobi Securities Exchange</Text>
+            {dataSource === 'mock' && (
+              <View style={styles.dataSourceBadge}>
+                <Text style={styles.dataSourceText}>Demo Mode</Text>
+              </View>
+            )}
+          </View>
         </View>
       </View>
 
@@ -317,6 +342,22 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
+  },
+  subtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  dataSourceBadge: {
+    backgroundColor: colors.warning + '20',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  dataSourceText: {
+    fontSize: 10,
+    color: colors.warning,
+    fontWeight: typography.fontWeight.semibold,
   },
   searchContainer: {
     flexDirection: 'row',

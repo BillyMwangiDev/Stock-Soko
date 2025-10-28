@@ -22,10 +22,12 @@ class User(Base):
     salt = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     role = Column(String, default="user")
+    fcm_token = Column(String, nullable=True)
+    totp_secret = Column(String, nullable=True)
+    two_fa_enabled = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     profile = relationship("UserProfile", back_populates="user", uselist=False)
     accounts = relationship("Account", back_populates="user")
     portfolio = relationship("Portfolio", back_populates="user", uselist=False)
@@ -51,7 +53,6 @@ class UserProfile(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     user = relationship("User", back_populates="profile")
 
 
@@ -67,7 +68,6 @@ class Broker(Base):
     credentials = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    # Relationships
     accounts = relationship("Account", back_populates="broker")
 
 
@@ -80,10 +80,16 @@ class Account(Base):
     broker_id = Column(String, ForeignKey("brokers.id"), nullable=False)
     broker_account_ref = Column(String, nullable=True)
     cds_number = Column(String, nullable=True)
-    status = Column(String, default="onboarding")  # active, onboarding, suspended
+    status = Column(String, default="onboarding")
+    balance = Column(Numeric, default=0)  # Available cash balance for trading
+    reserved_balance = Column(Numeric, default=0)  # Balance reserved for pending orders
+    total_deposits = Column(Numeric, default=0)  # Lifetime deposits
+    total_withdrawals = Column(Numeric, default=0)  # Lifetime withdrawals
+    is_active = Column(Boolean, default=True)
+    is_primary = Column(Boolean, default=False)  # Primary trading account
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     user = relationship("User", back_populates="accounts")
     broker = relationship("Broker", back_populates="accounts")
     orders = relationship("Order", back_populates="account")
@@ -100,7 +106,6 @@ class Portfolio(Base):
     unrealized_pl = Column(Numeric, default=0)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     user = relationship("User", back_populates="portfolio")
 
 
@@ -123,7 +128,6 @@ class Stock(Base):
     extra_data = Column(JSON, nullable=True)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     holdings = relationship("Holding", back_populates="stock")
     orders = relationship("Order", back_populates="stock")
     market_ticks = relationship("MarketTick", back_populates="stock")
@@ -145,11 +149,9 @@ class Holding(Base):
     realized_pl = Column(Numeric, default=0)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     user = relationship("User", back_populates="holdings")
     stock = relationship("Stock", back_populates="holdings")
     
-    # Composite index
     __table_args__ = (
         Index('ix_holdings_user_stock', 'user_id', 'stock_id'),
     )
@@ -174,12 +176,10 @@ class Order(Base):
     submitted_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
     user = relationship("User", back_populates="orders")
     account = relationship("Account", back_populates="orders")
     stock = relationship("Stock", back_populates="orders")
     
-    # Composite indexes
     __table_args__ = (
         Index('ix_orders_user_status', 'user_id', 'status'),
     )
@@ -191,17 +191,16 @@ class Transaction(Base):
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    account_id = Column(String, ForeignKey("accounts.id"), nullable=True, index=True)  # Broker account
     type = Column(String, nullable=False)  # deposit, withdrawal
     method = Column(String, nullable=False)  # mpesa, bank
     amount = Column(Numeric, nullable=False)
-    status = Column(String, default="pending", index=True)  # pending, completed, failed
+    status = Column(String, default="pending", index=True)
     provider_reference = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    # Relationships
     user = relationship("User", back_populates="transactions")
     
-    # Composite index
     __table_args__ = (
         Index('ix_transactions_user_status', 'user_id', 'status'),
     )
@@ -219,7 +218,6 @@ class MarketTick(Base):
     ask = Column(Numeric, nullable=True)
     extra_data = Column(JSON, nullable=True)
     
-    # Relationships
     stock = relationship("Stock", back_populates="market_ticks")
 
 
@@ -237,10 +235,8 @@ class News(Base):
     sentiment_score = Column(Numeric, nullable=True)
     extra_data = Column(JSON, nullable=True)
     
-    # Relationships
     stock = relationship("Stock", back_populates="news")
     
-    # Composite index
     __table_args__ = (
         Index('ix_news_stock_published', 'stock_id', 'published_at'),
     )
@@ -252,13 +248,20 @@ class Alert(Base):
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    stock_id = Column(String, ForeignKey("stocks.id"), nullable=False, index=True)
-    type = Column(String, nullable=False)  # price_above, price_below, pct_change
+    stock_id = Column(String, ForeignKey("stocks.id"), nullable=True, index=True)
+    symbol = Column(String, nullable=False)
+    type = Column(String, nullable=False)
     value = Column(Numeric, nullable=False)
-    active = Column(Boolean, default=True)
+    alert_type = Column(String, nullable=False)
+    target_price = Column(Numeric, nullable=True)
+    base_price = Column(Numeric, nullable=True)
+    target_percent = Column(Numeric, nullable=True)
+    active = Column(Boolean, default=True, index=True)
+    triggered = Column(Boolean, default=False)
+    triggered_at = Column(DateTime(timezone=True), nullable=True)
+    triggered_price = Column(Numeric, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    # Relationships
     user = relationship("User", back_populates="alerts")
     stock = relationship("Stock", back_populates="alerts")
 
@@ -272,11 +275,9 @@ class Watchlist(Base):
     stock_id = Column(String, ForeignKey("stocks.id"), nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    # Relationships
     user = relationship("User", back_populates="watchlists")
     stock = relationship("Stock", back_populates="watchlists")
     
-    # Unique constraint
     __table_args__ = (
         Index('ix_watchlist_user_stock', 'user_id', 'stock_id', unique=True),
     )

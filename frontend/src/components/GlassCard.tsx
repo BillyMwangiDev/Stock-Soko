@@ -23,7 +23,8 @@ export function GlassCard({
   ];
 
   return (
-    <View style={cardStyles}>      {children}
+    <View style={cardStyles}>
+      {children}
     </View>
   );
 }
@@ -36,13 +37,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     // Soft shadow for depth
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
     elevation: 4,
     // Backdrop blur simulation
     overflow: 'hidden',

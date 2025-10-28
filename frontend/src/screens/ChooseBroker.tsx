@@ -333,10 +333,10 @@ export default function ChooseBroker({ navigation }: Props) {
 
               {/* Rating & API Status */}
               <View style={styles.brokerMeta}>
-                <View style={styles.ratingContainer}>
-                  <Ionicons name="star" size={14} color="#FFA500" />
-                  <Text style={styles.ratingText}>{broker.rating}</Text>
-                </View>
+              <View style={styles.ratingContainer}>
+                <Ionicons name="star" size={14} color={colors.warning} />
+                <Text style={styles.ratingText}>{broker.rating}</Text>
+              </View>
                 <View style={styles.metaDivider} />
                 <View style={[
                   styles.apiStatusBadge,

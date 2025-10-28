@@ -5,27 +5,40 @@ import { getAccessToken, logout, setAccessToken } from '../store/auth';
 
 // Determine the correct base URL based on platform
 const getDefaultBaseURL = () => {
-  // For web, use localhost
+  // For web, always use localhost on port 8000
   if (Platform.OS === 'web') {
     return 'http://localhost:8000';
   }
   
-  // For iOS and Android, use the local network IP
-  // Make sure your computer and phone are on the same WiFi network
-  return 'http://192.168.1.15:8000';
+  // For Expo Go on physical devices, we need to use your computer's IP
+  // This is automatically available through EXPO_PUBLIC_API_URL
+  // For Android emulator
+  if (Platform.OS === 'android') {
+    // Check if running on physical device via Expo Go
+    // In that case, EXPO_PUBLIC_API_URL should be set
+    return 'http://10.0.2.2:8000'; // Android emulator localhost mapping
+  }
+  
+  // For iOS - use localhost for simulator (shares host network)
+  // For physical device running Expo Go, set EXPO_PUBLIC_API_URL in .env
+  return 'http://localhost:8000';
 };
 
-const baseURL = (Constants?.expoConfig?.extra as any)?.apiBaseUrl || 
-  process.env.EXPO_PUBLIC_API_URL || 
+const serverURL = process.env.EXPO_PUBLIC_API_URL || 
+  (Constants?.expoConfig?.extra as any)?.apiBaseUrl || 
   getDefaultBaseURL();
+
+// Add /api/v1 prefix to the base URL
+const baseURL = `${serverURL}/api/v1`;
 
 console.log(`[API Client] Platform: ${Platform.OS}, Using baseURL: ${baseURL}`);
 
 export const api = axios.create({
 	baseURL,
-	timeout: 10000, // 10 second timeout
+	timeout: 8000, // 8 second timeout - fail fast and use mock data
 	headers: {
 		'Content-Type': 'application/json',
+		'Accept': 'application/json',
 	},
 });
 

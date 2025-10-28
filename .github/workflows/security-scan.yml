@@ -1,0 +1,51 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+  workflow_dispatch:
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install bandit safety
+    
+    - name: Run Bandit security scan
+      run: bandit -r backend/app -f json -o bandit-report.json
+      continue-on-error: true
+    
+    - name: Check for known vulnerabilities
+      run: safety check --json
+      continue-on-error: true
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Frontend security audit
+      working-directory: ./frontend
+      run: |
+        npm ci
+        npm audit --json > npm-audit.json || true
+    
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          npm-audit.json
+

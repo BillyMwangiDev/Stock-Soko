@@ -4,8 +4,10 @@
  */
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { api } from '../api/client';
+import { mockNews } from '../mocks/news';
 
 interface NewsArticle {
   id: string;
@@ -22,6 +24,7 @@ interface NewsArticle {
 }
 
 export default function News() {
+  const navigation = useNavigation();
   const [activeCategory, setActiveCategory] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -32,7 +35,7 @@ export default function News() {
     { id: 'markets', label: 'Markets' },
     { id: 'stocks', label: 'Stocks' },
     { id: 'economy', label: 'Economy' },
-    { id: 'technology', label: 'Tech' },
+    { id: 'tech', label: 'Tech' },
   ];
 
   useEffect(() => {
@@ -70,47 +73,100 @@ export default function News() {
       const response = await api.get('/news', { params });
       
       const newsData = response.data.news || response.data.articles || [];
-      setArticles(newsData.map((item: any) => {
-        const title = item.title || '';
-        const description = item.description || item.summary || item.content || '';
-        const sentiment = detectSentiment(title, description);
-        const impactStocks = extractImpactStocks(title, description);
-        
-        return {
-          id: item.id || item.article_id || Math.random().toString(),
-          category: item.category || 'Markets',
-          title,
-          description,
-          source: item.source || 'Stock Soko',
-          published_at: item.published_at || item.date || new Date().toISOString(),
-          url: item.url || '',
-          aiSummary: generateAISummary(title, description),
-          sentiment,
-          impactStocks: impactStocks.length > 0 ? impactStocks : undefined,
-          impactDirection: sentiment === 'Bullish' ? 'positive' : sentiment === 'Bearish' ? 'negative' : 'neutral',
+      
+      // If API returns data, use it
+      if (newsData.length > 0) {
+        const categoryMap: { [key: string]: string } = {
+          'markets': 'Markets',
+          'stocks': 'Stocks',
+          'economy': 'Economy',
+          'tech': 'Tech'
         };
-      }));
+        
+        setArticles(newsData.map((item: any) => {
+          const title = item.title || '';
+          const description = item.description || item.summary || item.content || '';
+          const sentiment = detectSentiment(title, description);
+          const impactStocks = extractImpactStocks(title, description);
+          
+          return {
+            id: item.id || item.article_id || Math.random().toString(),
+            category: categoryMap[item.category?.toLowerCase()] || 'Markets',
+            title,
+            description,
+            source: item.source || 'Stock Soko',
+            published_at: item.published_at || item.date || new Date().toISOString(),
+            url: item.url || '',
+            aiSummary: generateAISummary(title, description),
+            sentiment,
+            impactStocks: impactStocks.length > 0 ? impactStocks : undefined,
+            impactDirection: sentiment === 'Bullish' ? 'positive' : sentiment === 'Bearish' ? 'negative' : 'neutral',
+          };
+        }));
+      } else {
+        // No data from API, use mock data
+        console.log('[News] No data from API, using mock news data');
+        loadMockNews();
+      }
     } catch (error) {
-      console.error('Failed to load news:', error);
+      console.error('[News] Failed to load from API:', error);
       // Fallback to mock data if API fails
-      setArticles([
-        {
-          id: '1',
-          category: 'Markets',
-          title: 'Connect to News API for live updates',
-          description: 'Real-time market news will appear here once the backend /news endpoint is configured with a news data provider.',
-          source: 'Stock Soko',
-        },
-      ]);
+      loadMockNews();
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
+  const loadMockNews = () => {
+    console.log(`[News] Loading mock news for category: ${activeCategory}`);
+    
+    // Filter mock news by category (no 'all' category in data anymore)
+    const filteredMockNews = activeCategory === 'all' 
+      ? mockNews 
+      : mockNews.filter(article => article.categories.includes(activeCategory as 'markets' | 'stocks' | 'economy' | 'tech'));
+    
+    console.log(`[News] Found ${filteredMockNews.length} articles for ${activeCategory}`);
+    
+    setArticles(filteredMockNews.map((item: any) => {
+      const title = item.title || '';
+      const description = item.summary || '';
+      const sentiment = detectSentiment(title, description);
+      const impactStocks = item.relatedStocks || extractImpactStocks(title, description);
+      
+      const categoryMap: { [key: string]: string } = {
+        'markets': 'Markets',
+        'stocks': 'Stocks',
+        'economy': 'Economy',
+        'tech': 'Tech'
+      };
+      
+      return {
+        id: item.id,
+        category: categoryMap[item.category] || 'Markets',
+        title,
+        description,
+        source: item.source || 'Stock Soko',
+        published_at: item.publishedAt || new Date().toISOString(),
+        url: item.url || '',
+        aiSummary: generateAISummary(title, description),
+        sentiment,
+        impactStocks: impactStocks.length > 0 ? impactStocks : undefined,
+        impactDirection: sentiment === 'Bullish' ? 'positive' : sentiment === 'Bearish' ? 'negative' : 'neutral',
+      };
+    }));
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await loadNews();
+  };
+
+  const handleStockPress = (symbol: string) => {
+    (navigation as any).navigate('MarketsTab', {
+      screen: 'StockDetail',
+      params: { symbol }
+    });
   };
 
   const filteredArticles = articles;
@@ -205,12 +261,17 @@ export default function News() {
                   <View style={styles.impactStocks}>
                     <Text style={styles.impactLabel}>Impact: </Text>
                     {article.impactStocks.slice(0, 3).map((stock, idx) => (
-                      <View key={stock} style={[
-                        styles.impactStockBadge,
-                        { backgroundColor: article.impactDirection === 'positive' ? colors.success + '20' : 
-                                           article.impactDirection === 'negative' ? colors.error + '20' : 
-                                           colors.text.tertiary + '20' }
-                      ]}>
+                      <TouchableOpacity 
+                        key={stock} 
+                        style={[
+                          styles.impactStockBadge,
+                          { backgroundColor: article.impactDirection === 'positive' ? colors.success + '20' : 
+                                             article.impactDirection === 'negative' ? colors.error + '20' : 
+                                             colors.text.tertiary + '20' }
+                        ]}
+                        onPress={() => handleStockPress(stock)}
+                        activeOpacity={0.7}
+                      >
                         <Text style={[
                           styles.impactStockText,
                           { color: article.impactDirection === 'positive' ? colors.success : 
@@ -219,14 +280,10 @@ export default function News() {
                         ]}>
                           {stock}
                         </Text>
-                      </View>
+                      </TouchableOpacity>
                     ))}
                   </View>
                 )}
-              </View>
-              
-              <View style={styles.articleImage}>
-                <Text style={styles.categoryIcon}>{article.category[0]}</Text>
               </View>
             </TouchableOpacity>
             
@@ -323,18 +380,22 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   categoryLabel: {
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: typography.fontWeight.semibold,
-    letterSpacing: 1.2,
+    letterSpacing: 0.8,
     color: colors.primary.main,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    backgroundColor: colors.primary.main + '10',
+    borderRadius: borderRadius.xs,
   },
   sentimentBadge: {
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: borderRadius.sm,
+    borderRadius: borderRadius.xs,
   },
   sentimentText: {
-    fontSize: typography.fontSize.xs,
+    fontSize: 9,
     fontWeight: typography.fontWeight.bold,
   },
   articleTitle: {
@@ -381,26 +442,13 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.medium,
   },
   impactStockBadge: {
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: borderRadius.sm,
+    borderRadius: borderRadius.xs,
   },
   impactStockText: {
-    fontSize: typography.fontSize.xs,
+    fontSize: 9,
     fontWeight: typography.fontWeight.bold,
-  },
-  articleImage: {
-    flex: 1,
-    aspectRatio: 1,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.background.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  categoryIcon: {
-    fontSize: 32,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.primary.main,
   },
   divider: {
     height: 1,

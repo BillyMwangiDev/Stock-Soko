@@ -47,9 +47,9 @@ export default function Watchlist() {
       const watchlistRes = await api.get('/watchlist');
       const watchlistItems = watchlistRes.data.items || [];
 
-      // Load market data to get prices
-      const marketsRes = await api.get('/markets');
-      const instruments = marketsRes.data.instruments || [];
+      // Load market data to get prices from all 20 stocks
+      const marketsRes = await api.get('/markets/stocks');
+      const instruments = marketsRes.data.stocks || [];
 
       // Merge watchlist with market data
       const enrichedItems = watchlistItems.map((item: any) => {
@@ -58,7 +58,7 @@ export default function Watchlist() {
           symbol: item.symbol,
           name: item.name,
           last_price: marketData?.last_price,
-          change_pct: marketData?.change_pct,
+          change_pct: marketData?.change_percent,
         };
       });
 

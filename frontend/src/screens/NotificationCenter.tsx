@@ -4,7 +4,6 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { ProfileStackParamList } from '../navigation/types';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { useNavigation } from '@react-navigation/native';
 import { mockNotifications, Notification, NotificationType } from '../mocks';
 
 type NotificationCenterScreenProp = StackNavigationProp<ProfileStackParamList, 'NotificationCenter'>;
@@ -16,7 +15,6 @@ interface Props {
 type FilterType = 'all' | NotificationType;
 
 export default function NotificationCenter({ navigation }: Props) {
-  const nav = useNavigation();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
@@ -52,14 +50,75 @@ export default function NotificationCenter({ navigation }: Props) {
   const handleNotificationAction = (notification: Notification) => {
     markAsRead(notification.id);
 
-    if (notification.actionLabel === 'View Portfolio') {
-      (nav as any).navigate('Portfolio');
-    } else if (notification.actionLabel === 'View Wallet') {
-      navigation.navigate('Wallet');
-    } else if (notification.actionLabel === 'View Stock' && notification.ticker) {
-      (nav as any).navigate('Markets', {
-        screen: 'Markets',
-      });
+    console.log('[Notification] Handling action:', notification.actionLabel || 'default', 'for type:', notification.type);
+
+    // Get the tab navigator (parent of this stack)
+    const tabNavigator = navigation.getParent();
+    
+    if (!tabNavigator) {
+      console.warn('[Notification] Tab navigator not found');
+      return;
+    }
+
+    // Navigate based on action label
+    switch (notification.actionLabel) {
+      case 'View Portfolio':
+        console.log('[Notification] Navigating to PortfolioTab → Portfolio');
+        tabNavigator.navigate('PortfolioTab', { screen: 'Portfolio' });
+        break;
+      
+      case 'View Wallet':
+        console.log('[Notification] Navigating to Wallet');
+        navigation.navigate('Wallet');
+        break;
+      
+      case 'View Stock':
+      case 'View Details':
+        if (notification.ticker) {
+          console.log('[Notification] Navigating to MarketsTab → StockDetail for', notification.ticker);
+          tabNavigator.navigate('MarketsTab', { 
+            screen: 'StockDetail', 
+            params: { symbol: notification.ticker }
+          });
+        } else {
+          console.log('[Notification] Navigating to PortfolioTab → TradeHistory');
+          tabNavigator.navigate('PortfolioTab', { screen: 'TradeHistory' });
+        }
+        break;
+      
+      case 'Read More':
+      case 'Learn More':
+        console.log('[Notification] Navigating to NewsTab');
+        tabNavigator.navigate('NewsTab');
+        break;
+      
+      case 'Start Trading':
+        console.log('[Notification] Navigating to MarketsTab → Markets');
+        tabNavigator.navigate('MarketsTab', { screen: 'Markets' });
+        break;
+      
+      default:
+        // If no specific action, navigate based on notification type
+        console.log('[Notification] No specific action, navigating by type:', notification.type);
+        if (notification.type === 'trade') {
+          if (notification.ticker) {
+            console.log('[Notification] Trade notification → StockDetail for', notification.ticker);
+            tabNavigator.navigate('MarketsTab', { 
+              screen: 'StockDetail', 
+              params: { symbol: notification.ticker }
+            });
+          } else {
+            console.log('[Notification] Trade notification → Portfolio');
+            tabNavigator.navigate('PortfolioTab', { screen: 'Portfolio' });
+          }
+        } else if (notification.type === 'news') {
+          console.log('[Notification] News notification → NewsTab');
+          tabNavigator.navigate('NewsTab');
+        } else if (notification.type === 'account') {
+          console.log('[Notification] Account notification → Profile');
+          navigation.navigate('Profile');
+        }
+        break;
     }
   };
 
@@ -83,9 +142,9 @@ export default function NotificationCenter({ navigation }: Props) {
   const getTypeColor = (type: NotificationType): string => {
     switch (type) {
       case 'trade':
-        return colors.warning;
+        return colors.text.primary;
       case 'news':
-        return colors.status.info;
+        return colors.text.secondary;
       case 'account':
         return colors.primary.main;
     }
@@ -138,7 +197,7 @@ export default function NotificationCenter({ navigation }: Props) {
         <Text style={styles.headerTitle}>Notifications</Text>
         {unreadCount > 0 && (
           <TouchableOpacity onPress={markAllAsRead} style={styles.headerButton}>
-            <Ionicons name="checkmark" color={colors.warning} size={20} />
+            <Ionicons name="checkmark" color={colors.text.primary} size={20} />
             <Text style={styles.headerButtonText}>Mark All Read</Text>
           </TouchableOpacity>
         )}
@@ -162,7 +221,7 @@ export default function NotificationCenter({ navigation }: Props) {
             active={filter === 'trade'}
             onPress={() => setFilter('trade')}
             icon="trending-up"
-            color={colors.warning}
+            color={colors.text.primary}
           />
           <FilterButton
             label="News"
@@ -217,7 +276,7 @@ export default function NotificationCenter({ navigation }: Props) {
                   !notification.read && styles.unreadCard,
                   getPriorityStyle(notification.priority),
                 ]}
-                onPress={() => markAsRead(notification.id)}
+                onPress={() => handleNotificationAction(notification)}
                 activeOpacity={0.7}
               >
                 <View style={styles.notificationContent}>
@@ -249,7 +308,7 @@ export default function NotificationCenter({ navigation }: Props) {
                           onPress={() => handleNotificationAction(notification)}
                         >
                           <Text style={styles.actionText}>{notification.actionLabel}</Text>
-                          <Ionicons name="chevron-forward" color={colors.warning} size={14} />
+                          <Ionicons name="chevron-forward" color={colors.text.primary} size={14} />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -304,7 +363,7 @@ const styles = StyleSheet.create({
   },
   headerButtonText: {
     fontSize: typography.fontSize.sm,
-    color: colors.warning,
+    color: colors.text.primary,
     fontWeight: typography.fontWeight.semibold,
   },
   filterContainer: {
@@ -329,8 +388,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border.main,
   },
   filterButtonActive: {
-    backgroundColor: colors.warning,
-    borderColor: colors.warning,
+    backgroundColor: colors.primary.main,
+    borderColor: colors.primary.main,
   },
   filterText: {
     fontSize: typography.fontSize.sm,
@@ -375,7 +434,7 @@ const styles = StyleSheet.create({
   },
   unreadCard: {
     backgroundColor: colors.background.secondary + 'CC',
-    borderColor: colors.warning + '40',
+    borderColor: colors.primary.main + '60',
   },
   notificationContent: {
     flexDirection: 'row',
@@ -410,7 +469,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.warning,
+    backgroundColor: colors.primary.main,
   },
   tickerBadge: {
     alignSelf: 'flex-start',
@@ -423,7 +482,7 @@ const styles = StyleSheet.create({
   },
   tickerText: {
     fontSize: 11,
-    color: colors.warning,
+    color: colors.text.primary,
     fontWeight: typography.fontWeight.bold,
   },
   message: {
@@ -448,7 +507,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 12,
-    color: colors.warning,
+    color: colors.text.primary,
     fontWeight: typography.fontWeight.semibold,
   },
   deleteButton: {

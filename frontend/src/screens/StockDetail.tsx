@@ -226,13 +226,14 @@ export default function StockDetail() {
 
   const loadStockData = async () => {
     try {
-      const res = await api.get('/markets');
-      const stockData = res.data.instruments?.find((s: any) => s.symbol === symbol);
+      const res = await api.get('/markets/stocks');
+      const stockData = res.data.stocks?.find((s: any) => s.symbol === symbol);
       
       if (stockData) {
         setStock({
           ...stockData,
-          change_amount: (stockData.last_price * stockData.change_pct) / 100,
+          change_pct: stockData.change_percent,
+          change_amount: (stockData.last_price * stockData.change_percent) / 100,
           about: `${stockData.name} is a leading company listed on the Nairobi Securities Exchange, known for its strong market presence and consistent performance.`,
           news: 'Recent expansion plans aim to grow market share by 15% this quarter, with focus on innovative products and customer service excellence.',
         });
@@ -304,7 +305,7 @@ export default function StockDetail() {
       case 'High':
         return { backgroundColor: colors.error + '20', borderColor: colors.error };
       case 'Very High':
-        return { backgroundColor: '#8B0000' + '20', borderColor: '#8B0000' };
+        return { backgroundColor: colors.error + '40', borderColor: colors.error };
       default:
         return { backgroundColor: colors.text.disabled + '20', borderColor: colors.text.disabled };
     }
@@ -1750,7 +1751,7 @@ const styles = StyleSheet.create({
   buyButtonText: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.bold,
-    color: '#FFFFFF',
+    color: colors.primary.contrast,
     marginBottom: 2,
   },
   sellButton: {
@@ -1764,12 +1765,12 @@ const styles = StyleSheet.create({
   sellButtonText: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.bold,
-    color: '#FFFFFF',
+    color: colors.primary.contrast,
     marginBottom: 2,
   },
   buttonSubtext: {
     fontSize: typography.fontSize.xs,
-    color: '#FFFFFF',
+    color: colors.primary.contrast,
     opacity: 0.8,
   },
   // Order Book Styles
@@ -2196,7 +2197,7 @@ const styles = StyleSheet.create({
   },
   metricHint: {
     fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
+    color: colors.text.secondary,
     fontStyle: 'italic',
   },
   metricRight: {
@@ -2205,6 +2206,7 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
     marginBottom: spacing.xs,
   },
   metricRating: {

@@ -86,7 +86,6 @@ export default function Login({ navigation }: Props) {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          
           <Input
             label="Password"
             placeholder="Enter your password"
@@ -94,14 +93,12 @@ export default function Login({ navigation }: Props) {
             onChangeText={setPassword}
             secureTextEntry
           />
-
           <TouchableOpacity 
             style={styles.forgotPassword}
             onPress={() => navigation.navigate('ForgotPassword' as any)}
           >
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
-
           <Button
             title="Sign In"
             onPress={handleLogin}
@@ -110,14 +107,12 @@ export default function Login({ navigation }: Props) {
             size="lg"
             fullWidth
           />
-
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>Don't have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
               <Text style={styles.signupLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>
-
           <TouchableOpacity 
             style={styles.guestButton}
             onPress={() => (navigation as any).navigate('MainTabs')}

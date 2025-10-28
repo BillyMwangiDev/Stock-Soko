@@ -9,6 +9,7 @@ import { AuthStackParamList } from '../navigation/types';
 import { Button } from '../components';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '../api/client';
 
 type RiskProfileScreenProp = StackNavigationProp<AuthStackParamList, 'RiskProfile'>;
 
@@ -109,18 +110,43 @@ export default function RiskProfile({ navigation }: Props) {
 
   const handleComplete = async () => {
     const riskProfile = calculateRiskProfile();
-    await AsyncStorage.setItem('riskProfile', riskProfile);
+    
+    try {
+      // Save to AsyncStorage
+      await AsyncStorage.setItem('riskProfile', riskProfile);
+      
+      // Save to backend
+      const totalScore = Object.values(answers).reduce((sum, score) => sum + score, 0);
+      
+      try {
+        await api.put('/profile', {
+          risk_tolerance: riskProfile,
+          risk_assessment_data: {
+            answers: answers,
+            total_score: totalScore,
+            profile: riskProfile,
+            completed_at: new Date().toISOString()
+          }
+        });
+      } catch (error) {
+        console.error('Failed to save risk profile to backend:', error);
+        // Continue anyway - we have it in AsyncStorage
+      }
 
-    Alert.alert(
-      'Assessment Complete',
-      `Your risk profile: ${riskProfile.toUpperCase()}\n\nWe'll personalize your investment recommendations.`,
-      [
-        {
-          text: 'Continue',
-          onPress: () => navigation.navigate('ChooseBroker' as any),
-        },
-      ]
-    );
+      Alert.alert(
+        'Assessment Complete',
+        `Your risk profile: ${riskProfile.toUpperCase()}\n\nWe'll personalize your investment recommendations based on your ${riskProfile} risk tolerance.`,
+        [
+          {
+            text: 'Continue',
+            onPress: () => navigation.navigate('ChooseBroker' as any),
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Failed to save risk profile:', error);
+      Alert.alert('Error', 'Failed to save your risk profile. Please try again.');
+    }
   };
 
   const handleSkip = () => {

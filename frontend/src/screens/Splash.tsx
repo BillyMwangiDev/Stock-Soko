@@ -51,24 +51,15 @@ export default function Splash({ navigation }: Props) {
       style={styles.container}
       resizeMode="cover"
     >
-      {/* Dark overlay for better text readability */}
-      <View style={styles.overlay} />
-      
-      {/* Main content */}
+      {/* Main content - No overlay needed, image has good contrast */}
       <View style={styles.content}>
-        {/* App title */}
-        <Text style={styles.title}>Stock Soko</Text>
-        
-        {/* Tagline */}
-        <Text style={styles.tagline}>Trade Smarter. Invest Confidently.</Text>
-        
         {/* Progress indicator */}
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
             <View style={styles.progressFill} />
           </View>
           <View style={styles.starIcon}>
-            <Text style={styles.star}></Text>
+            <Text style={styles.star}>*</Text>
           </View>
         </View>
       </View>
@@ -81,80 +72,46 @@ const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-  },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Subtle dark overlay for text readability
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: spacing['2xl'],
-    paddingVertical: spacing['3xl'],
-    zIndex: 1,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#4fc3f7', // Light blue
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 10,
-  },
-  tagline: {
-    fontSize: typography.fontSize.lg,
-    color: '#ffffff',
-    textAlign: 'center',
-    marginBottom: spacing['3xl'],
-    fontWeight: '300',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 5,
+    paddingBottom: spacing['3xl'],
+    width: '100%',
   },
   progressContainer: {
-    position: 'absolute',
-    bottom: 40,
-    left: spacing['2xl'],
-    right: spacing['2xl'],
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    zIndex: 2,
+    marginBottom: 40,
   },
   progressBar: {
     flex: 1,
-    height: 2,
-    backgroundColor: 'rgba(79, 195, 247, 0.3)',
-    borderRadius: 1,
+    height: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 2,
     marginRight: spacing.md,
   },
   progressFill: {
-    width: '30%',
+    width: '40%',
     height: '100%',
-    backgroundColor: '#4fc3f7',
-    borderRadius: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 2,
   },
   starIcon: {
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
   star: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    color: '#FFFFFF',
+    fontSize: 18,
+    textShadow: '0px 2px 4px rgba(0, 0, 0, 0.3)',
   },
 });

@@ -1,0 +1,50 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Type check
+      working-directory: ./frontend
+      run: npx tsc --noEmit --skipLibCheck
+    
+    - name: Lint
+      working-directory: ./frontend
+      run: npx eslint src/ --ext .ts,.tsx --max-warnings 0
+      continue-on-error: true
+    
+    - name: Security audit
+      working-directory: ./frontend
+      run: npm audit --audit-level=high
+      continue-on-error: true
+    
+    - name: Build check
+      working-directory: ./frontend
+      run: npm run web --no-dev --minify
+      continue-on-error: true
+

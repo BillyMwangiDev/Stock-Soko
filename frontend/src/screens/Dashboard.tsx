@@ -2,7 +2,7 @@
  * Investment Dashboard Screen
  * Displays portfolio overview, market news, and AI recommendations
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { api } from '../api/client';
@@ -33,11 +33,7 @@ export default function Dashboard() {
   const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       const [positionsRes, balanceRes] = await Promise.all([
         api.get('/ledger/positions'),
@@ -76,13 +72,17 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
     }
-  };
+  }, []);
 
-  const onRefresh = async () => {
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
+
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadDashboardData();
     setRefreshing(false);
-  };
+  }, [loadDashboardData]);
 
   const getActionColor = (action: string) => {
     switch (action) {
@@ -223,12 +223,13 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
+    color: colors.primary.contrast,
   },
   positive: {
-    color: '#4ADE80',
+    color: colors.primary.light,
   },
   negative: {
-    color: '#F87171',
+    color: colors.error,
   },
   recommendationsSection: {
     marginBottom: spacing.lg,

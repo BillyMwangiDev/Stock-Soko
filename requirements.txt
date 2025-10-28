@@ -1,7 +1,7 @@
-fastapi==0.115.5
-uvicorn[standard]==0.32.1
-pydantic==2.10.3
-pydantic-settings==2.6.1
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.6
+pydantic-settings==2.7.1
 python-decouple==3.8
 python-jose[cryptography]==3.3.0
 python-multipart==0.0.20
@@ -10,28 +10,43 @@ pyotp==2.9.0
 requests==2.32.3
 httpx==0.28.1
 pytest==8.3.4
-pytest-asyncio==0.25.0
-prometheus-client==0.21.0
+pytest-asyncio==0.25.1
+prometheus-client==0.21.1
 reportlab==4.2.5
-pillow==11.0.0
 
 # Database
-sqlalchemy==2.0.36
-alembic==1.14.0
-psycopg2-binary==2.9.10  # PostgreSQL adapter
-redis==5.2.0
+sqlalchemy==2.0.37
+alembic==1.14.1
+psycopg2-binary==2.9.10
 
-# Celery for background tasks
-celery==5.4.0
-flower==2.0.1  # Celery monitoring
+# Market Data & News APIs
+twelvedata==1.2.18
+alpha-vantage==2.3.1
+finnhub-python==2.4.20
+yfinance==0.2.49
+newsapi-python==0.2.7
 
-# Monitoring
-sentry-sdk==2.19.2
-
-# Data & ML (for AI features)
-numpy==2.1.3
+# PDF & Report Generation
 pandas==2.2.3
-scikit-learn==1.5.2
+openpyxl==3.1.5
 
-# WebSockets
+# Image Processing (KYC Documents)
+Pillow==11.1.0
+
+# Redis & Celery (for caching and background tasks)
+redis==5.2.1
+celery[redis]==5.4.0
+flower==2.0.1
+eventlet==0.37.0
+
+# WebSocket support
 websockets==14.1
+
+# Push notifications
+firebase-admin==6.6.0
+
+# Cryptography for M-Pesa (using pycryptodome, not deprecated pycrypto)
+pycryptodome==3.21.0
+
+# QR Code generation (2FA)
+qrcode[pil]==8.0

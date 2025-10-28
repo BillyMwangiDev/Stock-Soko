@@ -55,6 +55,6 @@ const styles = StyleSheet.create({
     color: colors.info,  // #3B82F6
   },
   text_neutral: {
-    color: colors.text.tertiary,  // #6B7280
+    color: colors.text.primary,
   },
 });

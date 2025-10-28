@@ -38,20 +38,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary.main,
     justifyContent: 'center',
     alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.primary.main,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 8,
-      },
-      web: {
-        boxShadow: `0 4px 20px ${colors.primary.main}66`,
-      },
-    }),
+    boxShadow: `0 4px 20px ${colors.primary.main}66`,
+    elevation: 8,
   },
   icon: {
     fontSize: 18,

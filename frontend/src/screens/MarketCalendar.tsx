@@ -88,10 +88,10 @@ export default function MarketCalendar({ navigation }: Props) {
       onPress={() => {
         hapticFeedback.light();
         if (event.stockId) {
-          navigation.navigate('Markets' as never, {
+          (navigation as any).navigate('MarketsTab', {
             screen: 'StockDetail',
             params: { symbol: event.stockId }
-          } as never);
+          });
         }
       }}
       activeOpacity={0.7}

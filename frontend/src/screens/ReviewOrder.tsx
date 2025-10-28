@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing } from '../theme';
 import { Card, Button, Badge } from '../components';
 import { api } from '../api/client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { OrderData } from './TradeOrder';
 
 interface ReviewOrderProps {
@@ -16,6 +17,44 @@ interface ReviewOrderProps {
 export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: ReviewOrderProps) {
   const [confirming, setConfirming] = useState(false);
 
+  const saveDemoTrade = async () => {
+    try {
+      // Get existing demo trades
+      const existingTrades = await AsyncStorage.getItem('demo_trades');
+      const trades = existingTrades ? JSON.parse(existingTrades) : [];
+      
+      // Create new trade
+      const newTrade = {
+        id: `demo_${Date.now()}`,
+        symbol: order.symbol,
+        side: order.side,
+        quantity: order.quantity,
+        price: order.price || 0,
+        order_type: order.orderType,
+        status: 'filled',
+        filled_quantity: order.quantity,
+        fees: order.fees,
+        total: order.total,
+        submitted_at: new Date().toISOString(),
+        filled_at: new Date().toISOString(),
+      };
+      
+      // Add to trades
+      trades.unshift(newTrade);
+      
+      // Keep only last 100 trades
+      const limitedTrades = trades.slice(0, 100);
+      
+      // Save back to storage
+      await AsyncStorage.setItem('demo_trades', JSON.stringify(limitedTrades));
+      
+      console.log('[ReviewOrder] Demo trade saved:', newTrade);
+      return newTrade;
+    } catch (error) {
+      console.error('[ReviewOrder] Failed to save demo trade:', error);
+    }
+  };
+
   const handleConfirm = async () => {
     setConfirming(true);
     try {
@@ -27,13 +66,30 @@ export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: Review
         price: order.limitPrice || order.price,
       };
 
-      await api.post('/trades', orderPayload);
-
-      Alert.alert(
-        'Order Placed',
-        `Your ${order.side} order for ${order.quantity} shares of ${order.symbol} has been placed successfully.`,
-        [{ text: 'OK', onPress: () => onConfirm() }]
-      );
+      // Try to place real order
+      try {
+        await api.post('/trades/order', orderPayload);
+        
+        Alert.alert(
+          '✅ Order Placed',
+          `Your ${order.side} order for ${order.quantity} shares of ${order.symbol} has been placed successfully.`,
+          [{ text: 'OK', onPress: () => onConfirm() }]
+        );
+      } catch (apiError: any) {
+        // If 401 (not authenticated), use demo mode
+        if (apiError.response?.status === 401) {
+          console.log('[ReviewOrder] Demo mode - saving trade locally');
+          await saveDemoTrade();
+          
+          Alert.alert(
+            '🎮 Demo Order Placed',
+            `Your demo ${order.side} order for ${order.quantity} shares of ${order.symbol} has been executed!\n\n💰 Total: KES ${order.total.toFixed(2)}\n\nThis is a demo trade and won't affect real money.`,
+            [{ text: 'OK', onPress: () => onConfirm() }]
+          );
+        } else {
+          throw apiError; // Re-throw other errors
+        }
+      }
     } catch (error: any) {
       console.error('Order execution failed:', error);
       setConfirming(false);
@@ -47,7 +103,8 @@ export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: Review
   };
 
   return (
-    <View style={styles.container}>      <View style={styles.header}>
+    <View style={styles.container}>
+      <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>

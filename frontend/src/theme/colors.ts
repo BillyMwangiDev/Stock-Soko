@@ -94,10 +94,10 @@ export const colors: ColorTheme = {
     card: '#161B22',
   },
   text: {
-    primary: '#EAECEF',
-    secondary: '#B7BDC6',
-    tertiary: '#848E9C',
-    disabled: '#5E6673',
+    primary: '#FFFFFF',
+    secondary: '#E5E7EB',
+    tertiary: '#D1D5DB',
+    disabled: '#9CA3AF',
     inverse: '#0D1117',
   },
   primary: {
@@ -134,12 +134,12 @@ export const colors: ColorTheme = {
     background: '#1E2329',
     border: '#2B3139',
     focus: '#16A34A',
-    placeholder: '#5E6673',
+    placeholder: '#9CA3AF',
   },
   tabBar: {
     background: '#161B22',
     active: '#16A34A',
-    inactive: '#848E9C',
+    inactive: '#D1D5DB',
   },
   chart: {
     grid: '#2B3139',

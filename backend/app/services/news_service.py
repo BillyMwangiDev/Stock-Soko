@@ -2,14 +2,19 @@
 News Service - Provides market news and sentiment analysis
 """
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import random
+import httpx
+from ..config import NEWS_API_KEY, FINNHUB_API_KEY, ENABLE_REAL_TIME_PRICES
+from ..utils.logging import get_logger
+
+logger = get_logger("news_service")
 
 
 class NewsService:
     """Service for managing news articles and sentiment"""
     
-    # Mock news data (in production, integrate with news APIs like NewsAPI, RSS feeds, etc.)
+    # Mock news data (fallback when APIs fail)
     MOCK_NEWS = [
         {
             "id": "1",
@@ -167,6 +172,160 @@ class NewsService:
             return "negative"
         else:
             return "neutral"
+    
+    def fetch_real_news(self, country: str = "us", category: str = "business", limit: int = 20) -> List[Dict[str, Any]]:
+        """Fetch real news from NewsAPI"""
+        if not NEWS_API_KEY:
+            logger.warning("NEWS_API_KEY not configured, using mock data")
+            return []
+        
+        try:
+            url = "https://newsapi.org/v2/top-headlines"
+            params = {
+                "apiKey": NEWS_API_KEY,
+                "country": country,
+                "category": category,
+                "pageSize": limit
+            }
+            
+            with httpx.Client(timeout=10) as client:
+                response = client.get(url, params=params)
+                response.raise_for_status()
+                data = response.json()
+                
+                articles = []
+                for article in data.get("articles", []):
+                    articles.append({
+                        "id": str(hash(article["url"])),
+                        "title": article.get("title", ""),
+                        "source": article.get("source", {}).get("name", "Unknown"),
+                        "url": article.get("url", ""),
+                        "summary": article.get("description", ""),
+                        "published_at": article.get("publishedAt", datetime.utcnow().isoformat()),
+                        "image_url": article.get("urlToImage"),
+                        "sentiment": "neutral",
+                        "related_symbols": []
+                    })
+                
+                logger.info(f"Fetched {len(articles)} articles from NewsAPI")
+                return articles
+        
+        except Exception as e:
+            logger.error(f"NewsAPI fetch failed: {e}")
+            return []
+    
+    def fetch_stock_news(self, symbol: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """Fetch stock-specific news from Finnhub"""
+        if not FINNHUB_API_KEY:
+            logger.warning("FINNHUB_API_KEY not configured, using mock data")
+            return []
+        
+        try:
+            # Clean symbol (remove NSE: prefix)
+            clean_symbol = symbol.replace("NSE:", "").replace("KE:", "")
+            
+            url = "https://finnhub.io/api/v1/company-news"
+            
+            # Get news from last 30 days
+            from_date = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d")
+            to_date = datetime.utcnow().strftime("%Y-%m-%d")
+            
+            params = {
+                "symbol": clean_symbol,
+                "from": from_date,
+                "to": to_date,
+                "token": FINNHUB_API_KEY
+            }
+            
+            with httpx.Client(timeout=10) as client:
+                response = client.get(url, params=params)
+                response.raise_for_status()
+                data = response.json()
+                
+                articles = []
+                for item in data[:limit]:
+                    articles.append({
+                        "id": str(item.get("id", hash(item["url"]))),
+                        "title": item.get("headline", ""),
+                        "source": item.get("source", "Finnhub"),
+                        "url": item.get("url", ""),
+                        "summary": item.get("summary", ""),
+                        "published_at": datetime.fromtimestamp(item.get("datetime", 0)).isoformat(),
+                        "image_url": item.get("image"),
+                        "sentiment": "neutral",
+                        "related_symbols": [symbol]
+                    })
+                
+                logger.info(f"Fetched {len(articles)} articles for {symbol} from Finnhub")
+                return articles
+        
+        except Exception as e:
+            logger.error(f"Finnhub news fetch failed for {symbol}: {e}")
+            return []
+    
+    def get_combined_news(self, symbol: Optional[str] = None, limit: int = 20) -> Dict[str, Any]:
+        """Get news from real APIs with fallback to mock data"""
+        articles = []
+        
+        if ENABLE_REAL_TIME_PRICES and (NEWS_API_KEY or FINNHUB_API_KEY):
+            try:
+                if symbol:
+                    # Get stock-specific news from Finnhub
+                    articles = self.fetch_stock_news(symbol, limit)
+                else:
+                    # Get general business news from NewsAPI
+                    articles = self.fetch_real_news(limit=limit)
+                
+                if articles:
+                    return {
+                        "articles": articles,
+                        "total": len(articles),
+                        "source": "real_api",
+                        "offset": 0,
+                        "limit": limit
+                    }
+            except Exception as e:
+                logger.warning(f"Real news fetch failed, using mock: {e}")
+        
+        # Fallback to mock data
+        return self.get_news(category=symbol, limit=limit)
+    
+    def get_company_fundamentals(self, symbol: str) -> Dict[str, Any]:
+        """Get company fundamentals from Finnhub"""
+        if not FINNHUB_API_KEY:
+            return {}
+        
+        try:
+            clean_symbol = symbol.replace("NSE:", "").replace("KE:", "")
+            
+            url = f"https://finnhub.io/api/v1/stock/profile2"
+            params = {
+                "symbol": clean_symbol,
+                "token": FINNHUB_API_KEY
+            }
+            
+            with httpx.Client(timeout=10) as client:
+                response = client.get(url, params=params)
+                response.raise_for_status()
+                data = response.json()
+                
+                return {
+                    "name": data.get("name"),
+                    "country": data.get("country"),
+                    "currency": data.get("currency"),
+                    "exchange": data.get("exchange"),
+                    "ipo": data.get("ipo"),
+                    "market_cap": data.get("marketCapitalization"),
+                    "shares_outstanding": data.get("shareOutstanding"),
+                    "logo": data.get("logo"),
+                    "phone": data.get("phone"),
+                    "weburl": data.get("weburl"),
+                    "industry": data.get("finnhubIndustry")
+                }
+        
+        except Exception as e:
+            logger.error(f"Failed to get fundamentals for {symbol}: {e}")
+            return {}
 
 
 # Singleton instance

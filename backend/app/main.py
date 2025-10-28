@@ -1,19 +1,21 @@
 from typing import Callable
-from fastapi import FastAPI, Request, Response
-from fastapi.responses import PlainTextResponse
+from fastapi import FastAPI, Request, Response, WebSocket
+from fastapi.responses import PlainTextResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 import logging
+import asyncio
 
 from .config import APP_NAME, ALLOWED_ORIGINS
 from .database import init_db
 from .routers import (
     health, markets, trades, payments, kyc, watchlist, ledger,
-    cds, auth, news, ai_chat, settings, dashboard, charts, alerts, profile, broker, notifications
+    cds, auth, news, ai_chat, settings, dashboard, charts, alerts, profile, broker, notifications, fees, statements, wallet, dividends, tax_reports, leaderboard, achievements, portfolio_analytics
 )
 from .utils.middleware import RequestIdMiddleware, RateLimitMiddleware
+from .utils.security_headers import SecurityHeadersMiddleware
 from .utils.error_handlers import (
     StockSokoException,
     stocksoko_exception_handler,
@@ -21,6 +23,8 @@ from .utils.error_handlers import (
     http_exception_handler,
     general_exception_handler
 )
+from .websocket.price_stream import websocket_endpoint, start_heartbeat_task
+from .services.cache_service import cache_service
 
 # Configure logging
 logging.basicConfig(
@@ -37,8 +41,10 @@ app = FastAPI(
 )
 
 @app.on_event("startup")
-def on_startup() -> None:
+async def on_startup() -> None:
     init_db()
+    asyncio.create_task(start_heartbeat_task())
+    logging.info("Application started, WebSocket heartbeat task initiated")
 
 # Configure CORS
 app.add_middleware(
@@ -71,27 +77,48 @@ async def metrics_middleware(request: Request, call_next: Callable) -> Response:
 
 app.add_middleware(RequestIdMiddleware)
 app.add_middleware(RateLimitMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 @app.get("/metrics")
 async def metrics() -> PlainTextResponse:
     return PlainTextResponse(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
-app.include_router(health.router)
-app.include_router(auth.router)
-app.include_router(profile.router)
-app.include_router(broker.router)
-app.include_router(dashboard.router)
-app.include_router(markets.router)
-app.include_router(trades.router)
-app.include_router(payments.router)
-app.include_router(kyc.router)
-app.include_router(watchlist.router)
-app.include_router(ledger.router)
-app.include_router(cds.router)
-app.include_router(news.router)
-app.include_router(ai_chat.router)
-app.include_router(settings.router)
-app.include_router(charts.router)
-app.include_router(alerts.router)
-app.include_router(notifications.router)
+
+@app.get("/admin/cache-stats")
+async def cache_stats():
+    """Get cache statistics (admin only)"""
+    return JSONResponse(content=cache_service.get_stats())
+
+
+@app.websocket("/ws/prices/{client_id}")
+async def websocket_prices(websocket: WebSocket, client_id: str):
+    """WebSocket endpoint for real-time price updates"""
+    await websocket_endpoint(websocket, client_id)
+
+app.include_router(health.router, prefix="/api/v1")
+app.include_router(auth.router, prefix="/api/v1")
+app.include_router(profile.router, prefix="/api/v1")
+app.include_router(broker.router, prefix="/api/v1")
+app.include_router(dashboard.router, prefix="/api/v1")
+app.include_router(markets.router, prefix="/api/v1")
+app.include_router(trades.router, prefix="/api/v1")
+app.include_router(payments.router, prefix="/api/v1")
+app.include_router(wallet.router, prefix="/api/v1")
+app.include_router(kyc.router, prefix="/api/v1")
+app.include_router(watchlist.router, prefix="/api/v1")
+app.include_router(ledger.router, prefix="/api/v1")
+app.include_router(cds.router, prefix="/api/v1")
+app.include_router(news.router, prefix="/api/v1")
+app.include_router(ai_chat.router, prefix="/api/v1")
+app.include_router(settings.router, prefix="/api/v1")
+app.include_router(charts.router, prefix="/api/v1")
+app.include_router(alerts.router, prefix="/api/v1")
+app.include_router(dividends.router, prefix="/api/v1")
+app.include_router(tax_reports.router, prefix="/api/v1")
+app.include_router(leaderboard.router, prefix="/api/v1")
+app.include_router(achievements.router, prefix="/api/v1")
+app.include_router(portfolio_analytics.router, prefix="/api/v1")
+app.include_router(notifications.router, prefix="/api/v1")
+app.include_router(fees.router, prefix="/api/v1")
+app.include_router(statements.router, prefix="/api/v1")

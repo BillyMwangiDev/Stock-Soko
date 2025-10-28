@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, Alert, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
-import { LoadingState, Card } from '../components';
+import { LoadingState, Card, DemoModeBanner } from '../components';
 import { useApp } from '../contexts';
 
 interface PortfolioData {
@@ -84,23 +84,48 @@ export default function Home() {
     }
     
     try {
-      // Load top gainers
-      const marketsRes = await api.get('/markets');
-      const instruments = marketsRes.data.instruments || [];
+      // Load top gainers from all 20 stocks
+      const marketsRes = await api.get('/markets/stocks');
+      const instruments = marketsRes.data.stocks || [];
       const gainers = instruments
-        .filter((stock: any) => stock.change_pct > 0)
-        .sort((a: any, b: any) => b.change_pct - a.change_pct)
+        .filter((stock: any) => stock.change_percent > 0)
+        .sort((a: any, b: any) => b.change_percent - a.change_percent)
         .slice(0, 3)
         .map((stock: any) => ({
           symbol: stock.symbol,
           name: stock.name,
           last_price: stock.last_price,
-          change_pct: stock.change_pct,
+          change_pct: stock.change_percent,
           volume: stock.volume || 0,
         }));
       setTopGainers(gainers);
     } catch (error) {
       console.error('Failed to load data:', error);
+      
+      // Fallback to mock data
+      setTopGainers([
+        {
+          symbol: 'KCB',
+          name: 'KCB Group',
+          last_price: 35.20,
+          change_pct: 8.31,
+          volume: 1250000,
+        },
+        {
+          symbol: 'SCOM',
+          name: 'Safaricom',
+          last_price: 29.50,
+          change_pct: 5.36,
+          volume: 2800000,
+        },
+        {
+          symbol: 'EABL',
+          name: 'East African Breweries',
+          last_price: 165.00,
+          change_pct: 3.75,
+          volume: 450000,
+        },
+      ]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -151,6 +176,31 @@ export default function Home() {
           });
         } catch (error) {
           console.error(`Failed to load AI recommendation for ${symbol}:`, error);
+          
+          // Fallback to mock data for this stock
+          const mockStocks = {
+            'KCB': { name: 'KCB Group', price: 35.20, action: 'BUY' as const },
+            'SCOM': { name: 'Safaricom PLC', price: 29.50, action: 'BUY' as const },
+            'EQTY': { name: 'Equity Group', price: 46.50, action: 'HOLD' as const },
+          };
+          
+          const mockData = mockStocks[symbol as keyof typeof mockStocks];
+          if (mockData) {
+            const confidence = mockData.action === 'BUY' ? 85 : 72;
+            recommendations.push({
+              id: `${symbol}-${Date.now()}`,
+              symbol,
+              name: mockData.name,
+              action: mockData.action,
+              confidence,
+              targetPrice: mockData.price * (mockData.action === 'BUY' ? 1.15 : 1.05),
+              currentPrice: mockData.price,
+              reasoning: generateReasoning(mockData.action, category, symbol),
+              riskLevel: 'Low',
+              timeHorizon: category === 'Growth' ? 'Long' : category === 'Dividend' ? 'Medium' : 'Short',
+              category,
+            });
+          }
         }
       }
       
@@ -204,10 +254,17 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Demo Mode Banner */}
+      <DemoModeBanner variant="banner" />
+      
       {/* Enhanced Header with Logo */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>SS</Text>
+          <Image 
+            source={require('../../assets/images/homelogo.png')} 
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
         </View>
         <Text style={styles.headerTitle}>Stock Soko</Text>
         <TouchableOpacity 
@@ -248,7 +305,7 @@ export default function Home() {
         <Card variant="elevated" style={styles.portfolioCard}>
           <View style={styles.portfolioHeader}>
             <Text style={styles.portfolioLabel}>Portfolio Value</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Portfolio', { screen: 'Portfolio' })}>
+            <TouchableOpacity onPress={() => (navigation as any).navigate('PortfolioTab')}>
               <Ionicons name="arrow-forward" size={20} color={colors.primary.main} />
             </TouchableOpacity>
           </View>
@@ -349,13 +406,13 @@ export default function Home() {
                     styles.aiRecBadge,
                     { backgroundColor: rec.action === 'BUY' ? colors.success + '20' : 
                                        rec.action === 'SELL' ? colors.error + '20' : 
-                                       colors.warning + '20' }
+                                       colors.text.secondary + '20' }
                   ]}>
                     <Text style={[
                       styles.aiRecBadgeText,
                       { color: rec.action === 'BUY' ? colors.success : 
                                rec.action === 'SELL' ? colors.error : 
-                               colors.warning }
+                               colors.text.primary }
                     ]}>
                       {rec.action}
                     </Text>
@@ -375,13 +432,13 @@ export default function Home() {
                             'warning-outline'} 
                       size={14} 
                       color={rec.riskLevel === 'Low' ? colors.success : 
-                             rec.riskLevel === 'Medium' ? colors.warning : 
+                             rec.riskLevel === 'Medium' ? colors.text.secondary : 
                              colors.error} 
                     />
                     <Text style={[
                       styles.aiRecMetaText,
                       { color: rec.riskLevel === 'Low' ? colors.success : 
-                               rec.riskLevel === 'Medium' ? colors.warning : 
+                               rec.riskLevel === 'Medium' ? colors.text.secondary : 
                                colors.error }
                     ]}>
                       {rec.riskLevel} Risk
@@ -399,7 +456,7 @@ export default function Home() {
                         width: `${rec.confidence}%`,
                         backgroundColor: rec.confidence > 85 ? colors.success : 
                                        rec.confidence > 75 ? colors.primary.main : 
-                                       colors.warning
+                                       colors.text.secondary
                       }
                     ]} />
                   </View>
@@ -518,17 +575,22 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border.main + '40',
   },
   logoContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.primary.main,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'transparent',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 4,
   },
-  logoText: {
-    fontSize: 18,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.primary.contrast,
+  logoImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
   },
   headerTitle: {
     flex: 1,

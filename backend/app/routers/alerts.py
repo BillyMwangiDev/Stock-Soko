@@ -1,189 +1,203 @@
 """
-Alerts Router - Price alerts and notifications system
+Alerts Router
+
+Manages price alerts for stocks including creation, updates, deletion,
+and retrieval of active/triggered alerts.
 """
-from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel, Field
-from typing import List, Optional
-from datetime import datetime
-import uuid
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session, joinedload
+from typing import List
+from pydantic import BaseModel
+from ..database import get_db
+from ..database.models import Alert, User
 from ..utils.jwt import get_current_user
+from ..utils.logging import get_logger
+from datetime import datetime, timezone
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
+logger = get_logger("alerts_router")
 
 
-class PriceAlert(BaseModel):
-    symbol: str = Field(..., description="Stock symbol")
-    condition: str = Field(..., description="above, below, change_pct")
-    target_value: float = Field(..., description="Target price or percentage")
-    notify_email: bool = Field(True, description="Send email notification")
-    notify_sms: bool = Field(False, description="Send SMS notification")
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "symbol": "NSE:KCB",
-                "condition": "above",
-                "target_value": 25.00,
-                "notify_email": True,
-                "notify_sms": False
-            }
-        }
+class AlertCreate(BaseModel):
+    symbol: str
+    alert_type: str
+    target_price: float = None
+    base_price: float = None
+    target_percent: float = None
+
+
+class AlertUpdate(BaseModel):
+    active: bool = None
+    target_price: float = None
+    target_percent: float = None
 
 
 class AlertResponse(BaseModel):
-    alert_id: str
+    id: str
     symbol: str
-    condition: str
-    target_value: float
-    current_value: float
-    status: str  # active, triggered, expired
-    created_at: str
-    triggered_at: Optional[str] = None
+    alert_type: str
+    target_price: float = None
+    base_price: float = None
+    target_percent: float = None
+    active: bool
+    triggered: bool
+    triggered_at: datetime = None
+    triggered_price: float = None
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
 
 
-# In-memory storage (use database in production)
-alerts_db = {}
-
-
-@router.post("", response_model=AlertResponse)
-async def create_alert(
-    alert: PriceAlert,
-    current_user: dict = Depends(get_current_user)
+@router.post("/", response_model=AlertResponse, status_code=status.HTTP_201_CREATED)
+def create_alert(
+    alert: AlertCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    """
-    Create a new price alert
+    """Create a new price alert"""
     
-    - **symbol**: Stock symbol to monitor
-    - **condition**: Trigger condition (above, below, change_pct)
-    - **target_value**: Target price or percentage
-    - **notify_email**: Send email when triggered
-    - **notify_sms**: Send SMS when triggered
-    """
-    user_email = current_user.get("email")
-    
-    # Validate condition
-    valid_conditions = ["above", "below", "change_pct"]
-    if alert.condition not in valid_conditions:
+    if alert.alert_type not in ["above", "below", "percent_change"]:
         raise HTTPException(
-            status_code=400,
-            detail=f"Invalid condition. Must be one of: {', '.join(valid_conditions)}"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid alert type. Must be: above, below, or percent_change"
         )
     
-    # Create alert
-    alert_id = str(uuid.uuid4())
+    if alert.alert_type in ["above", "below"] and alert.target_price is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="target_price is required for above/below alerts"
+        )
     
-    # Mock current price
-    current_price = 22.10  # In production, get from markets service
+    if alert.alert_type == "percent_change" and (alert.base_price is None or alert.target_percent is None):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="base_price and target_percent are required for percent_change alerts"
+        )
     
-    alert_data = {
-        "alert_id": alert_id,
-        "user_email": user_email,
-        "symbol": alert.symbol,
-        "condition": alert.condition,
-        "target_value": alert.target_value,
-        "current_value": current_price,
-        "status": "active",
-        "created_at": datetime.utcnow().isoformat(),
-        "triggered_at": None,
-        "notify_email": alert.notify_email,
-        "notify_sms": alert.notify_sms
-    }
+    new_alert = Alert(
+        user_id=current_user.id,
+        symbol=alert.symbol,
+        type=alert.alert_type,
+        value=alert.target_price or alert.target_percent or 0,
+        alert_type=alert.alert_type,
+        target_price=alert.target_price,
+        base_price=alert.base_price,
+        target_percent=alert.target_percent,
+        active=True,
+        triggered=False
+    )
     
-    # Store alert
-    if user_email not in alerts_db:
-        alerts_db[user_email] = []
-    alerts_db[user_email].append(alert_data)
+    db.add(new_alert)
+    db.commit()
+    db.refresh(new_alert)
     
-    return AlertResponse(**alert_data)
+    logger.info(f"Created alert {new_alert.id} for user {current_user.id}")
+    
+    return new_alert
 
 
-@router.get("", response_model=List[AlertResponse])
-async def get_alerts(
-    status: Optional[str] = Query(None, description="Filter by status: active, triggered, expired"),
-    current_user: dict = Depends(get_current_user)
+@router.get("/", response_model=List[AlertResponse])
+def list_alerts(
+    active_only: bool = True,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    """
-    Get all price alerts for current user
+    """List all alerts for the current user"""
     
-    - **status**: Optional filter by status
-    """
-    user_email = current_user.get("email")
+    query = db.query(Alert).filter(Alert.user_id == current_user.id)
     
-    user_alerts = alerts_db.get(user_email, [])
+    if active_only:
+        query = query.filter(Alert.active == True, Alert.triggered == False)
     
-    # Filter by status if provided
-    if status:
-        user_alerts = [a for a in user_alerts if a["status"] == status]
+    alerts = query.order_by(Alert.created_at.desc()).all()
     
-    return [AlertResponse(**alert) for alert in user_alerts]
+    return alerts
 
 
 @router.get("/{alert_id}", response_model=AlertResponse)
-async def get_alert(
+def get_alert(
     alert_id: str,
-    current_user: dict = Depends(get_current_user)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    """
-    Get a specific alert by ID
+    """Get a specific alert"""
     
-    - **alert_id**: Alert identifier
-    """
-    user_email = current_user.get("email")
-    user_alerts = alerts_db.get(user_email, [])
+    alert = db.query(Alert).filter(
+        Alert.id == alert_id,
+        Alert.user_id == current_user.id
+    ).first()
     
-    for alert in user_alerts:
-        if alert["alert_id"] == alert_id:
-            return AlertResponse(**alert)
+    if not alert:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Alert not found"
+        )
     
-    raise HTTPException(status_code=404, detail="Alert not found")
+    return alert
 
 
-@router.delete("/{alert_id}")
-async def delete_alert(
+@router.put("/{alert_id}", response_model=AlertResponse)
+def update_alert(
     alert_id: str,
-    current_user: dict = Depends(get_current_user)
+    alert_update: AlertUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    """
-    Delete a price alert
+    """Update an alert"""
     
-    - **alert_id**: Alert to delete
-    """
-    user_email = current_user.get("email")
+    alert = db.query(Alert).filter(
+        Alert.id == alert_id,
+        Alert.user_id == current_user.id
+    ).first()
     
-    if user_email not in alerts_db:
-        raise HTTPException(status_code=404, detail="Alert not found")
+    if not alert:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Alert not found"
+        )
     
-    user_alerts = alerts_db[user_email]
+    if alert_update.active is not None:
+        alert.active = alert_update.active
     
-    for i, alert in enumerate(user_alerts):
-        if alert["alert_id"] == alert_id:
-            deleted = user_alerts.pop(i)
-            return {
-                "message": "Alert deleted successfully",
-                "alert_id": alert_id,
-                "symbol": deleted["symbol"]
-            }
+    if alert_update.target_price is not None:
+        alert.target_price = alert_update.target_price
+        alert.value = alert_update.target_price
     
-    raise HTTPException(status_code=404, detail="Alert not found")
+    if alert_update.target_percent is not None:
+        alert.target_percent = alert_update.target_percent
+        alert.value = alert_update.target_percent
+    
+    db.commit()
+    db.refresh(alert)
+    
+    logger.info(f"Updated alert {alert_id}")
+    
+    return alert
 
 
-@router.put("/{alert_id}/trigger")
-async def trigger_alert(alert_id: str):
-    """
-    Mark an alert as triggered (called by background job)
+@router.delete("/{alert_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_alert(
+    alert_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Delete an alert"""
     
-    - **alert_id**: Alert to trigger
-    """
-    # Find and update alert
-    for user_alerts in alerts_db.values():
-        for alert in user_alerts:
-            if alert["alert_id"] == alert_id:
-                alert["status"] = "triggered"
-                alert["triggered_at"] = datetime.utcnow().isoformat()
-                
-                return {
-                    "message": "Alert triggered",
-                    "alert": AlertResponse(**alert)
-                }
+    alert = db.query(Alert).filter(
+        Alert.id == alert_id,
+        Alert.user_id == current_user.id
+    ).first()
     
-    raise HTTPException(status_code=404, detail="Alert not found")
+    if not alert:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Alert not found"
+        )
+    
+    db.delete(alert)
+    db.commit()
+    
+    logger.info(f"Deleted alert {alert_id}")
+    
+    return None

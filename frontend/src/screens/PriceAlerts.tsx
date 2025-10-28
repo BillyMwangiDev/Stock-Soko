@@ -85,8 +85,11 @@ export default function PriceAlerts({ navigation }: Props) {
 
   const loadPopularStocks = async () => {
     try {
-      const res = await api.get('/markets');
-      const stocks = res.data.instruments || [];
+      const res = await api.get('/markets/stocks');
+      const stocks = (res.data.stocks || []).map((s: any) => ({
+        ...s,
+        change_pct: s.change_percent
+      }));
       setPopularStocks(stocks.slice(0, 6));
     } catch (error) {
       console.error('Failed to load stocks:', error);

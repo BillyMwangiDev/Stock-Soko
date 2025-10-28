@@ -44,49 +44,42 @@ export const textStyles = {
     fontSize: typography.fontSize['3xl'],
     fontWeight: typography.fontWeight.bold,
     lineHeight: typography.lineHeight.tight,
-    color: '#111827',
   },
   h2: {
     fontFamily: typography.fontFamily.headline,
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
     lineHeight: typography.lineHeight.tight,
-    color: '#111827',
   },
   h3: {
     fontFamily: typography.fontFamily.headline,
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.semibold,
     lineHeight: typography.lineHeight.tight,
-    color: '#111827',
   },
   h4: {
     fontFamily: typography.fontFamily.bodySemibold,
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.semibold,
     lineHeight: typography.lineHeight.normal,
-    color: '#111827',
   },
   body: {
     fontFamily: typography.fontFamily.body,
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.normal,
     lineHeight: typography.lineHeight.normal,
-    color: '#111827',
   },
   bodySmall: {
     fontFamily: typography.fontFamily.body,
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.normal,
     lineHeight: typography.lineHeight.normal,
-    color: '#374151',
   },
   caption: {
     fontFamily: typography.fontFamily.body,
     fontSize: typography.fontSize.xs,
     fontWeight: typography.fontWeight.normal,
     lineHeight: typography.lineHeight.normal,
-    color: '#6B7280',
   },
   button: {
     fontFamily: typography.fontFamily.bodyMedium,
@@ -94,7 +87,6 @@ export const textStyles = {
     fontWeight: typography.fontWeight.medium,
     lineHeight: typography.lineHeight.tight,
   },
-  // Price/number styles with monospace
   price: {
     fontFamily: typography.fontFamily.monoSemibold,
     fontSize: typography.fontSize.xl,

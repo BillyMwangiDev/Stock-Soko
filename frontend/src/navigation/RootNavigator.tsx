@@ -18,14 +18,26 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootNavigator() {
   const [isLoading, setIsLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
     initializeApp();
-  }, []);
+    
+    // Check auth state periodically to catch logout
+    const interval = setInterval(() => {
+      const currentAuthState = isAuthenticated();
+      if (currentAuthState !== authenticated) {
+        setAuthenticated(currentAuthState);
+      }
+    }, 500);
+    
+    return () => clearInterval(interval);
+  }, [authenticated]);
 
   const initializeApp = async () => {
     try {
       await initializeAuth();
+      setAuthenticated(isAuthenticated());
 
       // Small delay to ensure smooth transition
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -51,15 +63,16 @@ export default function RootNavigator() {
       screenOptions={{
         headerShown: false,
         animationEnabled: true,
-        gestureEnabled: true,
+        gestureEnabled: false,
       }}
     >
-      {!isAuthenticated() ? (
+      {!authenticated ? (
         <Stack.Screen
           name="Auth"
           component={AuthStack}
           options={{
-            animationTypeForReplace: 'push',
+            animationTypeForReplace: 'pop',
+            gestureEnabled: false,
           }}
         />
       ) : (
@@ -68,6 +81,7 @@ export default function RootNavigator() {
           component={MainTabs}
           options={{
             animationTypeForReplace: 'push',
+            gestureEnabled: false,
           }}
         />
       )}

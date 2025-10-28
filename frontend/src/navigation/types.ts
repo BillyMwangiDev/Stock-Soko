@@ -74,7 +74,6 @@ export type ProfileStackParamList = {
   ChangePassword: undefined;
   TwoFactorSetup: undefined;
   PaymentMethods: undefined;
-  AddPaymentMethod: { type: 'mpesa' | 'bank' };
   PrivacyPolicy: undefined;
   TermsConditions: undefined;
   LanguageSelection: undefined;
@@ -84,5 +83,4 @@ export type ProfileStackParamList = {
 
 export type NewsStackParamList = {
   News: undefined;
-  NewsDetail: { articleId: string };
 };

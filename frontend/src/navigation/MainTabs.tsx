@@ -55,7 +55,7 @@ export default function MainTabs() {
           paddingBottom: Platform.OS === 'ios' ? insets.bottom : 8,
           height: tabBarHeight,
           elevation: 0,
-          shadowOpacity: 0,
+          boxShadow: 'none',
         },
         tabBarLabelStyle: {
           fontSize: 12,

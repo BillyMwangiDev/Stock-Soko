@@ -36,18 +36,41 @@ export default function PaymentMethods({ navigation }: Props) {
     try {
       setLoading(true);
       const res = await api.get('/payments/methods');
-      setMethods(res.data.methods || []);
+      
+      // Map backend response to frontend format
+      const backendMethods = res.data.methods || [];
+      const mappedMethods: PaymentMethod[] = backendMethods.map((method: any) => ({
+        id: method.id,
+        type: method.type,
+        name: method.name,
+        details: method.type === 'mpesa' 
+          ? `Min: KES ${method.min_amount} | Max: KES ${method.max_amount.toLocaleString()}`
+          : `Fee: ${method.fees.withdrawal} | ${method.status || 'Available'}`,
+        isDefault: method.id === 'mpesa', // M-Pesa is default for now
+        isVerified: method.status !== 'coming_soon',
+      }));
+      
+      setMethods(mappedMethods);
     } catch (error: any) {
       console.error('Failed to load payment methods:', error);
       
+      // Fallback to showing available methods even if API fails
       const mockMethods: PaymentMethod[] = [
         {
-          id: '1',
+          id: 'mpesa',
           type: 'mpesa',
           name: 'M-Pesa',
-          details: '+254712345678',
+          details: 'Min: KES 100 | Max: KES 150,000',
           isDefault: true,
           isVerified: true,
+        },
+        {
+          id: 'bank',
+          type: 'bank',
+          name: 'Bank Transfer',
+          details: 'Coming Soon',
+          isDefault: false,
+          isVerified: false,
         },
       ];
       setMethods(mockMethods);
@@ -122,7 +145,7 @@ export default function PaymentMethods({ navigation }: Props) {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         {showAddMenu && (
-          <Card variant="glass" style={styles.addMenu}>
+          <Card variant="default" style={styles.addMenu}>
             <Text style={styles.addMenuTitle}>Add Payment Method</Text>
             
             <TouchableOpacity style={styles.addMenuItem} onPress={handleAddMpesa}>
@@ -150,11 +173,11 @@ export default function PaymentMethods({ navigation }: Props) {
         )}
 
         {loading ? (
-          <Card variant="glass" style={styles.loadingCard}>
+          <Card variant="default" style={styles.loadingCard}>
             <Text style={styles.loadingText}>Loading payment methods...</Text>
           </Card>
         ) : methods.length === 0 ? (
-          <Card variant="glass" style={styles.emptyState}>
+          <Card variant="default" style={styles.emptyState}>
             <Ionicons name="card-outline" size={60} color={colors.text.tertiary} />
             <Text style={styles.emptyTitle}>No Payment Methods</Text>
             <Text style={styles.emptyDescription}>
@@ -170,7 +193,7 @@ export default function PaymentMethods({ navigation }: Props) {
           </Card>
         ) : (
           methods.map((method) => (
-            <Card key={method.id} variant="glass" style={styles.methodCard}>
+            <Card key={method.id} variant="default" style={styles.methodCard}>
               <View style={styles.methodHeader}>
                 <View style={[
                   styles.methodIcon,

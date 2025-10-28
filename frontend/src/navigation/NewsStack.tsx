@@ -1,6 +1,6 @@
 /**
  * News Stack Navigator
- * Handles news flow: News  NewsDetail
+ * Handles news flow
  */
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -18,7 +18,7 @@ export default function NewsStack() {
         headerStyle: {
           backgroundColor: colors.background.primary,
           elevation: 0,
-          shadowOpacity: 0,
+          boxShadow: 'none',
           borderBottomWidth: 1,
           borderBottomColor: colors.border.main,
         },

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { Card, Button } from '../components';
-import { setAccessToken } from '../store/auth';
+import { logout as authLogout } from '../store/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { hapticFeedback } from '../utils/haptics';
 import { api } from '../api/client';
@@ -81,9 +81,22 @@ export default function Settings() {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: () => {
-            setAccessToken('');
-            Alert.alert('Logged Out', 'You have been logged out successfully');
+          onPress: async () => {
+            try {
+              // Clear all authentication data
+              await authLogout();
+              await AsyncStorage.removeItem('userEmail');
+              await AsyncStorage.removeItem('userName');
+              await AsyncStorage.removeItem('hasCompletedOnboarding');
+              
+              // The RootNavigator will automatically switch to Auth stack
+              // when it detects isAuthenticated() returns false
+              
+              Alert.alert('Logged Out', 'You have been logged out successfully');
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
           },
         },
       ]

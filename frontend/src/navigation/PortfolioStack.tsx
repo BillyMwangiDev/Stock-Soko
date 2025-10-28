@@ -22,7 +22,7 @@ export default function PortfolioStack() {
         headerStyle: {
           backgroundColor: colors.background.primary,
           elevation: 0,
-          shadowOpacity: 0,
+          boxShadow: 'none',
           borderBottomWidth: 1,
           borderBottomColor: colors.border.main,
         },

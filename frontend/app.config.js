@@ -8,17 +8,17 @@ module.exports = {
 		orientation: "portrait",
 		userInterfaceStyle: "dark",
 		icon: "./assets/images/logo.png",
-		splash: {
-			image: "./assets/images/splash.png",
-			resizeMode: "contain",
-			backgroundColor: "#0D1117"
-		},
+	splash: {
+		image: "./assets/images/splash.png",
+		resizeMode: "cover",
+		backgroundColor: "#FF8C42"
+	},
 		updates: { enabled: true },
 		assetBundlePatterns: ["**/*"],
-		androidStatusBar: {
-			backgroundColor: "#0D1117",
-			barStyle: "light-content"
-		},
+	androidStatusBar: {
+		backgroundColor: "#FF8C42",
+		barStyle: "light-content"
+	},
 		androidNavigationBar: {
 			backgroundColor: "#161B22",
 			barStyle: "light-content"
@@ -33,18 +33,23 @@ module.exports = {
 				}
 			}
 		},
-		android: {
-			adaptiveIcon: {
-				foregroundImage: "./assets/images/logo.png",
-				backgroundColor: "#0D1117"
-			},
-			package: "com.stocksoko.app"
+	android: {
+		adaptiveIcon: {
+			foregroundImage: "./assets/images/logo.png",
+			backgroundColor: "#1A3A2E"
 		},
+		package: "com.stocksoko.app"
+	},
 		web: {
 			favicon: "./assets/images/logo.png"
 		},
-		extra: {
-			apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.1.15:8000"
-		}
+	extra: {
+		apiBaseUrl: process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000"
+	},
+	// Performance optimizations
+	plugins: [],
+	experiments: {
+		tsconfigPaths: true
+	}
 	}
 };

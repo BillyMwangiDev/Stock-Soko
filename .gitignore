@@ -1,63 +1,111 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+*.py[cod]
+*$py.class
 *.so
-*.egg
-*.egg-info/
-dist/
+.Python
 build/
-.venv/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
 venv/
-.pytest_cache/
-.coverage
-htmlcov/
-.mypy_cache/
-
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-stocksoko.db
+.venv/
+ENV/
+env/
+backend/venv/
+backend/.venv/
+backend/backend/venv/
 
 # IDEs
-.idea/
 .vscode/
+.idea/
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
-Thumbs.db
 
-# Node / React Native / Expo
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+stocksoko.db
+backend/stocksoko.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+celerybeat-schedule
+celerybeat-schedule.db
+celerybeat-schedule-shm
+celerybeat-schedule-wal
+
+# Frontend
 node_modules/
+frontend/node_modules/
+.expo/
+.expo-shared/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.expo/
-.expo-shared/
-expo-env.d.ts
-web-build/
-dist/
+*.jsbundle
+*.map
 
-# React Native
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-*.orig.*
+# Build
+*.apk
+*.aab
+*.ipa
+web-build/
+
+# Uploads
+uploads/
+uploads/kyc/
+*.pdf
+*.jpg
+*.jpeg
+*.png
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Redis
+dump.rdb
 
 # Temporary files
-*.log
 *.tmp
+*.temp
 .cache/
+
+# Documentation (keep only essential)
+# Keep: README.md, CHANGELOG.md, LICENSE, docs/
+# Ignore temporary docs
+*-TEMP.md
+*-OLD.md
+*-BACKUP.md

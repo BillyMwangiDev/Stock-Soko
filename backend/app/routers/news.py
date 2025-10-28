@@ -69,3 +69,60 @@ async def analyze_sentiment(text: str):
         "text": text,
         "sentiment": sentiment
     }
+
+
+# ===============================================
+# NEW ENDPOINTS - Real News Integration
+# ===============================================
+
+@router.get("/live")
+async def get_live_news(
+    symbol: Optional[str] = Query(None, description="Stock symbol for specific news"),
+    limit: int = Query(20, ge=1, le=100, description="Number of articles")
+):
+    """Get live news from NewsAPI or Finnhub"""
+    try:
+        result = news_service.get_combined_news(symbol=symbol, limit=limit)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch live news: {str(e)}")
+
+
+@router.get("/stock/{symbol}")
+async def get_stock_news(
+    symbol: str,
+    limit: int = Query(10, ge=1, le=50, description="Number of articles")
+):
+    """Get news specific to a stock symbol from Finnhub"""
+    try:
+        articles = news_service.fetch_stock_news(symbol, limit)
+        return {
+            "symbol": symbol,
+            "articles": articles,
+            "count": len(articles)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch stock news: {str(e)}")
+
+
+@router.get("/research/fundamentals/{symbol}")
+async def get_fundamentals(symbol: str):
+    """Get company fundamentals from Finnhub"""
+    try:
+        fundamentals = news_service.get_company_fundamentals(symbol)
+        
+        if not fundamentals:
+            # Return empty object if no data (API key missing or symbol not found)
+            return {
+                "symbol": symbol,
+                "data": {},
+                "source": "unavailable"
+            }
+        
+        return {
+            "symbol": symbol,
+            "data": fundamentals,
+            "source": "finnhub"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch fundamentals: {str(e)}")

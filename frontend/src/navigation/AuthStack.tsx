@@ -27,7 +27,7 @@ export default function AuthStack() {
         headerStyle: {
           backgroundColor: colors.background.primary,
           elevation: 0,
-          shadowOpacity: 0,
+          boxShadow: 'none',
           borderBottomWidth: 1,
           borderBottomColor: colors.border.main,
         },
@@ -38,7 +38,10 @@ export default function AuthStack() {
         cardStyle: {
           backgroundColor: colors.background.primary,
         },
+        gestureEnabled: false,
+        headerBackVisible: true,
       }}
+      initialRouteName="Splash"
     >
       <Stack.Screen 
         name="Splash" 
@@ -85,6 +88,8 @@ export default function AuthStack() {
         options={{ 
           title: 'Sign In',
           headerShown: true,
+          headerBackVisible: false,
+          gestureEnabled: false,
         }}
       />
       <Stack.Screen 
