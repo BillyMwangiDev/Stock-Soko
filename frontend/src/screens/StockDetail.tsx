@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, TextInput as RNTextInput, Modal, Animated } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, TextInput as RNTextInput, Modal, Animated, Keyboard } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -1237,6 +1237,11 @@ export default function StockDetail() {
             keyboardType="number-pad"
             placeholder="0"
             placeholderTextColor={colors.text.disabled}
+            returnKeyType="done"
+            blurOnSubmit={true}
+            onSubmitEditing={() => {
+              // Keyboard will auto-dismiss
+            }}
           />
 
           {/* Quick Amount Buttons */}
@@ -1248,7 +1253,10 @@ export default function StockDetail() {
                   styles.quickBtn,
                   quickQuantity === amount && styles.quickBtnActive
                 ]}
-                onPress={() => setQuickQuantity(amount)}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setQuickQuantity(amount);
+                }}
               >
                 <Text style={[
                   styles.quickBtnText,
@@ -1282,6 +1290,7 @@ export default function StockDetail() {
           <TouchableOpacity 
             style={styles.buyButton}
             onPress={() => {
+              Keyboard.dismiss();
               if (!quickQuantity || parseFloat(quickQuantity) <= 0) {
                 Alert.alert('Enter Quantity', 'Please enter a valid quantity');
                 return;
@@ -1298,6 +1307,7 @@ export default function StockDetail() {
           <TouchableOpacity 
             style={styles.sellButton}
             onPress={() => {
+              Keyboard.dismiss();
               if (!quickQuantity || parseFloat(quickQuantity) <= 0) {
                 Alert.alert('Enter Quantity', 'Please enter a valid quantity');
                 return;
