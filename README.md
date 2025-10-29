@@ -10,22 +10,22 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [Quick Start](#-quick-start)
-- [Features](#-features)
-- [Installation](#-installation)
-- [Architecture](#-architecture)
-- [API Documentation](#-api-documentation)
-- [Security](#-security)
-- [Testing](#-testing)
-- [Deployment](#-deployment)
-- [Configuration](#-configuration)
-- [Troubleshooting](#-troubleshooting)
+- [Quick Start](#quick-start)
+- [Features](#features)
+- [Installation](#installation)
+- [Architecture](#architecture)
+- [API Documentation](#api-documentation)
+- [Security](#security)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Configuration](#configuration)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Start the Application
 
@@ -47,44 +47,44 @@ This will:
 
 ---
 
-## ✨ Features
+## Features
 
 ### Core Trading
-- ✅ **Real-time stock quotes** - Multi-provider fallback (Twelve Data, Alpha Vantage, Finnhub, MarketStack)
-- ✅ **Order execution** - Market and limit orders
-- ✅ **Portfolio tracking** - Real-time valuations with P&L
-- ✅ **AI recommendations** - Buy/sell/hold signals with confidence scores
-- ✅ **Technical indicators** - RSI, MACD, SMA, Bollinger Bands
+- **Real-time stock quotes** - Multi-provider fallback (Twelve Data, Alpha Vantage, Finnhub, MarketStack)
+- **Order execution** - Market and limit orders
+- **Portfolio tracking** - Real-time valuations with P&L
+- **AI recommendations** - Buy/sell/hold signals with confidence scores
+- **Technical indicators** - RSI, MACD, SMA, Bollinger Bands
 
 ### Advanced Features
-- ✅ **Price alerts** - Push notifications for price targets
-- ✅ **M-Pesa integration** - Deposits/withdrawals via Daraja API
-- ✅ **Market news** - Real-time news aggregation
-- ✅ **AI chat assistant** - Trading queries with context-aware responses
-- ✅ **PDF reports** - Portfolio statements and trade confirmations
-- ✅ **2FA security** - TOTP authentication
-- ✅ **WebSocket streaming** - Real-time price updates
-- ✅ **KYC management** - Document upload and verification
-- ✅ **Broker integration** - CDSC account linking
+- **Price alerts** - Push notifications for price targets
+- **M-Pesa integration** - Deposits/withdrawals via Daraja API
+- **Market news** - Real-time news aggregation
+- **AI chat assistant** - Trading queries with context-aware responses
+- **PDF reports** - Portfolio statements and trade confirmations
+- **2FA security** - TOTP authentication
+- **WebSocket streaming** - Real-time price updates
+- **KYC management** - Document upload and verification
+- **Broker integration** - CDSC account linking
 
 ### Mobile App Features
-- ✅ **Comprehensive learning center** - 24 modules across 4 connected learning paths
+- **Comprehensive learning center** - 24 modules across 4 connected learning paths
   - Complete Beginner Track (8 modules)
   - Value Investing Mastery (12 modules)
   - Technical Trading Specialist (9 modules)
   - Fundamental Analysis Pro (10 modules)
-- ✅ **Interactive charts** - Candlestick, line, and area charts
-- ✅ **Watchlists** - Track favorite stocks
-- ✅ **Push notifications** - Price alerts and trade confirmations
-- ✅ **Dark theme** - Optimized for low-light viewing
-- ✅ **Offline support** - View cached data without connection
+- **Interactive charts** - Candlestick, line, and area charts
+- **Watchlists** - Track favorite stocks
+- **Push notifications** - Price alerts and trade confirmations
+- **Dark theme** - Optimized for low-light viewing
+- **Offline support** - View cached data without connection
 
 ### Background Services
-- ✅ **Celery workers** - Async task processing
-- ✅ **Market data updates** - Scheduled every 30 seconds
-- ✅ **Price monitoring** - Alert evaluation
-- ✅ **Redis caching** - With in-memory fallback
-- ✅ **Firebase notifications** - Push notification delivery
+- **Celery workers** - Async task processing
+- **Market data updates** - Scheduled every 30 seconds
+- **Price monitoring** - Alert evaluation
+- **Redis caching** - With in-memory fallback
+- **Firebase notifications** - Push notification delivery
 
 ---
 
@@ -138,7 +138,7 @@ Edit `.env` with your configuration (see [Configuration](#-configuration) sectio
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ### Tech Stack
 
@@ -287,7 +287,7 @@ DELETE /api/v1/alerts/{id}           Delete alert
 
 ### Production Security Checklist
 
-#### ✅ Implemented
+#### Implemented
 - JWT authentication with secure tokens
 - Password hashing with bcrypt
 - HTTPS enforcement in production
@@ -340,7 +340,7 @@ RATE_LIMIT_PER_HOUR=1000
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Run All Tests
 ```bash
@@ -355,16 +355,16 @@ pytest --cov=backend/app --cov-report=html
 ### Test Categories
 
 **Backend Tests (60% coverage)**
-- ✅ Authentication tests
-- ✅ Trading tests
-- ✅ Market data tests
-- ✅ Ledger tests
-- ✅ Watchlist tests
-- ⚠️ Service layer tests (35% gap)
-- ⚠️ Integration tests needed
+- Authentication tests
+- Trading tests
+- Market data tests
+- Ledger tests
+- Watchlist tests
+- Service layer tests (35% gap)
+- Integration tests needed
 
 **Frontend Tests**
-- ⚠️ Currently 0% - needs implementation
+- Currently 0% - needs implementation
 - Recommended: Jest + React Testing Library
 
 ### Manual Testing
@@ -383,7 +383,7 @@ Password: Test123!
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
 ### Production Deployment Steps
 
@@ -489,7 +489,7 @@ SECURE_COOKIES=true
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -566,7 +566,7 @@ ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8081,http://localhost:190
 
 ---
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -696,7 +696,7 @@ celery -A backend.app.tasks.celery_app worker --loglevel=debug
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 ### Code Style
 
