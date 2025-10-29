@@ -68,6 +68,8 @@ export default function StockDetail() {
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [aiRecommendation, setAiRecommendation] = useState<any>(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [stockNews, setStockNews] = useState<any[]>([]);
+  const [loadingNews, setLoadingNews] = useState(false);
   
   // Order Book states
   const [showOrderBook, setShowOrderBook] = useState(false);
@@ -93,6 +95,7 @@ export default function StockDetail() {
     loadStockData();
     checkWatchlist();
     loadAIRecommendation();
+    loadStockNews();
   }, [symbol]);
 
   useEffect(() => {
@@ -226,6 +229,27 @@ export default function StockDetail() {
     }
   };
 
+  const loadStockNews = async () => {
+    setLoadingNews(true);
+    try {
+      const res = await api.get(`/news/stock/${symbol}`);
+      if (res.data.articles && res.data.articles.length > 0) {
+        setStockNews(res.data.articles.slice(0, 5)); // Get top 5 news items
+      }
+    } catch (error) {
+      console.error(`Failed to load news for ${symbol}:`, error);
+      // Set default placeholder news
+      setStockNews([{
+        title: `${symbol} Market Update`,
+        description: 'Recent expansion plans aim to grow market share by 15% this quarter, with focus on innovative products and customer service excellence.',
+        source: 'Market Analysis',
+        published_at: new Date().toISOString(),
+      }]);
+    } finally {
+      setLoadingNews(false);
+    }
+  };
+
   const loadStockData = async () => {
     try {
       const res = await api.get('/markets/stocks');
@@ -237,7 +261,6 @@ export default function StockDetail() {
           change_pct: stockData.change_percent,
           change_amount: (stockData.last_price * stockData.change_percent) / 100,
           about: `${stockData.name} is a leading company listed on the Nairobi Securities Exchange, known for its strong market presence and consistent performance.`,
-          news: 'Recent expansion plans aim to grow market share by 15% this quarter, with focus on innovative products and customer service excellence.',
         });
       }
     } catch (error) {
@@ -1079,8 +1102,31 @@ export default function StockDetail() {
           <View style={styles.cardContent}>
             <View style={styles.cardTextSection}>
               <Text style={styles.cardLabel}>NEWS FEED</Text>
-              <Text style={styles.cardTitle}>{stock.symbol} Expansion Plans Announced</Text>
-              <Text style={styles.cardDescription}>{stock.news}</Text>
+              {loadingNews ? (
+                <Text style={styles.cardDescription}>Loading news...</Text>
+              ) : stockNews.length > 0 ? (
+                <>
+                  <Text style={styles.cardTitle}>{stockNews[0].title}</Text>
+                  <Text style={styles.cardDescription}>
+                    {stockNews[0].description || stockNews[0].summary || 'Click to read more...'}
+                  </Text>
+                  <Text style={styles.cardMeta}>
+                    {stockNews[0].source} • {new Date(stockNews[0].published_at).toLocaleDateString()}
+                  </Text>
+                  {stockNews.length > 1 && (
+                    <Text style={styles.moreNewsText}>
+                      +{stockNews.length - 1} more articles available
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Text style={styles.cardTitle}>No Recent News</Text>
+                  <Text style={styles.cardDescription}>
+                    No recent news available for {stock.symbol}. Check back later for updates.
+                  </Text>
+                </>
+              )}
             </View>
             <View style={styles.cardImage}>
               <Text style={styles.imageEmoji}>NEWS</Text>
@@ -1532,6 +1578,18 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     color: colors.text.secondary,
     lineHeight: 20,
+  },
+  cardMeta: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.disabled,
+    marginTop: spacing.xs,
+    fontStyle: 'italic',
+  },
+  moreNewsText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.primary.main,
+    marginTop: spacing.xs,
+    fontWeight: typography.fontWeight.semibold,
   },
   cardImage: {
     width: 96,

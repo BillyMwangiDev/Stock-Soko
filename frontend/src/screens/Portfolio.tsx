@@ -2,9 +2,9 @@
  * Portfolio Screen
  * Current holdings, P/L summary, tax summary, and performance
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../api/client';
@@ -47,6 +47,14 @@ export default function Portfolio() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Refresh portfolio when screen comes into focus (e.g., after placing a trade)
+  useFocusEffect(
+    useCallback(() => {
+      console.log('[Portfolio] Screen focused - refreshing data');
+      loadData();
+    }, [])
+  );
 
   const loadData = async () => {
     try {
