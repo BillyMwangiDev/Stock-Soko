@@ -85,6 +85,7 @@ export default function StockDetail() {
   const [currentOrder, setCurrentOrder] = useState<OrderData | null>(null);
   const [orderType, setOrderType] = useState<'market' | 'limit'>('market');
   const [quantity, setQuantity] = useState('');
+  const [quickQuantity, setQuickQuantity] = useState('');
   const [limitPrice, setLimitPrice] = useState('');
 
   useEffect(() => {
@@ -1202,34 +1203,117 @@ export default function StockDetail() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* OKX-Style Trading Interface */}
+      {/* Integrated Trading Interface - Fixed at bottom */}
       <View style={styles.tradingPanel}>
-        <TouchableOpacity 
-          style={styles.buyButton}
-          onPress={() => {
-            hapticFeedback.impact();
-            setTradeSide('buy');
-            setShowTradeModal(true);
-          }}
-        >
-          <Text style={styles.buyButtonText}>Buy {stock.symbol}</Text>
-          <Text style={styles.buttonSubtext}>Long / Spot</Text>
-        </TouchableOpacity>
+        {/* Compact Order Form */}
+        <View style={styles.compactOrderForm}>
+          <View style={styles.orderTypeRow}>
+            <Text style={styles.orderFormTitle}>Place Order</Text>
+            <View style={styles.orderTypeToggle}>
+              <TouchableOpacity 
+                style={[styles.orderTypeBtn, orderType === 'market' && styles.orderTypeBtnActive]}
+                onPress={() => setOrderType('market')}
+              >
+                <Text style={[styles.orderTypeBtnText, orderType === 'market' && styles.orderTypeBtnTextActive]}>
+                  Market
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.orderTypeBtn, orderType === 'limit' && styles.orderTypeBtnActive]}
+                onPress={() => setOrderType('limit')}
+              >
+                <Text style={[styles.orderTypeBtnText, orderType === 'limit' && styles.orderTypeBtnTextActive]}>
+                  Limit
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
 
-        <TouchableOpacity 
-          style={styles.sellButton}
-          onPress={() => {
-            hapticFeedback.impact();
-            setTradeSide('sell');
-            setShowTradeModal(true);
-          }}
-        >
-          <Text style={styles.sellButtonText}>Sell {stock.symbol}</Text>
-          <Text style={styles.buttonSubtext}>Short / Exit</Text>
-        </TouchableOpacity>
+          <Text style={styles.quantityLabel}>Quantity (Shares)</Text>
+          <RNTextInput
+            style={styles.quantityInputBox}
+            value={quickQuantity}
+            onChangeText={setQuickQuantity}
+            keyboardType="number-pad"
+            placeholder="0"
+            placeholderTextColor={colors.text.disabled}
+          />
+
+          {/* Quick Amount Buttons */}
+          <View style={styles.quickButtonsRow}>
+            {['10', '50', '100'].map((amount) => (
+              <TouchableOpacity
+                key={amount}
+                style={[
+                  styles.quickBtn,
+                  quickQuantity === amount && styles.quickBtnActive
+                ]}
+                onPress={() => setQuickQuantity(amount)}
+              >
+                <Text style={[
+                  styles.quickBtnText,
+                  quickQuantity === amount && styles.quickBtnTextActive
+                ]}>
+                  {amount}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Est. Total and Fee */}
+          <View style={styles.estimatesRow}>
+            <View style={styles.estimateItem}>
+              <Text style={styles.estimateLabel}>Est. Total</Text>
+              <Text style={styles.estimateValue}>
+                KES {((parseFloat(quickQuantity) || 0) * stock.last_price).toFixed(2)}
+              </Text>
+            </View>
+            <View style={styles.estimateItem}>
+              <Text style={styles.estimateLabel}>Fee (0.2%)</Text>
+              <Text style={styles.estimateValue}>
+                KES {((parseFloat(quickQuantity) || 0) * stock.last_price * 0.002).toFixed(2)}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Buy/Sell Buttons - Integrated */}
+        <View style={styles.actionButtonsRow}>
+          <TouchableOpacity 
+            style={styles.buyButton}
+            onPress={() => {
+              if (!quickQuantity || parseFloat(quickQuantity) <= 0) {
+                Alert.alert('Enter Quantity', 'Please enter a valid quantity');
+                return;
+              }
+              hapticFeedback.impact();
+              setTradeSide('buy');
+              setShowTradeModal(true);
+            }}
+          >
+            <Text style={styles.buyButtonText}>Buy {stock.symbol}</Text>
+            <Text style={styles.buttonSubtext}>Long / Spot</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.sellButton}
+            onPress={() => {
+              if (!quickQuantity || parseFloat(quickQuantity) <= 0) {
+                Alert.alert('Enter Quantity', 'Please enter a valid quantity');
+                return;
+              }
+              hapticFeedback.impact();
+              setTradeSide('sell');
+              setShowTradeModal(true);
+            }}
+          >
+            <Text style={styles.sellButtonText}>Sell {stock.symbol}</Text>
+            <Text style={styles.buttonSubtext}>Short / Exit</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Trade Order - Rendered directly as overlay for smooth transition */}
+      {/* Trade Order Modal - For advanced options */}
       {showTradeModal && (
         <TradeOrder
           symbol={symbol}
@@ -1725,15 +1809,114 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border.light,
   },
-  // OKX-Style Trading Panel
+  // Integrated Trading Panel
   tradingPanel: {
-    flexDirection: 'row',
-    gap: spacing.sm,
+    flexDirection: 'column',
     padding: spacing.md,
     backgroundColor: colors.background.card,
     borderTopWidth: 1,
     borderTopColor: colors.border.main,
     paddingBottom: spacing.md + 10,
+  },
+  compactOrderForm: {
+    marginBottom: spacing.md,
+  },
+  orderTypeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  orderFormTitle: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+  },
+  orderTypeToggle: {
+    flexDirection: 'row',
+    backgroundColor: colors.background.secondary,
+    borderRadius: borderRadius.md,
+    padding: spacing.xs / 2,
+  },
+  orderTypeBtn: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.sm,
+  },
+  orderTypeBtnActive: {
+    backgroundColor: colors.success,
+  },
+  orderTypeBtnText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.secondary,
+  },
+  orderTypeBtnTextActive: {
+    color: colors.primary.contrast,
+  },
+  quantityLabel: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    marginBottom: spacing.sm,
+  },
+  quantityInputBox: {
+    backgroundColor: colors.background.secondary,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.lg,
+    fontSize: typography.fontSize.xxl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  quickButtonsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  quickBtn: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.background.secondary,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickBtnActive: {
+    backgroundColor: colors.success + '30',
+    borderWidth: 1,
+    borderColor: colors.success,
+  },
+  quickBtnText: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.success,
+  },
+  quickBtnTextActive: {
+    color: colors.success,
+  },
+  estimatesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+  },
+  estimateItem: {
+    flex: 1,
+  },
+  estimateLabel: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  estimateValue: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+  },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
   buyButton: {
     flex: 1,
