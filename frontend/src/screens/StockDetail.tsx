@@ -314,7 +314,7 @@ export default function StockDetail() {
   return (
     <View style={styles.container}>      <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backIcon}></Text>
+          <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{stock.name}</Text>
         <TouchableOpacity 
@@ -323,7 +323,7 @@ export default function StockDetail() {
           disabled={watchlistLoading}
         >
           <Text style={[styles.watchlistIcon, isInWatchlist && styles.watchlistIconActive]}>
-            {isInWatchlist ? '' : ''}
+            {isInWatchlist ? '★' : '☆'}
           </Text>
         </TouchableOpacity>
       </View>
