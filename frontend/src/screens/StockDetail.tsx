@@ -337,7 +337,7 @@ export default function StockDetail() {
         <View style={[styles.priceSection, isPositive ? styles.sentimentPositive : styles.sentimentNegative]}>
           <View style={styles.priceInfo}>
             <Text style={styles.stockLabel}>{stock.name} ({stock.symbol})</Text>
-            <Text style={styles.stockPrice}>${stock.last_price.toFixed(2)}</Text>
+            <Text style={styles.stockPrice}>KSH {stock.last_price.toFixed(2)}</Text>
             <View style={styles.changeRow}>
               <Text style={styles.todayLabel}>Today</Text>
               <Text style={[styles.changePercent, isPositive ? styles.positiveText : styles.negativeText]}>
