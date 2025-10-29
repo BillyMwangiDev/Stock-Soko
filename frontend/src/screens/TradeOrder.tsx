@@ -37,6 +37,8 @@ interface TradeOrderProps {
 export default function TradeOrder({ symbol, side, currentPrice: priceFromProps, onBack, onReview }: TradeOrderProps) {
   const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [amount, setAmount] = useState('');
+  const [inputMode, setInputMode] = useState<'quantity' | 'amount'>('quantity');
   const [orderType, setOrderType] = useState<'market' | 'limit' | 'stop' | 'stop-limit' | 'trailing-stop'>('market');
   const [stopPrice, setStopPrice] = useState('');
   const [trailingPercent, setTrailingPercent] = useState('');
@@ -84,12 +86,35 @@ export default function TradeOrder({ symbol, side, currentPrice: priceFromProps,
     }
   };
 
+  // Calculate quantity from amount or vice versa
+  const effectivePrice = orderType === 'market' ? currentPrice : (parseFloat(price) || currentPrice);
+  
+  const handleAmountChange = (value: string) => {
+    setAmount(value);
+    if (value && effectivePrice > 0) {
+      const calculatedQuantity = parseFloat(value) / effectivePrice;
+      setQuantity(calculatedQuantity.toFixed(4));
+    } else {
+      setQuantity('');
+    }
+  };
+
+  const handleQuantityChange = (value: string) => {
+    setQuantity(value);
+    if (value && effectivePrice > 0) {
+      const calculatedAmount = parseFloat(value) * effectivePrice;
+      setAmount(calculatedAmount.toFixed(2));
+    } else {
+      setAmount('');
+    }
+  };
+
   const totalCost = (parseFloat(price) || currentPrice) * (parseFloat(quantity) || 0);
   const estimatedFee = totalCost * 0.002; // 0.2% brokerage fee
 
   const handleReviewOrder = () => {
     if (!quantity || parseFloat(quantity) <= 0) {
-      Alert.alert('Invalid Quantity', 'Please enter a valid quantity');
+      Alert.alert('Invalid Quantity', 'Please enter a valid quantity or amount');
       return;
     }
 
@@ -194,61 +219,169 @@ export default function TradeOrder({ symbol, side, currentPrice: priceFromProps,
                 <Text style={styles.priceDisplayValue}>KES {currentPrice.toFixed(2)}</Text>
               </View>
 
-              {/* MAIN QUANTITY INPUT - PROMINENT */}
+              {/* INPUT MODE TOGGLE */}
+              <View style={styles.inputModeToggle}>
+                <TouchableOpacity
+                  style={[
+                    styles.toggleButton,
+                    inputMode === 'quantity' && styles.toggleButtonActive
+                  ]}
+                  onPress={() => setInputMode('quantity')}
+                >
+                  <Text style={[
+                    styles.toggleText,
+                    inputMode === 'quantity' && styles.toggleTextActive
+                  ]}>
+                    By Shares
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.toggleButton,
+                    inputMode === 'amount' && styles.toggleButtonActive
+                  ]}
+                  onPress={() => setInputMode('amount')}
+                >
+                  <Text style={[
+                    styles.toggleText,
+                    inputMode === 'amount' && styles.toggleTextActive
+                  ]}>
+                    By Amount
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* MAIN INPUT - QUANTITY OR AMOUNT */}
               <View style={styles.mainInputSection}>
-                <Text style={styles.mainInputLabel}>
-                  {side === 'buy' ? 'HOW MANY SHARES TO BUY?' : 'HOW MANY SHARES TO SELL?'}
-                </Text>
-                <TouchableWithoutFeedback onPress={() => {}}>
-                  <View style={styles.quantityInputContainer}>
-                    <TextInput
-                      style={styles.quantityInput}
-                      placeholder="0"
-                      placeholderTextColor={colors.text.disabled}
-                      value={quantity}
-                      onChangeText={setQuantity}
-                      keyboardType="decimal-pad"
-                      returnKeyType="done"
-                      onSubmitEditing={Keyboard.dismiss}
-                      blurOnSubmit={true}
-                    />
-                    <Text style={styles.sharesLabel}>shares</Text>
-                  </View>
-                </TouchableWithoutFeedback>
-                
-                {/* Quick Amount Buttons */}
-                <View style={styles.quickAmountRow}>
-                  <TouchableOpacity 
-                    style={styles.quickAmountButton}
-                    onPress={() => setQuantity('5')}
-                  >
-                    <Text style={styles.quickAmountText}>5</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.quickAmountButton}
-                    onPress={() => setQuantity('10')}
-                  >
-                    <Text style={styles.quickAmountText}>10</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.quickAmountButton}
-                    onPress={() => setQuantity('25')}
-                  >
-                    <Text style={styles.quickAmountText}>25</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.quickAmountButton}
-                    onPress={() => setQuantity('50')}
-                  >
-                    <Text style={styles.quickAmountText}>50</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.quickAmountButton}
-                    onPress={() => setQuantity('100')}
-                  >
-                    <Text style={styles.quickAmountText}>100</Text>
-                  </TouchableOpacity>
-                </View>
+                {inputMode === 'quantity' ? (
+                  <>
+                    <Text style={styles.mainInputLabel}>
+                      {side === 'buy' ? 'HOW MANY SHARES TO BUY?' : 'HOW MANY SHARES TO SELL?'}
+                    </Text>
+                    <TouchableWithoutFeedback onPress={() => {}}>
+                      <View style={styles.quantityInputContainer}>
+                        <TextInput
+                          style={styles.quantityInput}
+                          placeholder="0"
+                          placeholderTextColor={colors.text.disabled}
+                          value={quantity}
+                          onChangeText={handleQuantityChange}
+                          keyboardType="decimal-pad"
+                          returnKeyType="done"
+                          onSubmitEditing={Keyboard.dismiss}
+                          blurOnSubmit={true}
+                        />
+                        <Text style={styles.sharesLabel}>shares</Text>
+                      </View>
+                    </TouchableWithoutFeedback>
+                    
+                    {/* Quick Share Buttons */}
+                    <View style={styles.quickAmountRow}>
+                      <TouchableOpacity 
+                        style={styles.quickAmountButton}
+                        onPress={() => handleQuantityChange('5')}
+                      >
+                        <Text style={styles.quickAmountText}>5</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.quickAmountButton}
+                        onPress={() => handleQuantityChange('10')}
+                      >
+                        <Text style={styles.quickAmountText}>10</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.quickAmountButton}
+                        onPress={() => handleQuantityChange('25')}
+                      >
+                        <Text style={styles.quickAmountText}>25</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.quickAmountButton}
+                        onPress={() => handleQuantityChange('50')}
+                      >
+                        <Text style={styles.quickAmountText}>50</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.quickAmountButton}
+                        onPress={() => handleQuantityChange('100')}
+                      >
+                        <Text style={styles.quickAmountText}>100</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Show calculated amount */}
+                    {quantity && parseFloat(quantity) > 0 && (
+                      <View style={styles.calculatedInfo}>
+                        <Text style={styles.calculatedLabel}>Total Amount:</Text>
+                        <Text style={styles.calculatedValue}>KSH {(parseFloat(quantity) * effectivePrice).toFixed(2)}</Text>
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.mainInputLabel}>
+                      {side === 'buy' ? 'HOW MUCH TO INVEST?' : 'HOW MUCH TO SELL?'}
+                    </Text>
+                    <TouchableWithoutFeedback onPress={() => {}}>
+                      <View style={styles.quantityInputContainer}>
+                        <Text style={styles.currencyPrefix}>KSH</Text>
+                        <TextInput
+                          style={styles.quantityInput}
+                          placeholder="0"
+                          placeholderTextColor={colors.text.disabled}
+                          value={amount}
+                          onChangeText={handleAmountChange}
+                          keyboardType="decimal-pad"
+                          returnKeyType="done"
+                          onSubmitEditing={Keyboard.dismiss}
+                          blurOnSubmit={true}
+                        />
+                      </View>
+                    </TouchableWithoutFeedback>
+                    
+                    {/* Quick Amount Buttons */}
+                    <View style={styles.quickAmountRow}>
+                      <TouchableOpacity 
+                        style={styles.quickAmountButton}
+                        onPress={() => handleAmountChange('1000')}
+                      >
+                        <Text style={styles.quickAmountText}>1K</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.quickAmountButton}
+                        onPress={() => handleAmountChange('5000')}
+                      >
+                        <Text style={styles.quickAmountText}>5K</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.quickAmountButton}
+                        onPress={() => handleAmountChange('10000')}
+                      >
+                        <Text style={styles.quickAmountText}>10K</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.quickAmountButton}
+                        onPress={() => handleAmountChange('25000')}
+                      >
+                        <Text style={styles.quickAmountText}>25K</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.quickAmountButton}
+                        onPress={() => handleAmountChange('50000')}
+                      >
+                        <Text style={styles.quickAmountText}>50K</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Show calculated shares */}
+                    {amount && parseFloat(amount) > 0 && (
+                      <View style={styles.calculatedInfo}>
+                        <Text style={styles.calculatedLabel}>You will get:</Text>
+                        <Text style={styles.calculatedValue}>{parseFloat(quantity).toFixed(4)} shares</Text>
+                      </View>
+                    )}
+                  </>
+                )}
               </View>
 
               {/* Order Type Selection */}
@@ -708,6 +841,61 @@ const styles = StyleSheet.create({
   priceDisplayValue: {
     fontSize: typography.fontSize.lg,
     color: colors.text.primary,
+    fontWeight: typography.fontWeight.bold,
+  },
+  inputModeToggle: {
+    flexDirection: 'row',
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xs,
+    gap: spacing.xs,
+  },
+  toggleButton: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toggleButtonActive: {
+    backgroundColor: colors.primary.main,
+  },
+  toggleText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.secondary,
+  },
+  toggleTextActive: {
+    color: colors.primary.contrast,
+  },
+  currencyPrefix: {
+    fontSize: 32,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.secondary,
+    marginRight: spacing.sm,
+  },
+  calculatedInfo: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.primary.main + '30',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  calculatedLabel: {
+    fontSize: typography.fontSize.base,
+    color: colors.text.secondary,
+    fontWeight: typography.fontWeight.medium,
+  },
+  calculatedValue: {
+    fontSize: typography.fontSize.lg,
+    color: colors.primary.main,
     fontWeight: typography.fontWeight.bold,
   },
 });
