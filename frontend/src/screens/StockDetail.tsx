@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, TextInput as RNTextInput, Modal } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, TextInput as RNTextInput, Modal, Animated } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -1229,13 +1229,8 @@ export default function StockDetail() {
         </TouchableOpacity>
       </View>
 
-      {/* Trade Order Modal */}
-      <Modal
-        visible={showTradeModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowTradeModal(false)}
-      >
+      {/* Trade Order - Rendered directly as overlay for smooth transition */}
+      {showTradeModal && (
         <TradeOrder
           symbol={symbol}
           side={tradeSide}
@@ -1247,7 +1242,7 @@ export default function StockDetail() {
             setShowReviewModal(true);
           }}
         />
-      </Modal>
+      )}
 
       {/* Review Order Modal */}
       <Modal
