@@ -51,6 +51,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const loadAppState = async () => {
     try {
+      // Initialize demo cash balance on first app launch
+      const demoCashInitialized = await AsyncStorage.getItem('demo_cash_initialized');
+      if (!demoCashInitialized) {
+        console.log('[AppContext] Initializing demo cash balance to KES 100,000');
+        await AsyncStorage.setItem('demo_cash_balance', '100000');
+        await AsyncStorage.setItem('demo_cash_initialized', 'true');
+      }
+      
       // Load onboarding status
       const onboardingStatus = await AsyncStorage.getItem('hasCompletedOnboarding');
       const storedUserName = await AsyncStorage.getItem('userName');
@@ -90,27 +98,46 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       const positionsRes = await api.get('/ledger/positions');
       const positions = positionsRes.data.positions || [];
 
-      // If user has no positions, use demo data for better UX
+      // If user has no positions and is not authenticated, use demo mode
       if (positions.length === 0 && balance === 0) {
-        console.log('[AppContext] Empty portfolio detected - using demo data for better UX');
+        console.log('[AppContext] Demo mode - initializing portfolio from AsyncStorage');
         
-        const mockHoldings = [
-          { symbol: 'KCB', quantity: 100, avg_price: 32.50, current_price: 35.20, total_value: 3520, profit_loss: 270 },
-          { symbol: 'SCOM', quantity: 200, avg_price: 28.00, current_price: 29.50, total_value: 5900, profit_loss: 300 },
-          { symbol: 'EQTY', quantity: 150, avg_price: 48.00, current_price: 46.50, total_value: 6975, profit_loss: -225 },
-        ];
+        // Load demo cash balance
+        const cashStr = await AsyncStorage.getItem('demo_cash_balance');
+        const demoCash = cashStr ? parseFloat(cashStr) : 100000;
         
-        const totalVal = mockHoldings.reduce((sum, h) => sum + h.total_value, 0); // 16,395
-        const totalPL = mockHoldings.reduce((sum, h) => sum + h.profit_loss, 0);  // 345
-        const totalInv = mockHoldings.reduce((sum, h) => sum + (h.avg_price * h.quantity), 0); // 16,050
-        const cashBal = 50000;
+        // Load demo positions (from actual demo trades)
+        const demoPositionsStr = await AsyncStorage.getItem('demo_positions');
+        const demoPositions = demoPositionsStr ? JSON.parse(demoPositionsStr) : [];
         
-        setCashBalance(cashBal);
-        setTotalPortfolioValue(totalVal + cashBal); // 66,395
+        let totalVal = 0;
+        let totalPL = 0;
+        let totalInv = 0;
+        
+        // Calculate portfolio metrics from demo positions
+        for (const position of demoPositions) {
+          try {
+            const stockRes = await api.get(`/markets/stocks/${position.symbol}`);
+            const currentPrice = stockRes.data.last_price || 0;
+            
+            const positionValue = position.quantity * currentPrice;
+            const costBasis = position.avg_price * position.quantity;
+            const profitLoss = positionValue - costBasis;
+            
+            totalVal += positionValue;
+            totalInv += costBasis;
+            totalPL += profitLoss;
+          } catch (err) {
+            console.error(`Failed to load price for demo position ${position.symbol}:`, err);
+          }
+        }
+        
+        setCashBalance(demoCash);
+        setTotalPortfolioValue(totalVal + demoCash);
         setTotalGainLoss(totalPL);
         setGainLossPercent(totalInv > 0 ? (totalPL / totalInv) * 100 : 0);
         
-        console.log('[AppContext] Demo portfolio data loaded');
+        console.log(`[AppContext] Demo portfolio loaded: Cash KES ${demoCash.toFixed(2)}, Holdings ${demoPositions.length}, Total Value KES ${(totalVal + demoCash).toFixed(2)}`);
         return;
       }
 

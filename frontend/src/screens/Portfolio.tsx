@@ -66,32 +66,25 @@ export default function Portfolio() {
       const balanceRes = await api.get('/ledger/balance');
       const cashBalance = balanceRes.data.available_balance || 0;
       
-      // If user has no positions, use demo data for better UX
+      // If user has no positions, show empty portfolio with starting cash
       if (positions.length === 0 && cashBalance === 0) {
-        console.log('[Portfolio] Empty portfolio detected - using demo data for better UX');
+        console.log('[Portfolio] Empty portfolio - loading demo cash balance');
         
-        const mockHoldings: Holding[] = [
-          { symbol: 'KCB', name: 'KCB Group', quantity: 100, avg_price: 32.50, current_price: 35.20, total_value: 3520, profit_loss: 270, profit_loss_percent: 8.31 },
-          { symbol: 'SCOM', name: 'Safaricom PLC', quantity: 200, avg_price: 28.00, current_price: 29.50, total_value: 5900, profit_loss: 300, profit_loss_percent: 5.36 },
-          { symbol: 'EQTY', name: 'Equity Group Holdings', quantity: 150, avg_price: 48.00, current_price: 46.50, total_value: 6975, profit_loss: -225, profit_loss_percent: -3.13 },
-        ];
+        // Load demo cash balance from AsyncStorage
+        const cashStr = await AsyncStorage.getItem('demo_cash_balance');
+        const demoCash = cashStr ? parseFloat(cashStr) : 100000;
         
-        setHoldings(mockHoldings);
-        
-        const totalVal = mockHoldings.reduce((sum, h) => sum + h.total_value, 0);
-        const totalPL = mockHoldings.reduce((sum, h) => sum + h.profit_loss, 0);
-        const totalInv = mockHoldings.reduce((sum, h) => sum + (h.avg_price * h.quantity), 0);
-        const cashBal = 50000;
+        setHoldings([]);
         
         setPortfolioSummary({
-          total_value: totalVal + cashBal,
-          total_profit_loss: totalPL,
-          total_profit_loss_percent: totalInv > 0 ? (totalPL / totalInv) * 100 : 0,
-          total_invested: totalInv,
-          cash_balance: cashBal,
+          total_value: demoCash,
+          total_profit_loss: 0,
+          total_profit_loss_percent: 0,
+          total_invested: 0,
+          cash_balance: demoCash,
         });
         
-        console.log('[Portfolio] Demo portfolio data loaded');
+        console.log(`[Portfolio] Demo mode: Starting cash KES ${demoCash.toFixed(2)}, No positions yet`);
         return;
       }
       
@@ -201,7 +194,10 @@ export default function Portfolio() {
             setHoldings(validHoldings);
             
             const totalProfitLossPct = totalInvested > 0 ? (totalProfitLoss / totalInvested) * 100 : 0;
-            const demoCash = 100000; // Demo starting cash
+            
+            // Load demo cash balance from AsyncStorage
+            const cashStr = await AsyncStorage.getItem('demo_cash_balance');
+            const demoCash = cashStr ? parseFloat(cashStr) : 100000;
             
             setPortfolioSummary({
               total_value: totalValue + demoCash,
@@ -220,54 +216,21 @@ export default function Portfolio() {
         }
       }
       
-      // Fallback to mock data
-      const mockHoldings: Holding[] = [
-        {
-          symbol: 'KCB',
-          name: 'KCB Group',
-          quantity: 100,
-          avg_price: 32.50,
-          current_price: 35.20,
-          total_value: 3520,
-          profit_loss: 270,
-          profit_loss_percent: 8.31,
-        },
-        {
-          symbol: 'SCOM',
-          name: 'Safaricom',
-          quantity: 200,
-          avg_price: 28.00,
-          current_price: 29.50,
-          total_value: 5900,
-          profit_loss: 300,
-          profit_loss_percent: 5.36,
-        },
-        {
-          symbol: 'EQTY',
-          name: 'Equity Group',
-          quantity: 150,
-          avg_price: 48.00,
-          current_price: 46.50,
-          total_value: 6975,
-          profit_loss: -225,
-          profit_loss_percent: -3.125,
-        },
-      ];
+      // Fallback to empty demo portfolio
+      const cashStr = await AsyncStorage.getItem('demo_cash_balance');
+      const demoCash = cashStr ? parseFloat(cashStr) : 100000;
       
-      setHoldings(mockHoldings);
-      
-      const totalVal = mockHoldings.reduce((sum, h) => sum + h.total_value, 0);
-      const totalPL = mockHoldings.reduce((sum, h) => sum + h.profit_loss, 0);
-      const totalInv = mockHoldings.reduce((sum, h) => sum + (h.avg_price * h.quantity), 0);
-      const cashBal = 50000;
+      setHoldings([]);
       
       setPortfolioSummary({
-        total_value: totalVal + cashBal,
-        total_profit_loss: totalPL,
-        total_profit_loss_percent: totalInv > 0 ? (totalPL / totalInv) * 100 : 0,
-        total_invested: totalInv,
-        cash_balance: cashBal,
+        total_value: demoCash,
+        total_profit_loss: 0,
+        total_profit_loss_percent: 0,
+        total_invested: 0,
+        cash_balance: demoCash,
       });
+      
+      console.log(`[Portfolio] Fallback to demo mode: Cash KES ${demoCash.toFixed(2)}`);
     } finally {
       setLoading(false);
       setRefreshing(false);

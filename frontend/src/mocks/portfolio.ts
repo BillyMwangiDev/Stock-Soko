@@ -102,13 +102,16 @@ const totalPL = mockPositions.reduce((sum, pos) => sum + pos.unrealizedPL, 0);  
 const totalDayChange = mockPositions.reduce((sum, pos) => sum + pos.dayChange, 0);    // 442.50
 const totalCostBasis = totalMarketValue - totalPL;                                      // 29,570.00
 
+// Demo starting balance: 100,000 KES
+// Total invested: 29,570 KES
+// Remaining cash: 70,430 KES
 export const mockPortfolioSummary: PortfolioSummary = {
-  totalValue: 60000.00,          // Total = Cash + Holdings
+  totalValue: 101107.50,         // Total = Cash (70,430) + Holdings (30,677.50)
   dayChange: 442.50,             // Sum of all day changes
   dayChangePercent: 1.46,        // (442.50 / 30235) × 100
   totalGain: 1107.50,            // Sum of all unrealized PL
   totalGainPercent: 3.75,        // (1107.50 / 29570) × 100
-  cashBalance: 29322.50,         // Remaining cash after investments
+  cashBalance: 70430.00,         // 100,000 starting - 29,570 invested
 };
 
 export interface AIRecommendation {

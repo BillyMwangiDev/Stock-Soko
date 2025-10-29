@@ -17,6 +17,24 @@ interface ReviewOrderProps {
 export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: ReviewOrderProps) {
   const [confirming, setConfirming] = useState(false);
 
+  const updateDemoCashBalance = async (side: 'buy' | 'sell', total: number) => {
+    try {
+      const cashStr = await AsyncStorage.getItem('demo_cash_balance');
+      let currentCash = cashStr ? parseFloat(cashStr) : 100000;
+      
+      if (side === 'buy') {
+        currentCash -= total;
+      } else {
+        currentCash += total;
+      }
+      
+      await AsyncStorage.setItem('demo_cash_balance', currentCash.toString());
+      console.log(`[ReviewOrder] Demo cash updated: ${side} KES ${total.toFixed(2)}, New balance: KES ${currentCash.toFixed(2)}`);
+    } catch (error) {
+      console.error('[ReviewOrder] Error updating demo cash balance:', error);
+    }
+  };
+
   const updateDemoPositions = async (symbol: string, side: 'buy' | 'sell', quantity: number, price: number) => {
     try {
       // Get existing positions
@@ -106,6 +124,9 @@ export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: Review
       
       // Update demo positions
       await updateDemoPositions(order.symbol, order.side, order.quantity, order.price || 0);
+      
+      // Update demo cash balance
+      await updateDemoCashBalance(order.side, order.total);
       
       console.log('[ReviewOrder] Demo trade saved:', newTrade);
       return newTrade;

@@ -4,6 +4,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { Button } from '../components';
 import { api } from '../api/client';
@@ -73,8 +74,10 @@ export default function TradeOrder({ symbol, side, currentPrice: priceFromProps,
       } catch (balanceError: any) {
         // Use demo balance if not authenticated
         if (balanceError.response?.status === 401) {
-          console.log('[TradeOrder] Using demo balance: KES 100,000');
-          setAvailableBalance(100000); // Demo balance
+          const cashStr = await AsyncStorage.getItem('demo_cash_balance');
+          const demoCash = cashStr ? parseFloat(cashStr) : 100000;
+          console.log(`[TradeOrder] Using demo balance: KES ${demoCash.toFixed(2)}`);
+          setAvailableBalance(demoCash);
         }
       }
 
