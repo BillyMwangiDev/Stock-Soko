@@ -81,6 +81,7 @@ export default function StockDetail() {
   // Order flow states
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showOrderForm, setShowOrderForm] = useState(false);
   const [tradeSide, setTradeSide] = useState<'buy' | 'sell'>('buy');
   const [currentOrder, setCurrentOrder] = useState<OrderData | null>(null);
   const [orderType, setOrderType] = useState<'market' | 'limit'>('market');
@@ -1205,10 +1206,23 @@ export default function StockDetail() {
 
       {/* Integrated Trading Interface - Fixed at bottom */}
       <View style={styles.tradingPanel}>
-        {/* Compact Order Form */}
+        {/* Compact Order Form - Only shown when Buy/Sell is tapped */}
+        {showOrderForm && (
         <View style={styles.compactOrderForm}>
           <View style={styles.orderTypeRow}>
-            <Text style={styles.orderFormTitle}>Place Order</Text>
+            <TouchableOpacity 
+              onPress={() => {
+                setShowOrderForm(false);
+                setQuickQuantity('');
+                Keyboard.dismiss();
+              }}
+              style={styles.closeFormButton}
+            >
+              <Text style={styles.closeFormIcon}>✕</Text>
+            </TouchableOpacity>
+            <Text style={styles.orderFormTitle}>
+              {tradeSide === 'buy' ? 'Buy' : 'Sell'} {stock.symbol}
+            </Text>
             <View style={styles.orderTypeToggle}>
               <TouchableOpacity 
                 style={[styles.orderTypeBtn, orderType === 'market' && styles.orderTypeBtnActive]}
@@ -1284,20 +1298,27 @@ export default function StockDetail() {
             </View>
           </View>
         </View>
+        )}
 
-        {/* Buy/Sell Buttons - Integrated */}
+        {/* Buy/Sell Buttons - Always visible */}
         <View style={styles.actionButtonsRow}>
           <TouchableOpacity 
             style={styles.buyButton}
             onPress={() => {
               Keyboard.dismiss();
-              if (!quickQuantity || parseFloat(quickQuantity) <= 0) {
+              if (!showOrderForm) {
+                // First tap: Show order form
+                setTradeSide('buy');
+                setShowOrderForm(true);
+              } else if (!quickQuantity || parseFloat(quickQuantity) <= 0) {
+                // Form visible but no quantity
                 Alert.alert('Enter Quantity', 'Please enter a valid quantity');
-                return;
+              } else {
+                // Place order
+                hapticFeedback.impact();
+                setTradeSide('buy');
+                setShowTradeModal(true);
               }
-              hapticFeedback.impact();
-              setTradeSide('buy');
-              setShowTradeModal(true);
             }}
           >
             <Text style={styles.buyButtonText}>Buy {stock.symbol}</Text>
@@ -1308,13 +1329,19 @@ export default function StockDetail() {
             style={styles.sellButton}
             onPress={() => {
               Keyboard.dismiss();
-              if (!quickQuantity || parseFloat(quickQuantity) <= 0) {
+              if (!showOrderForm) {
+                // First tap: Show order form
+                setTradeSide('sell');
+                setShowOrderForm(true);
+              } else if (!quickQuantity || parseFloat(quickQuantity) <= 0) {
+                // Form visible but no quantity
                 Alert.alert('Enter Quantity', 'Please enter a valid quantity');
-                return;
+              } else {
+                // Place order
+                hapticFeedback.impact();
+                setTradeSide('sell');
+                setShowTradeModal(true);
               }
-              hapticFeedback.impact();
-              setTradeSide('sell');
-              setShowTradeModal(true);
             }}
           >
             <Text style={styles.sellButtonText}>Sell {stock.symbol}</Text>
@@ -1837,7 +1864,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.md,
   },
+  closeFormButton: {
+    padding: spacing.xs,
+    marginRight: spacing.sm,
+  },
+  closeFormIcon: {
+    fontSize: 24,
+    color: colors.text.secondary,
+    fontWeight: typography.fontWeight.bold,
+  },
   orderFormTitle: {
+    flex: 1,
     fontSize: typography.fontSize.lg,
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
