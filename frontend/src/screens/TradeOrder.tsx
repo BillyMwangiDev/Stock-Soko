@@ -30,13 +30,14 @@ interface TradeOrderProps {
   symbol: string;
   side: 'buy' | 'sell';
   currentPrice?: number;
+  initialQuantity?: string;
   onBack: () => void;
   onReview?: (orderData: OrderData) => void;
 }
 
-export default function TradeOrder({ symbol, side, currentPrice: priceFromProps, onBack, onReview }: TradeOrderProps) {
+export default function TradeOrder({ symbol, side, currentPrice: priceFromProps, initialQuantity, onBack, onReview }: TradeOrderProps) {
   const [price, setPrice] = useState('');
-  const [quantity, setQuantity] = useState('');
+  const [quantity, setQuantity] = useState(initialQuantity || '');
   const [amount, setAmount] = useState('');
   const [inputMode, setInputMode] = useState<'quantity' | 'amount'>('quantity');
   const [orderType, setOrderType] = useState<'market' | 'limit' | 'stop' | 'stop-limit' | 'trailing-stop'>('market');
@@ -53,6 +54,14 @@ export default function TradeOrder({ symbol, side, currentPrice: priceFromProps,
   useEffect(() => {
     loadInitialData();
   }, []);
+
+  // Calculate amount when initial quantity is provided
+  useEffect(() => {
+    if (initialQuantity && currentPrice > 0) {
+      const calculatedAmount = parseFloat(initialQuantity) * currentPrice;
+      setAmount(calculatedAmount.toFixed(2));
+    }
+  }, [initialQuantity, currentPrice]);
 
   const loadInitialData = async () => {
     setLoading(true);

@@ -1356,11 +1356,15 @@ export default function StockDetail() {
           symbol={symbol}
           side={tradeSide}
           currentPrice={stock.last_price}
+          initialQuantity={quickQuantity}
           onBack={() => setShowTradeModal(false)}
           onReview={(orderData) => {
             setCurrentOrder(orderData);
             setShowTradeModal(false);
             setShowReviewModal(true);
+            // Reset form after order
+            setShowOrderForm(false);
+            setQuickQuantity('');
           }}
         />
       )}
