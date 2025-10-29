@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../api/client';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { LoadingState, Card, PortfolioChart } from '../components';
@@ -138,8 +139,78 @@ export default function Portfolio() {
         total_invested: totalInvested,
         cash_balance: cashBalance,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load portfolio:', error);
+      
+      // In demo mode (401), load demo positions from AsyncStorage
+      if (error.response?.status === 401) {
+        try {
+          const demoPositionsStr = await AsyncStorage.getItem('demo_positions');
+          const demoPositions = demoPositionsStr ? JSON.parse(demoPositionsStr) : [];
+          
+          if (demoPositions.length > 0) {
+            console.log('[Portfolio] Loading demo positions:', demoPositions);
+            
+            let totalValue = 0;
+            let totalInvested = 0;
+            let totalProfitLoss = 0;
+            
+            const processedHoldings: Holding[] = await Promise.all(
+              demoPositions.map(async (position: any) => {
+                try {
+                  // Fetch current stock price
+                  const stockRes = await api.get(`/markets/stocks/${position.symbol}`);
+                  const currentPrice = stockRes.data.last_price || 0;
+                  const stockName = stockRes.data.name || position.symbol;
+                  
+                  const totalVal = position.quantity * currentPrice;
+                  const avgCost = position.avg_price * position.quantity;
+                  const profitLoss = totalVal - avgCost;
+                  const profitLossPct = avgCost > 0 ? (profitLoss / avgCost) * 100 : 0;
+                  
+                  totalValue += totalVal;
+                  totalInvested += avgCost;
+                  totalProfitLoss += profitLoss;
+                  
+                  return {
+                    symbol: position.symbol,
+                    name: stockName,
+                    quantity: position.quantity,
+                    avg_price: position.avg_price,
+                    current_price: currentPrice,
+                    total_value: totalVal,
+                    profit_loss: profitLoss,
+                    profit_loss_percent: profitLossPct,
+                  };
+                } catch (err) {
+                  console.error(`Failed to load price for ${position.symbol}:`, err);
+                  return null;
+                }
+              })
+            );
+            
+            const validHoldings = processedHoldings.filter(h => h !== null) as Holding[];
+            setHoldings(validHoldings);
+            
+            const totalProfitLossPct = totalInvested > 0 ? (totalProfitLoss / totalInvested) * 100 : 0;
+            const demoCash = 100000; // Demo starting cash
+            
+            setPortfolioSummary({
+              total_value: totalValue + demoCash,
+              total_profit_loss: totalProfitLoss,
+              total_profit_loss_percent: totalProfitLossPct,
+              total_invested: totalInvested,
+              cash_balance: demoCash,
+            });
+            
+            setLoading(false);
+            setRefreshing(false);
+            return;
+          }
+        } catch (storageError) {
+          console.error('[Portfolio] Failed to load demo positions from storage:', storageError);
+        }
+      }
       
       // Fallback to mock data
       const mockHoldings: Holding[] = [

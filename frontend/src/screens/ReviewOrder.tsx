@@ -17,6 +17,62 @@ interface ReviewOrderProps {
 export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: ReviewOrderProps) {
   const [confirming, setConfirming] = useState(false);
 
+  const updateDemoPositions = async (symbol: string, side: 'buy' | 'sell', quantity: number, price: number) => {
+    try {
+      // Get existing positions
+      const existingPositions = await AsyncStorage.getItem('demo_positions');
+      const positions = existingPositions ? JSON.parse(existingPositions) : [];
+      
+      // Find existing position for this symbol
+      const positionIndex = positions.findIndex((p: any) => p.symbol === symbol);
+      
+      if (side === 'buy') {
+        if (positionIndex >= 0) {
+          // Update existing position
+          const position = positions[positionIndex];
+          const totalQuantity = position.quantity + quantity;
+          const totalCost = (position.quantity * position.avg_price) + (quantity * price);
+          const newAvgPrice = totalCost / totalQuantity;
+          
+          positions[positionIndex] = {
+            ...position,
+            quantity: totalQuantity,
+            avg_price: newAvgPrice,
+          };
+        } else {
+          // Create new position
+          positions.push({
+            symbol,
+            quantity,
+            avg_price: price,
+          });
+        }
+      } else if (side === 'sell') {
+        if (positionIndex >= 0) {
+          const position = positions[positionIndex];
+          const newQuantity = position.quantity - quantity;
+          
+          if (newQuantity <= 0) {
+            // Remove position
+            positions.splice(positionIndex, 1);
+          } else {
+            // Update quantity
+            positions[positionIndex] = {
+              ...position,
+              quantity: newQuantity,
+            };
+          }
+        }
+      }
+      
+      // Save updated positions
+      await AsyncStorage.setItem('demo_positions', JSON.stringify(positions));
+      console.log('[ReviewOrder] Demo positions updated:', positions);
+    } catch (error) {
+      console.error('[ReviewOrder] Error updating demo positions:', error);
+    }
+  };
+
   const saveDemoTrade = async () => {
     try {
       // Get existing demo trades
@@ -47,6 +103,9 @@ export default function ReviewOrder({ order, onBack, onEdit, onConfirm }: Review
       
       // Save back to storage
       await AsyncStorage.setItem('demo_trades', JSON.stringify(limitedTrades));
+      
+      // Update demo positions
+      await updateDemoPositions(order.symbol, order.side, order.quantity, order.price || 0);
       
       console.log('[ReviewOrder] Demo trade saved:', newTrade);
       return newTrade;
