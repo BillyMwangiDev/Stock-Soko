@@ -2,6 +2,7 @@
 Virtual Wallet Router for Demo Mode
 Manages virtual balances and transactions for paper trading
 """
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
@@ -29,8 +30,7 @@ class VirtualWithdrawalRequest(BaseModel):
 
 @router.post("/create")
 async def create_virtual_wallet(
-    email: str = Depends(current_user_email),
-    db: Session = Depends(get_db)
+    email: str = Depends(current_user_email), db: Session = Depends(get_db)
 ):
     """
     Create virtual wallet with starting balance
@@ -39,21 +39,20 @@ async def create_virtual_wallet(
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     result = virtual_wallet_service.create_wallet(user.id, db)
-    
+
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
-    
+
     logger.info(f"Virtual wallet created for user {user.id}")
-    
+
     return result
 
 
 @router.get("/balance")
 async def get_virtual_balance(
-    email: str = Depends(current_user_email),
-    db: Session = Depends(get_db)
+    email: str = Depends(current_user_email), db: Session = Depends(get_db)
 ):
     """
     Get current virtual wallet balance
@@ -61,12 +60,12 @@ async def get_virtual_balance(
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     result = virtual_wallet_service.get_balance(user.id, db)
-    
+
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
-    
+
     return result
 
 
@@ -74,7 +73,7 @@ async def get_virtual_balance(
 async def virtual_deposit(
     request: VirtualDepositRequest,
     email: str = Depends(current_user_email),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Add virtual funds to wallet (demo mode only)
@@ -83,19 +82,19 @@ async def virtual_deposit(
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     result = virtual_wallet_service.deposit(
         user_id=user.id,
         amount=request.amount,
         db=db,
-        description=request.description or "Virtual deposit"
+        description=request.description or "Virtual deposit",
     )
-    
+
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
-    
+
     logger.info(f"Virtual deposit: ${request.amount} for user {user.id}")
-    
+
     return result
 
 
@@ -103,7 +102,7 @@ async def virtual_deposit(
 async def virtual_withdrawal(
     request: VirtualWithdrawalRequest,
     email: str = Depends(current_user_email),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Remove virtual funds from wallet (demo mode only)
@@ -112,26 +111,25 @@ async def virtual_withdrawal(
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     result = virtual_wallet_service.withdraw(
         user_id=user.id,
         amount=request.amount,
         db=db,
-        description=request.description or "Virtual withdrawal"
+        description=request.description or "Virtual withdrawal",
     )
-    
+
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
-    
+
     logger.info(f"Virtual withdrawal: ${request.amount} for user {user.id}")
-    
+
     return result
 
 
 @router.post("/reset")
 async def reset_virtual_wallet(
-    email: str = Depends(current_user_email),
-    db: Session = Depends(get_db)
+    email: str = Depends(current_user_email), db: Session = Depends(get_db)
 ):
     """
     Reset wallet to starting balance
@@ -140,22 +138,24 @@ async def reset_virtual_wallet(
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     result = virtual_wallet_service.reset_wallet(user.id, db)
-    
+
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
-    
+
     logger.info(f"Wallet reset for user {user.id}")
-    
+
     return result
 
 
 @router.get("/transactions")
 async def get_virtual_transactions(
-    limit: int = Query(50, ge=1, le=200, description="Number of transactions to return"),
+    limit: int = Query(
+        50, ge=1, le=200, description="Number of transactions to return"
+    ),
     email: str = Depends(current_user_email),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get virtual wallet transaction history
@@ -163,15 +163,12 @@ async def get_virtual_transactions(
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     result = virtual_wallet_service.get_transaction_history(
-        user_id=user.id,
-        db=db,
-        limit=limit
+        user_id=user.id, db=db, limit=limit
     )
-    
+
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
-    
-    return result
 
+    return result

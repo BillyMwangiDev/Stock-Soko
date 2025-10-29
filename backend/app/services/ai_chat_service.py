@@ -1,6 +1,7 @@
 """
 AI Chat Service - Provides conversational AI assistance for stock trading
 """
+
 from datetime import datetime
 from typing import List, Optional
 import uuid
@@ -9,71 +10,77 @@ import random
 
 class AIChatService:
     """Service for AI chat assistant functionality"""
-    
+
     def __init__(self):
         self.conversations = {}  # In-memory storage (use DB in production)
-    
+
     def generate_response(
         self,
         message: str,
         conversation_id: Optional[str] = None,
-        context: Optional[dict] = None
+        context: Optional[dict] = None,
     ) -> dict:
         """
         Generate AI response to user message
-        
+
         Args:
             message: User's message
             conversation_id: Existing conversation ID or None for new
             context: Additional context (portfolio, market data, etc.)
-            
+
         Returns:
             Dict with response, conversation_id, suggestions, related_stocks
         """
         # Create or get conversation ID
         if not conversation_id:
             conversation_id = str(uuid.uuid4())
-        
+
         # Analyze message intent
         message_lower = message.lower()
-        
+
         # Generate contextual response based on keywords
         response = self._generate_contextual_response(message_lower, context)
         suggestions = self._generate_suggestions(message_lower)
         related_stocks = self._extract_related_stocks(message_lower)
-        
+
         # Store message in conversation history
         if conversation_id not in self.conversations:
             self.conversations[conversation_id] = []
-        
-        self.conversations[conversation_id].extend([
-            {
-                "role": "user",
-                "content": message,
-                "timestamp": datetime.utcnow().isoformat()
-            },
-            {
-                "role": "assistant",
-                "content": response,
-                "timestamp": datetime.utcnow().isoformat()
-            }
-        ])
-        
+
+        self.conversations[conversation_id].extend(
+            [
+                {
+                    "role": "user",
+                    "content": message,
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
+                {
+                    "role": "assistant",
+                    "content": response,
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
+            ]
+        )
+
         return {
             "message": response,
             "conversation_id": conversation_id,
             "suggestions": suggestions,
-            "related_stocks": related_stocks
+            "related_stocks": related_stocks,
         }
-    
-    def _generate_contextual_response(self, message: str, context: Optional[dict]) -> str:
+
+    def _generate_contextual_response(
+        self, message: str, context: Optional[dict]
+    ) -> str:
         """Generate response based on message content"""
-        
+
         # Stock recommendation queries
         if any(word in message for word in ["buy", "sell", "should i", "recommend"]):
             stocks = ["KCB", "SCOM", "EQTY", "EABL"]
-            stock = next((s for s in stocks if s.lower() in message), random.choice(stocks))
-            
+            stock = next(
+                (s for s in stocks if s.lower() in message), random.choice(stocks)
+            )
+
             return f"""Based on current market analysis for {stock}:
 
 **Technical Analysis**: The stock shows {random.choice(['bullish', 'neutral', 'consolidating'])} momentum on the daily chart.
@@ -112,7 +119,9 @@ class AIChatService:
 Would you like detailed analysis on any specific stock?"""
 
         # Learning/education queries
-        elif any(word in message for word in ["what is", "explain", "how does", "ratio"]):
+        elif any(
+            word in message for word in ["what is", "explain", "how does", "ratio"]
+        ):
             if "p/e" in message or "pe ratio" in message:
                 return """**P/E Ratio (Price-to-Earnings Ratio)** explained simply:
 
@@ -131,7 +140,7 @@ Would you like detailed analysis on any specific stock?"""
 **For NSE stocks**: Average P/E is around 8-12. Compare within the same sector for best insights.
 
 Want to see P/E ratios for specific stocks?"""
-            
+
             return """I can help you understand stock market concepts! Here are some topics:
 
 **Popular Topics**:
@@ -144,7 +153,9 @@ Want to see P/E ratios for specific stocks?"""
 What would you like to learn about?"""
 
         # Investment strategy queries
-        elif any(word in message for word in ["strategy", "beginner", "start", "invest"]):
+        elif any(
+            word in message for word in ["strategy", "beginner", "start", "invest"]
+        ):
             return """**Investment Strategy for Beginners**
 
 **Start Small**: Begin with amount you can afford to lose (KES 5,000-10,000)
@@ -175,54 +186,54 @@ I can help you with:
 - Portfolio advice
 
 What would you like to know about?"""
-    
+
     def _generate_suggestions(self, message: str) -> List[str]:
         """Generate contextual suggestions for follow-up"""
-        
+
         if "recommend" in message or "buy" in message:
             return [
                 "Show me top gainers today",
                 "Compare with sector peers",
                 "What's the risk level?",
-                "Show dividend history"
+                "Show dividend history",
             ]
         elif "market" in message:
             return [
                 "Analyze specific stock",
                 "Show sector performance",
                 "What's driving the market?",
-                "Best stocks for beginners"
+                "Best stocks for beginners",
             ]
         elif "learn" in message or "explain" in message:
             return [
                 "Explain dividend yield",
                 "What is market cap?",
                 "How to read stock charts",
-                "Investment strategies for beginners"
+                "Investment strategies for beginners",
             ]
         else:
             return [
                 "What are the top stocks today?",
                 "Should I buy or sell KCB?",
                 "Explain P/E ratio",
-                "Best investment strategy for beginners"
+                "Best investment strategy for beginners",
             ]
-    
+
     def _extract_related_stocks(self, message: str) -> List[str]:
         """Extract stock symbols mentioned in message"""
         common_stocks = ["KCB", "SCOM", "EQTY", "EABL", "BAT", "KEGN", "SCBK"]
-        
+
         related = []
         for stock in common_stocks:
             if stock.lower() in message:
                 related.append(stock)
-        
+
         # If no stocks mentioned but asking about market, show top stocks
         if not related and any(word in message for word in ["market", "top", "best"]):
             related = ["KCB", "SCOM", "EQTY"]
-        
+
         return related
-    
+
     def get_conversation_history(self, conversation_id: str) -> Optional[dict]:
         """Get conversation history by ID"""
         if conversation_id in self.conversations:
@@ -230,10 +241,10 @@ What would you like to know about?"""
                 "conversation_id": conversation_id,
                 "messages": self.conversations[conversation_id],
                 "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat()
+                "updated_at": datetime.utcnow().isoformat(),
             }
         return None
-    
+
     def clear_conversation(self, conversation_id: str) -> bool:
         """Clear conversation history"""
         if conversation_id in self.conversations:

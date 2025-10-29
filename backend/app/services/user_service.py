@@ -5,6 +5,7 @@ Manages user accounts including registration, authentication, profile management
 password operations, and 2FA configuration. Integrates with database models and
 handles password hashing with bcrypt.
 """
+
 from typing import Optional
 import bcrypt
 from sqlalchemy.orm import Session
@@ -16,7 +17,7 @@ from ..constants import BCRYPT_MAX_PASSWORD_LENGTH
 from ..exceptions import (
     UserNotFoundException,
     UserAlreadyExistsException,
-    InvalidCredentialsException
+    InvalidCredentialsException,
 )
 from ..utils.logging import get_logger
 
@@ -26,10 +27,11 @@ logger = get_logger("user_service")
 class User:
     """
     User domain model for service layer.
-    
+
     Represents a user account with basic profile information and security settings.
     Decouples service layer from database models.
     """
+
     def __init__(self, db_user: DBUser):
         self.id = db_user.id
         self.email = db_user.email
@@ -53,7 +55,7 @@ def create_user(
     password: str,
     full_name: Optional[str] = None,
     phone: Optional[str] = None,
-    db: Session = None
+    db: Session = None,
 ) -> User:
     """Create a new user. Use dependency injection for db session."""
     if db is None:
@@ -64,31 +66,33 @@ def create_user(
         should_close = True
     else:
         should_close = False
-    
+
     try:
         existing = db.query(DBUser).filter(DBUser.email == email.lower()).first()
         if existing:
             raise UserAlreadyExistsException()
-        
+
         # Truncate password to bcrypt max length
-        password_bytes = password.encode('utf-8')
+        password_bytes = password.encode("utf-8")
         if len(password_bytes) > BCRYPT_MAX_PASSWORD_LENGTH:
             password_bytes = password_bytes[:BCRYPT_MAX_PASSWORD_LENGTH]
-            logger.warning(f"Password truncated to {BCRYPT_MAX_PASSWORD_LENGTH} bytes for user {email}")
-        
-        password_hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('utf-8')
+            logger.warning(
+                f"Password truncated to {BCRYPT_MAX_PASSWORD_LENGTH} bytes for user {email}"
+            )
+
+        password_hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode("utf-8")
         db_user = DBUser(
             email=email.lower(),
             full_name=full_name,
             phone=phone,
             password_hash=password_hash,
             is_active=True,
-            role="user"
+            role="user",
         )
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
-        
+
         logger.info(f"User created successfully: {email}")
         return User(db_user)
     except UserAlreadyExistsException:
@@ -104,10 +108,10 @@ def create_user(
 
 def verify_password(plain: str, hashed: str) -> bool:
     """Verify password against hash. Handles bcrypt's 72-byte limit."""
-    password_bytes = plain.encode('utf-8')
+    password_bytes = plain.encode("utf-8")
     if len(password_bytes) > BCRYPT_MAX_PASSWORD_LENGTH:
         password_bytes = password_bytes[:BCRYPT_MAX_PASSWORD_LENGTH]
-    return bcrypt.checkpw(password_bytes, hashed.encode('utf-8'))
+    return bcrypt.checkpw(password_bytes, hashed.encode("utf-8"))
 
 
 def setup_2fa(email: str, db: Session) -> str:
@@ -136,14 +140,18 @@ def update_password(email: str, new_password: str, db: Session) -> None:
     db_user = db.query(DBUser).filter(DBUser.email == email.lower()).first()
     if not db_user:
         raise UserNotFoundException()
-    
+
     # Truncate password to bcrypt max length
-    password_bytes = new_password.encode('utf-8')
+    password_bytes = new_password.encode("utf-8")
     if len(password_bytes) > BCRYPT_MAX_PASSWORD_LENGTH:
         password_bytes = password_bytes[:BCRYPT_MAX_PASSWORD_LENGTH]
-        logger.warning(f"Password truncated to {BCRYPT_MAX_PASSWORD_LENGTH} bytes for user {email}")
-    
-    db_user.password_hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('utf-8')
+        logger.warning(
+            f"Password truncated to {BCRYPT_MAX_PASSWORD_LENGTH} bytes for user {email}"
+        )
+
+    db_user.password_hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode(
+        "utf-8"
+    )
     db.commit()
     logger.info(f"Password updated for user: {email}")
 
@@ -156,32 +164,34 @@ def update_user_profile(
     date_of_birth: Optional[str] = None,
     address: Optional[str] = None,
     city: Optional[str] = None,
-    country: str = "Kenya"
+    country: str = "Kenya",
 ) -> User:
     """Update user profile information. Use dependency injection for db session."""
     db_user = db.query(DBUser).filter(DBUser.email == email.lower()).first()
     if not db_user:
         raise UserNotFoundException()
-    
+
     db_user.full_name = full_name
     db_user.phone = phone
-    
+
     db.commit()
     db.refresh(db_user)
-    
+
     logger.info(f"Profile updated for user: {email}")
     return User(db_user)
 
 
-def change_password(email: str, current_password: str, new_password: str, db: Session) -> bool:
+def change_password(
+    email: str, current_password: str, new_password: str, db: Session
+) -> bool:
     """Change user password with current password verification"""
     user = get_user(email, db)
     if not user:
         raise UserNotFoundException()
-    
+
     if not verify_password(current_password, user.password_hash):
         raise InvalidCredentialsException("Current password is incorrect")
-    
+
     update_password(email, new_password, db)
     return True
 
@@ -191,10 +201,10 @@ def delete_user_account(email: str, password: str, db: Session) -> bool:
     user = get_user(email, db)
     if not user:
         raise UserNotFoundException()
-    
+
     if not verify_password(password, user.password_hash):
         raise InvalidCredentialsException("Password is incorrect")
-    
+
     db_user = db.query(DBUser).filter(DBUser.email == email.lower()).first()
     if db_user:
         db.delete(db_user)

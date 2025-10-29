@@ -2,9 +2,9 @@
 Stock Analysis Framework
 Comprehensive analysis system for fundamental, technical, and macro analysis
 """
-from typing import Dict, Any, List, Literal
-from datetime import datetime, timedelta
 import random
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Literal
 
 
 class StockAnalyzer:

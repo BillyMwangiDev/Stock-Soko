@@ -1,4 +1,5 @@
 from typing import List
+
 from decouple import config
 
 APP_NAME: str = "Stock Soko API"

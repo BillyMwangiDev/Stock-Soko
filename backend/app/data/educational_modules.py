@@ -5,8 +5,8 @@ Organized by complexity level: Beginner -> Intermediate -> Advanced
 This module provides structured learning paths with formulas, examples, and practical applications.
 """
 
-from typing import Dict, List, Any
 from dataclasses import dataclass
+from typing import Any, Dict, List
 
 
 @dataclass

@@ -2,8 +2,8 @@
 Comprehensive FAQ System for Stock Trading Platform
 Pre-defined answers for common questions
 """
-from typing import Dict, List, Optional
 import re
+from typing import Dict, List, Optional
 
 
 class FAQSystem:
@@ -838,7 +838,7 @@ Long-term: Stocks ← Invest here
 - Moderate: Mix of blue chips + growth
 - Aggressive: Small caps, growth stocks
 
-Want help assessing your risk tolerance? Ask "What's my risk profile?""""
+Want help assessing your risk tolerance? Ask "What's my risk profile?"""
             },
             
             # M-Pesa & Payments

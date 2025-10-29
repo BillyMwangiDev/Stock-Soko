@@ -7,9 +7,8 @@ This module combines classical value investing with modern analysis,
 specifically adapted for the Nairobi Securities Exchange.
 """
 
-from typing import Dict, List, Any
 from dataclasses import dataclass
-
+from typing import Any, Dict, List
 
 GRAHAM_DEFENSIVE_INVESTOR_CRITERIA = {
     "description": "Benjamin Graham's criteria for conservative investors seeking safety and steady returns",

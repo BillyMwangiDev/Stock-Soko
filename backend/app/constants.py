@@ -45,8 +45,8 @@ MIN_PAGE_SIZE = 1
 # File Upload
 MAX_FILE_SIZE_MB = 10
 MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10MB in bytes
-ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif']
-ALLOWED_DOCUMENT_EXTENSIONS = ['.pdf', '.doc', '.docx']
+ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif"]
+ALLOWED_DOCUMENT_EXTENSIONS = [".pdf", ".doc", ".docx"]
 
 # Database
 DEFAULT_QUERY_LIMIT = 100
@@ -100,9 +100,9 @@ HTTP_422_UNPROCESSABLE_ENTITY = 422
 HTTP_500_INTERNAL_SERVER_ERROR = 500
 
 # Regex Patterns
-EMAIL_PATTERN = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-PHONE_PATTERN = r'^\+?[1-9]\d{1,14}$'  # E.164 format
-SYMBOL_PATTERN = r'^[A-Z]{1,10}$'
+EMAIL_PATTERN = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+PHONE_PATTERN = r"^\+?[1-9]\d{1,14}$"  # E.164 format
+SYMBOL_PATTERN = r"^[A-Z]{1,10}$"
 
 # Error Messages
 ERROR_USER_NOT_FOUND = "User not found"
@@ -118,4 +118,3 @@ SUCCESS_USER_CREATED = "User created successfully"
 SUCCESS_ORDER_PLACED = "Order placed successfully"
 SUCCESS_PAYMENT_PROCESSED = "Payment processed successfully"
 SUCCESS_2FA_ENABLED = "Two-factor authentication enabled"
-

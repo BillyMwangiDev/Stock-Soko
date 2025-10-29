@@ -7,7 +7,9 @@ from fastapi.security import OAuth2PasswordBearer
 
 SECRET_KEY: str = config("JWT_SECRET", default="dev-secret-change-in-production")
 ALGORITHM: str = config("JWT_ALGORITHM", default="HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES: int = config("JWT_EXPIRATION_MINUTES", default=60, cast=int)
+ACCESS_TOKEN_EXPIRE_MINUTES: int = config(
+    "JWT_EXPIRATION_MINUTES", default=60, cast=int
+)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -15,7 +17,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 def create_access_token(
     sub: str,
     expires_delta: Optional[timedelta] = None,
-    additional_claims: Optional[Dict[str, Any]] = None
+    additional_claims: Optional[Dict[str, Any]] = None,
 ) -> str:
     exp = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -23,7 +25,7 @@ def create_access_token(
     to_encode: Dict[str, Any] = {
         "sub": sub,
         "exp": exp,
-        "iat": datetime.now(timezone.utc)
+        "iat": datetime.now(timezone.utc),
     }
     if additional_claims:
         to_encode.update(additional_claims)
@@ -45,14 +47,12 @@ def verify_token(token: str) -> Optional[str]:
         email = payload.get("sub")
         if email is None:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
             )
         return email
     except JWTError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
         )
 
 
@@ -81,7 +81,7 @@ def create_refresh_token(email: str) -> str:
         "sub": email,
         "type": "refresh",
         "exp": expire,
-        "iat": datetime.now(timezone.utc)
+        "iat": datetime.now(timezone.utc),
     }
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -90,18 +90,20 @@ def verify_refresh_token(refresh_token: str) -> Optional[str]:
     """Verify refresh token and return email if valid"""
     try:
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-        
+
         # Check token type
         if payload.get("type") != "refresh":
             return None
-        
+
         # Check expiration
         exp = payload.get("exp")
-        if exp and datetime.fromtimestamp(exp, tz=timezone.utc) < datetime.now(timezone.utc):
+        if exp and datetime.fromtimestamp(exp, tz=timezone.utc) < datetime.now(
+            timezone.utc
+        ):
             return None
-        
+
         return payload.get("sub")
-    
+
     except JWTError:
         return None
 
@@ -109,15 +111,15 @@ def verify_refresh_token(refresh_token: str) -> Optional[str]:
 def refresh_access_token(refresh_token: str) -> Optional[Dict[str, str]]:
     """Create new access token from refresh token"""
     email = verify_refresh_token(refresh_token)
-    
+
     if not email:
         return None
-    
+
     new_access_token = create_access_token(email)
     new_refresh_token = create_refresh_token(email)
-    
+
     return {
         "access_token": new_access_token,
         "refresh_token": new_refresh_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
     }

@@ -2,8 +2,8 @@
 Rule-Based Stock Recommendation System
 Provides recommendations based on financial metrics and technical indicators
 """
-from typing import Dict, Any, Literal, List, Tuple
 import random
+from typing import Any, Dict, List, Literal, Tuple
 
 Recommendation = Literal["BUY", "HOLD", "SELL"]
 

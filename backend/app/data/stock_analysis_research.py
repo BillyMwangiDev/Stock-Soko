@@ -11,9 +11,9 @@ This module contains research-backed formulas, metrics, and frameworks for:
 Use this as a reference for AI training, educational content, and analysis.
 """
 
-from typing import Dict, List, Any, Tuple
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
+from typing import Any, Dict, List, Tuple
 
 
 @dataclass
