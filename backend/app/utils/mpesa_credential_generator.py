@@ -23,8 +23,8 @@ from pathlib import Path
 from typing import Optional
 
 try:
-    from Crypto.PublicKey import RSA
     from Crypto.Cipher import PKCS1_v1_5
+    from Crypto.PublicKey import RSA
 except ImportError:
     print("Error: PyCryptodome package is required.")
     print("Install it with: pip install pycryptodome")

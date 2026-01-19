@@ -1,8 +1,9 @@
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from ..config import (
+    ENABLE_NOTIFICATIONS,
     FIREBASE_CREDENTIALS_PATH,
     FIREBASE_PROJECT_ID,
-    ENABLE_NOTIFICATIONS,
 )
 from ..utils.logging import get_logger
 

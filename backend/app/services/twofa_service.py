@@ -2,15 +2,17 @@
 Two-Factor Authentication Service
 """
 
-import pyotp
-import qrcode
-from io import BytesIO
 import base64
 import secrets
-from typing import Dict, Any, List
+from io import BytesIO
+from typing import Any, Dict, List
+
+import pyotp
+import qrcode
 from sqlalchemy.orm import Session
+
+from ..config import TOTP_DIGITS, TOTP_ISSUER
 from ..database.models import User
-from ..config import TOTP_ISSUER, TOTP_DIGITS
 from ..utils.logging import get_logger
 
 logger = get_logger("twofa_service")

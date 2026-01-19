@@ -3,11 +3,13 @@ Mock Trading Engine for Demo Mode
 Handles order execution, monitoring, and fills for paper trading
 """
 
-from typing import Dict, Any, Optional, List
 from datetime import datetime, timezone
 from decimal import Decimal
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy.orm import Session
-from ..database.models import Order, Holding, Portfolio, User, Stock
+
+from ..database.models import Holding, Order, Portfolio, Stock, User
 from ..services.markets_service import markets_service
 from ..utils.logging import get_logger
 

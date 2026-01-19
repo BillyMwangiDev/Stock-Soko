@@ -4,9 +4,11 @@ Yahoo Finance API Provider using yfinance library
 Best option for global stock data including Kenyan stocks
 """
 
-from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
 import yfinance as yf
+
 from ..utils.logging import get_logger
 from .market_data_providers import MarketDataProvider, cache
 

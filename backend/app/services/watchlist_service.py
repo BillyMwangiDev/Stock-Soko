@@ -1,6 +1,6 @@
 from typing import Dict, List
-from ..schemas.watchlist import WatchItem
 
+from ..schemas.watchlist import WatchItem
 
 # MVP in-memory store keyed by pseudo-user "default"
 _watchlists: Dict[str, List[WatchItem]] = {"default": []}

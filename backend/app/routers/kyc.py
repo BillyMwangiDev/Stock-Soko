@@ -7,8 +7,12 @@ from ..database import get_db
 from ..database.models import User
 from ..routers.auth import current_user_email
 from ..schemas.kyc import KycStatus, KycSubmission
-from ..services.kyc_service import (get_kyc_documents, get_kyc_status,
-                                    submit_kyc, upload_kyc_document)
+from ..services.kyc_service import (
+    get_kyc_documents,
+    get_kyc_status,
+    submit_kyc,
+    upload_kyc_document,
+)
 from ..utils.logging import get_logger
 
 logger = get_logger("kyc_router")

@@ -1,7 +1,9 @@
-from celery import shared_task
-from typing import List
 from datetime import datetime
+from typing import List
+
+from celery import shared_task
 from sqlalchemy.orm import Session
+
 from ..database import SessionLocal
 from ..database.models import Alert, User
 from ..services.markets_service import get_quote

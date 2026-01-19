@@ -1,7 +1,8 @@
 import re
 from hashlib import sha256
 from typing import Optional
-from fastapi import Response, HTTPException, status
+
+from fastapi import HTTPException, Response, status
 
 
 def hash_token(value: str) -> str:

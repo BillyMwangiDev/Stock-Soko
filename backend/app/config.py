@@ -9,7 +9,9 @@ VERSION: str = "1.0.0"
 # APPLICATION SETTINGS (Load early for validation)
 # ===============================================
 ENVIRONMENT: str = config("ENVIRONMENT", default="development")
-DEBUG: bool = config("DEBUG", default=True if ENVIRONMENT == "development" else False, cast=bool)
+DEBUG: bool = config(
+    "DEBUG", default=True if ENVIRONMENT == "development" else False, cast=bool
+)
 
 # Production environment validation
 if ENVIRONMENT == "production" and DEBUG:
@@ -18,10 +20,7 @@ if ENVIRONMENT == "production" and DEBUG:
 # ===============================================
 # DATABASE CONFIGURATION
 # ===============================================
-DATABASE_URL: str = config(
-    "DATABASE_URL",
-    default="sqlite:///./stocksoko.db"
-)
+DATABASE_URL: str = config("DATABASE_URL", default="sqlite:///./stocksoko.db")
 
 # ===============================================
 # JWT AUTHENTICATION
@@ -39,7 +38,10 @@ MPESA_CONSUMER_KEY: str = config("MPESA_CONSUMER_KEY", default="")
 MPESA_CONSUMER_SECRET: str = config("MPESA_CONSUMER_SECRET", default="")
 MPESA_PASSKEY: str = config("MPESA_PASSKEY", default="")
 MPESA_SHORTCODE: str = config("MPESA_SHORTCODE", default="174379")
-MPESA_CALLBACK_URL: str = config("MPESA_CALLBACK_URL", default="https://stocksoko.example.com/api/v1/payments/callback")
+MPESA_CALLBACK_URL: str = config(
+    "MPESA_CALLBACK_URL",
+    default="https://stocksoko.example.com/api/v1/payments/callback",
+)
 MPESA_ENV: str = config("MPESA_ENV", default="sandbox")
 
 # ===============================================
@@ -135,12 +137,18 @@ LOG_LEVEL: str = config("LOG_LEVEL", default="INFO")
 # ===============================================
 ENABLE_2FA: bool = config("ENABLE_2FA", default=True, cast=bool)
 ENABLE_BIOMETRIC: bool = config("ENABLE_BIOMETRIC", default=True, cast=bool)
-ENABLE_REAL_TIME_PRICES: bool = config("ENABLE_REAL_TIME_PRICES", default=True, cast=bool)
+ENABLE_REAL_TIME_PRICES: bool = config(
+    "ENABLE_REAL_TIME_PRICES", default=True, cast=bool
+)
 ENABLE_NOTIFICATIONS: bool = config("ENABLE_NOTIFICATIONS", default=False, cast=bool)
 
 # User tier limits
-FREE_TIER_DAILY_API_CALLS: int = config("FREE_TIER_DAILY_API_CALLS", default=800, cast=int)
-PAID_TIER_DAILY_API_CALLS: str = config("PAID_TIER_DAILY_API_CALLS", default="unlimited")
+FREE_TIER_DAILY_API_CALLS: int = config(
+    "FREE_TIER_DAILY_API_CALLS", default=800, cast=int
+)
+PAID_TIER_DAILY_API_CALLS: str = config(
+    "PAID_TIER_DAILY_API_CALLS", default="unlimited"
+)
 
 # ===============================================
 # PUSH NOTIFICATIONS
@@ -160,5 +168,5 @@ CELERY_RESULT_BACKEND: str = config("CELERY_RESULT_BACKEND", default=REDIS_URL)
 ALLOWED_ORIGINS: List[str] = config(
     "ALLOWED_ORIGINS",
     default="http://localhost:3000,http://localhost:8081,http://localhost:8147,http://localhost:19006,http://127.0.0.1:8081,http://127.0.0.1:8000,http://192.168.10.25:8081,exp://192.168.10.25:8081,exp://localhost:8081,http://192.168.0.104:8081",
-    cast=lambda v: [origin.strip() for origin in v.split(",")]
+    cast=lambda v: [origin.strip() for origin in v.split(",")],
 )

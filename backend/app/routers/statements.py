@@ -2,14 +2,16 @@
 Statements Router - Generate and download financial statements
 """
 
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from datetime import datetime
+
 from ..database import get_db
 from ..database.models import User
-from ..services.report_service import get_report_service
 from ..routers.auth import current_user_email
+from ..services.report_service import get_report_service
 from ..utils.logging import get_logger
 
 logger = get_logger("statements_router")

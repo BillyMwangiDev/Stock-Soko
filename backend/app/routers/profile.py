@@ -8,8 +8,12 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
 
-from ..services.user_service import (change_password, delete_user_account,
-                                     get_user, update_user_profile)
+from ..services.user_service import (
+    change_password,
+    delete_user_account,
+    get_user,
+    update_user_profile,
+)
 from .auth import current_user_email
 
 router = APIRouter(prefix="/auth", tags=["profile"])

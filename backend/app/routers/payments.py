@@ -9,11 +9,14 @@ from ..database import get_db
 from ..database.models import User
 from ..routers.auth import current_user_email
 from ..schemas.payments import MpesaDepositRequest, MpesaDepositResponse
-from ..services.mpesa_service import (get_transaction_history,
-                                      initiate_mpesa_stk,
-                                      initiate_mpesa_withdrawal,
-                                      process_b2c_result,
-                                      process_mpesa_callback, query_stk_status)
+from ..services.mpesa_service import (
+    get_transaction_history,
+    initiate_mpesa_stk,
+    initiate_mpesa_withdrawal,
+    process_b2c_result,
+    process_mpesa_callback,
+    query_stk_status,
+)
 from ..utils.logging import get_logger
 
 logger = get_logger("payments_router")

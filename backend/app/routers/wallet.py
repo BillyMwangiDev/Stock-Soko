@@ -3,10 +3,12 @@ Virtual Wallet Router for Demo Mode
 Manages virtual balances and transactions for paper trading
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
 from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+
 from ..database import get_db
 from ..database.models import User
 from ..routers.auth import current_user_email

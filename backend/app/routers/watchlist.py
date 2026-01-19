@@ -6,8 +6,9 @@ and retrieving watched stock symbols.
 """
 
 from fastapi import APIRouter, HTTPException
+
 from ..schemas.watchlist import WatchItem, WatchlistResponse
-from ..services.watchlist_service import list_items, add_item, remove_item
+from ..services.watchlist_service import add_item, list_items, remove_item
 
 router = APIRouter(prefix="/watchlist", tags=["watchlist"])
 

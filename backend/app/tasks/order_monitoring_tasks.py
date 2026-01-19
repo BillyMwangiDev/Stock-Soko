@@ -4,10 +4,11 @@ Background tasks for checking and executing pending orders
 """
 
 from celery import shared_task
+
 from ..database import get_db
+from ..database.models import User
 from ..services.mock_trading_engine import mock_trading_engine
 from ..services.notification_service import notification_service
-from ..database.models import User
 from ..utils.logging import get_logger
 
 logger = get_logger("order_monitoring_tasks")

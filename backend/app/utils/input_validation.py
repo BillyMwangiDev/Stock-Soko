@@ -4,8 +4,8 @@ Provides comprehensive validation for user inputs
 """
 
 import re
-from typing import Optional
 from decimal import Decimal, InvalidOperation
+from typing import Optional
 
 
 class InputValidator:

@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Any
-from jose import jwt, JWTError
+from typing import Any, Dict, Optional
+
 from decouple import config
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 
 SECRET_KEY: str = config("JWT_SECRET", default="dev-secret-change-in-production")
 ALGORITHM: str = config("JWT_ALGORITHM", default="HS256")

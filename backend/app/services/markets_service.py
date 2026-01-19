@@ -6,15 +6,16 @@ and NSE-specific instruments. Integrates multiple market data providers with cac
 and fallback support for reliability.
 """
 
-from typing import List, Optional, Dict, Any
-from datetime import datetime, timezone, timedelta
 import random
-from ..schemas.markets import MarketInstrument, QuoteResponse
-from .market_data_providers import get_market_data_provider
-from .cache_service import cache_service
-from ..config import ENABLE_REAL_TIME_PRICES, PRICE_CACHE_TTL, HISTORICAL_CACHE_TTL
-from ..utils.logging import get_logger
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional
+
+from ..config import ENABLE_REAL_TIME_PRICES, HISTORICAL_CACHE_TTL, PRICE_CACHE_TTL
 from ..data.sample_stocks import SAMPLE_STOCKS  # Use comprehensive stock data
+from ..schemas.markets import MarketInstrument, QuoteResponse
+from ..utils.logging import get_logger
+from .cache_service import cache_service
+from .market_data_providers import get_market_data_provider
 
 logger = get_logger("markets_service")
 

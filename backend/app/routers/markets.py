@@ -6,8 +6,10 @@ from fastapi import APIRouter, Body, HTTPException, Query
 from ..ai.indicators import macd, rsi
 from ..ai.recommender import sma_crossover_signal
 from ..data.sample_stocks import SAMPLE_STOCKS
-from ..data.stock_analysis_framework import (batch_analyze_stocks,
-                                             generate_comprehensive_analysis)
+from ..data.stock_analysis_framework import (
+    batch_analyze_stocks,
+    generate_comprehensive_analysis,
+)
 from ..schemas.markets import MarketListResponse, QuoteRequest, QuoteResponse
 from ..services.markets_service import get_quote, list_markets, markets_service
 from ..utils.logging import get_logger

@@ -6,10 +6,16 @@ from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException, Query
 
-from ..data.fee_structure import (BANK_FEES, FEE_EXAMPLES, MPESA_FEES,
-                                  REGULATORY_INFO, SETTLEMENT, TRADING_FEES,
-                                  calculate_mpesa_withdrawal_fee,
-                                  calculate_trading_fees)
+from ..data.fee_structure import (
+    BANK_FEES,
+    FEE_EXAMPLES,
+    MPESA_FEES,
+    REGULATORY_INFO,
+    SETTLEMENT,
+    TRADING_FEES,
+    calculate_mpesa_withdrawal_fee,
+    calculate_trading_fees,
+)
 
 router = APIRouter(prefix="/fees", tags=["fees"])
 

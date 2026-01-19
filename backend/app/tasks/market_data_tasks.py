@@ -1,9 +1,11 @@
-from celery import shared_task
-from typing import List
 from datetime import datetime
+from typing import List
+
+from celery import shared_task
+
+from ..services.cache_service import cache_service
 from ..services.markets_service import get_live_quotes, get_market_movers
 from ..services.news_service import news_service
-from ..services.cache_service import cache_service
 from ..utils.logging import get_logger
 
 logger = get_logger("market_data_tasks")
@@ -101,7 +103,7 @@ def warm_cache_for_stock(symbol: str):
     logger.info(f"Warming cache for {symbol}")
 
     try:
-        from ..services.markets_service import get_quote, get_historical_data
+        from ..services.markets_service import get_historical_data, get_quote
 
         quote = get_quote(symbol)
         cache_service.set(f"price_{symbol}", quote, ttl=30)
@@ -125,12 +127,12 @@ def generate_report_async(user_id: int, report_type: str, date_range: dict):
     logger.info(f"Generating {report_type} report for user {user_id}")
 
     try:
-        from ..services.report_service import (
-            generate_transaction_statement,
-            generate_tax_report,
-            generate_portfolio_summary,
-        )
         from ..database import SessionLocal
+        from ..services.report_service import (
+            generate_portfolio_summary,
+            generate_tax_report,
+            generate_transaction_statement,
+        )
 
         db = SessionLocal()
 

@@ -9,14 +9,28 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..schemas.auth import (TokenResponse, TwoFASetupResponse,
-                            TwoFAVerifyRequest, UserCreate, UserPublic)
-from ..services.user_service import (create_user, enable_2fa, get_user,
-                                     setup_2fa, update_password,
-                                     validate_2fa_code, verify_password)
+from ..schemas.auth import (
+    TokenResponse,
+    TwoFASetupResponse,
+    TwoFAVerifyRequest,
+    UserCreate,
+    UserPublic,
+)
+from ..services.user_service import (
+    create_user,
+    enable_2fa,
+    get_user,
+    setup_2fa,
+    update_password,
+    validate_2fa_code,
+    verify_password,
+)
 from ..utils.jwt import create_access_token, decode_token
-from ..utils.security import (validate_email, validate_password_strength,
-                              validate_phone_number)
+from ..utils.security import (
+    validate_email,
+    validate_password_strength,
+    validate_phone_number,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

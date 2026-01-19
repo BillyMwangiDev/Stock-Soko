@@ -4,10 +4,12 @@ Placeholder implementation until CDSC API access is obtained
 """
 
 import random
-from typing import Dict, Any
+from typing import Any, Dict
+
 from sqlalchemy.orm import Session
+
+from ..config import CDSC_API_KEY, CDSC_ENABLED
 from ..database.models import Account, User
-from ..config import CDSC_ENABLED, CDSC_API_KEY
 from ..utils.logging import get_logger
 
 logger = get_logger("cdsc_service")

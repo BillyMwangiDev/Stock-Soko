@@ -3,12 +3,14 @@ Achievement System for Demo Mode
 Tracks user milestones and awards badges
 """
 
-from typing import Dict, Any, List
-from datetime import datetime, timezone
-from sqlalchemy.orm import Session
-from ..database.models import User, Order, Holding, Portfolio
-from ..utils.logging import get_logger
 from collections import defaultdict
+from datetime import datetime, timezone
+from typing import Any, Dict, List
+
+from sqlalchemy.orm import Session
+
+from ..database.models import Holding, Order, Portfolio, User
+from ..utils.logging import get_logger
 
 logger = get_logger("achievement_service")
 

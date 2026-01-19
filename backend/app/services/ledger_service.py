@@ -1,9 +1,9 @@
 import time
 from typing import Dict, List
+
 from ..schemas.ledger import OrderRecord, Position
 from ..schemas.trades import OrderRequest
 from ..services.markets_service import get_quote
-
 
 _orders: List[OrderRecord] = []
 _positions: Dict[str, Position] = {}

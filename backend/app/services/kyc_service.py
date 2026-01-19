@@ -1,13 +1,15 @@
-from typing import Dict, Any, List
 import os
 import uuid
 from datetime import datetime
+from typing import Any, Dict, List
+
 from fastapi import UploadFile
-from sqlalchemy.orm import Session
 from PIL import Image
-from ..schemas.kyc import KycSubmission, KycStatus
-from ..database.models import User, UserProfile
+from sqlalchemy.orm import Session
+
 from ..config import KYC_UPLOAD_DIR, MAX_UPLOAD_SIZE_MB
+from ..database.models import User, UserProfile
+from ..schemas.kyc import KycStatus, KycSubmission
 from ..utils.logging import get_logger
 
 logger = get_logger("kyc_service")

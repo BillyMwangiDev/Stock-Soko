@@ -3,11 +3,13 @@ Leaderboard Service for Demo Mode
 Tracks and ranks users by trading performance
 """
 
-from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
-from sqlalchemy import func, desc
-from ..database.models import User, Portfolio, Order
+
+from ..database.models import Order, Portfolio, User
 from ..utils.logging import get_logger
 
 logger = get_logger("leaderboard_service")

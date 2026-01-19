@@ -7,17 +7,18 @@ handles password hashing with bcrypt.
 """
 
 from typing import Optional
-import bcrypt
-from sqlalchemy.orm import Session
-import pyotp
 
+import bcrypt
+import pyotp
+from sqlalchemy.orm import Session
+
+from ..constants import BCRYPT_MAX_PASSWORD_LENGTH
 from ..database import get_db, init_db
 from ..database.models import User as DBUser
-from ..constants import BCRYPT_MAX_PASSWORD_LENGTH
 from ..exceptions import (
-    UserNotFoundException,
-    UserAlreadyExistsException,
     InvalidCredentialsException,
+    UserAlreadyExistsException,
+    UserNotFoundException,
 )
 from ..utils.logging import get_logger
 

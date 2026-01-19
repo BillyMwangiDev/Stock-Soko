@@ -2,18 +2,19 @@
 Comprehensive FAQ System for Stock Trading Platform
 Pre-defined answers for common questions
 """
+
 import re
 from typing import Dict, List, Optional
 
 
 class FAQSystem:
     """FAQ system with pre-defined answers for common questions"""
-    
+
     def __init__(self):
         self.faqs = self._initialize_faqs()
         self.quick_responses = self._initialize_quick_responses()
         self.educational_content = self._initialize_educational_content()
-    
+
     def _initialize_faqs(self) -> List[Dict[str, str]]:
         """Initialize comprehensive FAQ database"""
         return [
@@ -41,7 +42,7 @@ class FAQSystem:
 ✓ Focus on long-term (1-2 years minimum)
 ✓ Keep learning and stay patient
 
-Ready to start? Click 'Markets' to explore available stocks!"""
+Ready to start? Click 'Markets' to explore available stocks!""",
             },
             {
                 "category": "Getting Started",
@@ -67,7 +68,7 @@ Ready to start? Click 'Markets' to explore available stocks!"""
 - CDS Fee: 0.06%
 - Total: ~1.5% per trade
 
-**Pro Tip**: Start small, learn the platform, then gradually increase investment as you gain confidence."""
+**Pro Tip**: Start small, learn the platform, then gradually increase investment as you gain confidence.""",
             },
             {
                 "category": "Getting Started",
@@ -100,9 +101,8 @@ Ready to start? Click 'Markets' to explore available stocks!"""
 
 **Important**: Past performance doesn't guarantee future results. Market timing is difficult - focus on time IN the market, not timing the market.
 
-**Reality Check**: Some months you'll gain, some you'll lose. Patience is key!"""
+**Reality Check**: Some months you'll gain, some you'll lose. Patience is key!""",
             },
-            
             # Stock Market Basics
             {
                 "category": "Market Basics",
@@ -151,7 +151,7 @@ P/E Ratio = Stock Price ÷ Earnings Per Share (EPS)
 - KCB P/E: 4.2 (undervalued or concerns?)
 - BAT P/E: 8.5 (declining sector, dividend play)
 
-Want to see P/E ratios for all stocks? Check the Markets page!"""
+Want to see P/E ratios for all stocks? Check the Markets page!""",
             },
             {
                 "category": "Market Basics",
@@ -206,7 +206,7 @@ For every KES 100 invested, you get KES 5.80 per year in dividends
 
 **Pro Tip**: High yield isn't always good - check if company can sustain it. Declining business with high yield is a red flag!
 
-**Tax**: 5% withholding tax on dividends"""
+**Tax**: 5% withholding tax on dividends""",
             },
             {
                 "category": "Market Basics",
@@ -272,9 +272,8 @@ Market Cap = Share Price × Total Shares Outstanding
 - 30% Mid cap (growth)
 - 10% Small cap (high risk/reward)
 
-**Pro Tip**: Bigger isn't always better, but it's usually safer!"""
+**Pro Tip**: Bigger isn't always better, but it's usually safer!""",
             },
-            
             # Trading & Orders
             {
                 "category": "Trading",
@@ -335,7 +334,7 @@ Stock at KES 30:
 
 **Our Recommendation**: Start with market orders on liquid stocks, graduate to limit orders as you learn.
 
-Want to place your first order? Head to Markets → Select Stock → Trade!"""
+Want to place your first order? Head to Markets → Select Stock → Trade!""",
             },
             {
                 "category": "Trading",
@@ -406,7 +405,7 @@ Want to place your first order? Head to Markets → Select Stock → Trade!"""
 
 **Pro Tip**: Place limit orders in pre-open (8-9 AM) to catch opening price movements!
 
-**Settlement**: T+3 (trade + 3 business days)"""
+**Settlement**: T+3 (trade + 3 business days)""",
             },
             {
                 "category": "Trading",
@@ -502,9 +501,8 @@ Total Credit:     KES  9,848.00
 **Fee Calculator**:
 Visit Markets → Select Stock → See fee breakdown before confirming
 
-**Pro Tip**: Frequent trading kills returns! Aim for 2-4 trades per month maximum."""
+**Pro Tip**: Frequent trading kills returns! Aim for 2-4 trades per month maximum.""",
             },
-            
             # Stock Analysis
             {
                 "category": "Analysis",
@@ -653,9 +651,8 @@ Focus on these 5 stocks (well analyzed, safe):
 4. EABL - Consumer staple
 5. Standard Chartered (SCBK) - Quality bank
 
-Want detailed analysis on any stock? Just ask "Analyze [STOCK]" or check Markets page!"""
+Want detailed analysis on any stock? Just ask "Analyze [STOCK]" or check Markets page!""",
             },
-            
             # Risk Management
             {
                 "category": "Risk",
@@ -838,9 +835,8 @@ Long-term: Stocks ← Invest here
 - Moderate: Mix of blue chips + growth
 - Aggressive: Small caps, growth stocks
 
-Want help assessing your risk tolerance? Ask "What's my risk profile?"""
+Want help assessing your risk tolerance? Ask "What's my risk profile?""",
             },
-            
             # M-Pesa & Payments
             {
                 "category": "Payments",
@@ -949,9 +945,8 @@ Issue with M-Pesa?
 **READY TO DEPOSIT?**
 Go to Wallet → Deposit → Enter Amount → Confirm!
 
-First deposit bonus: Trade fee discount on first 3 trades!"""
+First deposit bonus: Trade fee discount on first 3 trades!""",
             },
-            
             # Dividends
             {
                 "category": "Dividends",
@@ -1169,19 +1164,19 @@ After tax: KES 6,707/year
 **Q**: How often are dividends paid?
 **A**: Usually twice a year (interim + final)
 
-Want to see upcoming dividends? Check Portfolio → Dividend Tracker!"""
-            }
+Want to see upcoming dividends? Check Portfolio → Dividend Tracker!""",
+            },
         ]
-    
+
     def _initialize_quick_responses(self) -> Dict[str, str]:
         """Initialize quick responses for common queries"""
         return {
             "hello": "Hi! 👋 I'm your AI trading assistant. I can help with stock analysis, market insights, trading strategies, and learning. What would you like to know?",
             "help": "I can assist you with:\n\n📊 Stock Analysis & Recommendations\n📈 Market Trends & Insights\n💡 Investment Strategies\n📚 Learning Trading Concepts\n💰 Portfolio Management\n\nWhat specific topic interests you?",
             "thanks": "You're welcome! Happy to help. Feel free to ask anytime you need assistance with your investments. Good luck! 📈",
-            "bye": "Goodbye! Remember to review your portfolio regularly and stay informed. Happy investing! 🚀"
+            "bye": "Goodbye! Remember to review your portfolio regularly and stay informed. Happy investing! 🚀",
         }
-    
+
     def _initialize_educational_content(self) -> Dict[str, str]:
         """Initialize educational content for common topics"""
         return {
@@ -1228,7 +1223,6 @@ Want to see upcoming dividends? Check Portfolio → Dividend Tracker!"""
 ✓ Sleep better at night
 
 **Optimal**: 8-12 different stocks across 4-5 sectors""",
-            
             "market_timing": """**Market Timing: Truth vs Myth**
 
 **The Myth**:
@@ -1281,68 +1275,61 @@ Instead of KES 12,000 once:
 ❌ FOMO buying
 ❌ Following tips""",
         }
-    
+
     def find_answer(self, question: str) -> Optional[Dict[str, str]]:
         """Find best matching FAQ answer"""
         question_lower = question.lower()
-        
+
         # Check quick responses first
         for key, response in self.quick_responses.items():
             if key in question_lower:
-                return {
-                    "type": "quick",
-                    "answer": response,
-                    "category": "General"
-                }
-        
+                return {"type": "quick", "answer": response, "category": "General"}
+
         # Check FAQs
         best_match = None
         best_score = 0
-        
+
         for faq in self.faqs:
             score = 0
             for keyword in faq["keywords"]:
                 if keyword in question_lower:
                     score += 1
-            
+
             if score > best_score:
                 best_score = score
                 best_match = faq
-        
+
         if best_match and best_score > 0:
             return {
                 "type": "faq",
                 "question": best_match["question"],
                 "answer": best_match["answer"],
-                "category": best_match["category"]
+                "category": best_match["category"],
             }
-        
+
         # Check educational content
         for topic, content in self.educational_content.items():
-            if topic in question_lower or topic.replace('_', ' ') in question_lower:
+            if topic in question_lower or topic.replace("_", " ") in question_lower:
                 return {
                     "type": "educational",
                     "answer": content,
-                    "category": "Education"
+                    "category": "Education",
                 }
-        
+
         return None
-    
+
     def get_all_categories(self) -> List[str]:
         """Get all FAQ categories"""
         return list(set(faq["category"] for faq in self.faqs))
-    
+
     def get_faqs_by_category(self, category: str) -> List[Dict[str, str]]:
         """Get all FAQs in a category"""
         return [
-            {
-                "question": faq["question"],
-                "category": faq["category"]
-            }
+            {"question": faq["question"], "category": faq["category"]}
             for faq in self.faqs
             if faq["category"] == category
         ]
-    
+
     def get_popular_questions(self, limit: int = 10) -> List[str]:
         """Get popular/recommended questions"""
         return [faq["question"] for faq in self.faqs[:limit]]
@@ -1350,4 +1337,3 @@ Instead of KES 12,000 once:
 
 # Singleton instance
 faq_system = FAQSystem()
-

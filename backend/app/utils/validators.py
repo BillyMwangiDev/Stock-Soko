@@ -3,18 +3,20 @@ Input Validators
 Comprehensive validation utilities for API endpoints
 """
 
-from typing import Optional, Any
-from pydantic import BaseModel, validator, Field
+import re
+from typing import Any, Optional
+
+from pydantic import BaseModel, Field, validator
+
 from ..constants import (
+    BCRYPT_MAX_PASSWORD_LENGTH,
     EMAIL_PATTERN,
+    MAX_TRADE_AMOUNT,
+    MIN_TRADE_AMOUNT,
     PHONE_PATTERN,
     SYMBOL_PATTERN,
-    MIN_TRADE_AMOUNT,
-    MAX_TRADE_AMOUNT,
-    BCRYPT_MAX_PASSWORD_LENGTH,
 )
 from ..exceptions import ValidationException, WeakPasswordException
-import re
 
 
 # Email Validator

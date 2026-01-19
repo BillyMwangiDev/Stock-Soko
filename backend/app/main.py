@@ -6,23 +6,47 @@ from fastapi import FastAPI, Request, Response, WebSocket
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
-from prometheus_client import (CONTENT_TYPE_LATEST, Counter, Histogram,
-                               generate_latest)
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .config import ALLOWED_ORIGINS, APP_NAME
 from .database import init_db
-from .routers import (achievements, ai_chat, alerts, auth, broker, cds, charts,
-                      dashboard, dividends, fees, health, kyc, leaderboard,
-                      ledger, markets, news, notifications, payments,
-                      portfolio_analytics, profile, settings, statements,
-                      tax_reports, trades, wallet, watchlist)
+from .routers import (
+    achievements,
+    ai_chat,
+    alerts,
+    auth,
+    broker,
+    cds,
+    charts,
+    dashboard,
+    dividends,
+    fees,
+    health,
+    kyc,
+    leaderboard,
+    ledger,
+    markets,
+    news,
+    notifications,
+    payments,
+    portfolio_analytics,
+    profile,
+    settings,
+    statements,
+    tax_reports,
+    trades,
+    wallet,
+    watchlist,
+)
 from .services.cache_service import cache_service
-from .utils.error_handlers import (StockSokoException,
-                                   general_exception_handler,
-                                   http_exception_handler,
-                                   stocksoko_exception_handler,
-                                   validation_exception_handler)
+from .utils.error_handlers import (
+    StockSokoException,
+    general_exception_handler,
+    http_exception_handler,
+    stocksoko_exception_handler,
+    validation_exception_handler,
+)
 from .utils.middleware import RateLimitMiddleware, RequestIdMiddleware
 from .utils.security_headers import SecurityHeadersMiddleware
 from .websocket.price_stream import start_heartbeat_task, websocket_endpoint

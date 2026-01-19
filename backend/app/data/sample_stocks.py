@@ -12,7 +12,6 @@ SAMPLE_STOCKS = [
         "change_percent": 3.07,
         "volume": 15234500,
         "market_cap": 1140000000000,
-
         # Financial Metrics
         "roe": 32.5,  # Return on Equity %
         "roi": 28.3,  # Return on Investment %
@@ -23,14 +22,12 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.35,
         "current_ratio": 1.2,
         "dividend_yield": 5.8,
-
         # Risk/Reward
         "risk_score": 2.5,  # 1-10 scale (lower is safer)
         "reward_potential": 8.5,  # 1-10 scale
         "liquidity": "Very High",
         "volatility": 15.2,  # Annualized %
         "beta": 0.95,
-
         # Company Fundamentals
         "sector": "Telecommunications",
         "industry": "Mobile Network Operators",
@@ -38,7 +35,6 @@ SAMPLE_STOCKS = [
         "founded_year": 1997,
         "ceo": "Peter Ndegwa",
         "headquarters": "Nairobi, Kenya",
-
         # Historical Data (4 years)
         "yearly_revenue": [
             {"year": 2021, "revenue": 265.0},
@@ -58,14 +54,12 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 1.55},
             {"year": 2024, "dividend": 1.65},
         ],
-
         # Market Sentiment
         "market_sentiment": "Bullish",
         "kenya_market_trend": "Strong Outperformer",
         "global_market_impact": "Low correlation, defensive stock",
         "analyst_rating": "Buy",
         "price_target": 32.50,
-
         # AI Recommendation Data
         "ai_recommendation": "BUY",
         "ai_confidence": 85,
@@ -79,7 +73,6 @@ SAMPLE_STOCKS = [
         "change_percent": 2.69,
         "volume": 8532100,
         "market_cap": 173000000000,
-
         "roe": 22.3,
         "roi": 19.8,
         "roa": 3.2,
@@ -89,20 +82,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.15,
         "current_ratio": 0.9,
         "dividend_yield": 6.5,
-
         "risk_score": 3.5,
         "reward_potential": 8.0,
         "liquidity": "Very High",
         "volatility": 22.5,
         "beta": 1.15,
-
         "sector": "Financial Services",
         "industry": "Banking",
         "employees": 12500,
         "founded_year": 1984,
         "ceo": "James Mwangi",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 95.2},
             {"year": 2022, "revenue": 108.5},
@@ -121,13 +111,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 3.00},
             {"year": 2024, "dividend": 3.00},
         ],
-
         "market_sentiment": "Bullish",
         "kenya_market_trend": "Banking sector recovery",
         "global_market_impact": "Moderate - regional expansion exposure",
         "analyst_rating": "Buy",
         "price_target": 52.00,
-
         "ai_recommendation": "BUY",
         "ai_confidence": 82,
         "ai_reasoning": "Leading regional bank with strong digital banking growth. Aggressive expansion in East Africa. Undervalued P/E ratio compared to peers.",
@@ -140,7 +128,6 @@ SAMPLE_STOCKS = [
         "change_percent": -1.29,
         "volume": 6234800,
         "market_cap": 151000000000,
-
         "roe": 18.5,
         "roi": 16.2,
         "roa": 2.8,
@@ -150,20 +137,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.12,
         "current_ratio": 0.85,
         "dividend_yield": 7.2,
-
         "risk_score": 3.0,
         "reward_potential": 7.5,
         "liquidity": "High",
         "volatility": 20.3,
         "beta": 1.05,
-
         "sector": "Financial Services",
         "industry": "Banking",
         "employees": 8900,
         "founded_year": 1896,
         "ceo": "Paul Russo",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 85.3},
             {"year": 2022, "revenue": 92.1},
@@ -182,13 +166,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 2.75},
             {"year": 2024, "dividend": 2.75},
         ],
-
         "market_sentiment": "Neutral",
         "kenya_market_trend": "Consolidation phase",
         "global_market_impact": "Low - domestic focused",
         "analyst_rating": "Hold",
         "price_target": 40.00,
-
         "ai_recommendation": "HOLD",
         "ai_confidence": 68,
         "ai_reasoning": "Stable dividend payer but facing increased competition. Recent NBK acquisition integration ongoing. Attractive valuation but growth concerns.",
@@ -201,7 +183,6 @@ SAMPLE_STOCKS = [
         "change_percent": 2.17,
         "volume": 4521300,
         "market_cap": 65000000000,
-
         "roe": 16.8,
         "roi": 14.5,
         "roa": 2.5,
@@ -211,20 +192,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.18,
         "current_ratio": 0.88,
         "dividend_yield": 5.5,
-
         "risk_score": 3.2,
         "reward_potential": 7.0,
         "liquidity": "High",
         "volatility": 18.7,
         "beta": 0.98,
-
         "sector": "Financial Services",
         "industry": "Banking",
         "employees": 7200,
         "founded_year": 1965,
         "ceo": "Gideon Muriuki",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 42.5},
             {"year": 2022, "revenue": 46.8},
@@ -243,13 +221,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 0.90},
             {"year": 2024, "dividend": 0.90},
         ],
-
         "market_sentiment": "Bullish",
         "kenya_market_trend": "SME banking leader",
         "global_market_impact": "Low - co-operative model unique",
         "analyst_rating": "Buy",
         "price_target": 18.50,
-
         "ai_recommendation": "BUY",
         "ai_confidence": 75,
         "ai_reasoning": "Strong SME and agricultural sector exposure. Growing digital channels. Cooperative model provides stable deposit base.",
@@ -262,7 +238,6 @@ SAMPLE_STOCKS = [
         "change_percent": 1.37,
         "volume": 1235600,
         "market_cap": 142000000000,
-
         "roe": 28.5,
         "roi": 24.8,
         "roa": 12.3,
@@ -272,20 +247,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.45,
         "current_ratio": 1.35,
         "dividend_yield": 4.2,
-
         "risk_score": 2.8,
         "reward_potential": 6.5,
         "liquidity": "Medium",
         "volatility": 16.5,
         "beta": 0.85,
-
         "sector": "Consumer Goods",
         "industry": "Beverages",
         "employees": 3200,
         "founded_year": 1922,
         "ceo": "Jane Karuku",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 112.5},
             {"year": 2022, "revenue": 118.2},
@@ -304,13 +276,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 7.50},
             {"year": 2024, "dividend": 7.75},
         ],
-
         "market_sentiment": "Neutral",
         "kenya_market_trend": "Defensive consumer staple",
         "global_market_impact": "Moderate - Diageo parent exposure",
         "analyst_rating": "Hold",
         "price_target": 190.00,
-
         "ai_recommendation": "HOLD",
         "ai_confidence": 70,
         "ai_reasoning": "Defensive stock with stable dividends. Premium beer segment growing. Regulatory risks from excise duty changes. Fair valuation.",
@@ -323,7 +293,6 @@ SAMPLE_STOCKS = [
         "change_percent": -1.16,
         "volume": 89500,
         "market_cap": 85000000000,
-
         "roe": 45.2,
         "roi": 38.5,
         "roa": 22.1,
@@ -333,20 +302,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.25,
         "current_ratio": 1.8,
         "dividend_yield": 8.5,
-
         "risk_score": 4.5,
         "reward_potential": 5.5,
         "liquidity": "Low",
         "volatility": 25.3,
         "beta": 0.75,
-
         "sector": "Consumer Goods",
         "industry": "Tobacco",
         "employees": 1200,
         "founded_year": 1907,
         "ceo": "Crispin Achola",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 52.3},
             {"year": 2022, "revenue": 51.8},
@@ -365,13 +331,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 35.00},
             {"year": 2024, "dividend": 36.00},
         ],
-
         "market_sentiment": "Bearish",
         "kenya_market_trend": "Declining volumes, ESG concerns",
         "global_market_impact": "High - global tobacco headwinds",
         "analyst_rating": "Sell",
         "price_target": 400.00,
-
         "ai_recommendation": "SELL",
         "ai_confidence": 78,
         "ai_reasoning": "High dividend yield but declining revenue. Regulatory pressures increasing. ESG concerns limiting institutional investment. Sector headwinds.",
@@ -384,7 +348,6 @@ SAMPLE_STOCKS = [
         "change_percent": 1.06,
         "volume": 3245700,
         "market_cap": 52000000000,
-
         "roe": 15.2,
         "roi": 13.1,
         "roa": 2.2,
@@ -394,20 +357,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.14,
         "current_ratio": 0.92,
         "dividend_yield": 4.8,
-
         "risk_score": 3.5,
         "reward_potential": 6.8,
         "liquidity": "Medium",
         "volatility": 21.2,
         "beta": 1.08,
-
         "sector": "Financial Services",
         "industry": "Banking",
         "employees": 3800,
         "founded_year": 1910,
         "ceo": "Abdi Mohamed",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 38.5},
             {"year": 2022, "revenue": 41.2},
@@ -426,13 +386,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 0.68},
             {"year": 2024, "dividend": 0.68},
         ],
-
         "market_sentiment": "Neutral",
         "kenya_market_trend": "Digital transformation progress",
         "global_market_impact": "Moderate - Absa Group Africa exposure",
         "analyst_rating": "Hold",
         "price_target": 15.00,
-
         "ai_recommendation": "HOLD",
         "ai_confidence": 65,
         "ai_reasoning": "Mid-tier bank with improving margins. Digital strategy gaining traction. Competitive pressure from tier-1 banks. Fair valuation.",
@@ -445,7 +403,6 @@ SAMPLE_STOCKS = [
         "change_percent": 1.07,
         "volume": 456200,
         "market_cap": 50000000000,
-
         "roe": 17.8,
         "roi": 15.5,
         "roa": 3.5,
@@ -455,20 +412,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.10,
         "current_ratio": 1.15,
         "dividend_yield": 7.0,
-
         "risk_score": 2.5,
         "reward_potential": 7.2,
         "liquidity": "Low",
         "volatility": 19.5,
         "beta": 0.92,
-
         "sector": "Financial Services",
         "industry": "Banking",
         "employees": 1250,
         "founded_year": 1911,
         "ceo": "Kariuki Ngari",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 28.5},
             {"year": 2022, "revenue": 30.8},
@@ -487,13 +441,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 10.00},
             {"year": 2024, "dividend": 10.00},
         ],
-
         "market_sentiment": "Bullish",
         "kenya_market_trend": "Corporate and affluent focus paying off",
         "global_market_impact": "High - emerging markets exposure",
         "analyst_rating": "Buy",
         "price_target": 155.00,
-
         "ai_recommendation": "BUY",
         "ai_confidence": 80,
         "ai_reasoning": "Premium positioning with wealthy clients. Strong profit margins. Global parent support. High dividend yield with growth potential.",
@@ -506,7 +458,6 @@ SAMPLE_STOCKS = [
         "change_percent": 0.77,
         "volume": 623400,
         "market_cap": 39000000000,
-
         "roe": 16.5,
         "roi": 14.2,
         "roa": 2.9,
@@ -516,20 +467,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.11,
         "current_ratio": 0.95,
         "dividend_yield": 6.2,
-
         "risk_score": 3.0,
         "reward_potential": 7.0,
         "liquidity": "Medium",
         "volatility": 20.8,
         "beta": 1.02,
-
         "sector": "Financial Services",
         "industry": "Banking",
         "employees": 950,
         "founded_year": 1970,
         "ceo": "Samuel Odeke",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 24.2},
             {"year": 2022, "revenue": 26.1},
@@ -548,13 +496,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 6.00},
             {"year": 2024, "dividend": 6.10},
         ],
-
         "market_sentiment": "Neutral",
         "kenya_market_trend": "Stable mid-tier performer",
         "global_market_impact": "Moderate - Standard Bank Group Africa",
         "analyst_rating": "Hold",
         "price_target": 102.00,
-
         "ai_recommendation": "HOLD",
         "ai_confidence": 72,
         "ai_reasoning": "Solid fundamentals with Standard Bank backing. Good dividend yield. Limited upside at current valuation. Competitive market.",
@@ -567,7 +513,6 @@ SAMPLE_STOCKS = [
         "change_percent": -1.54,
         "volume": 892300,
         "market_cap": 19000000000,
-
         "roe": 8.5,
         "roi": 6.2,
         "roa": 4.1,
@@ -577,20 +522,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.55,
         "current_ratio": 1.25,
         "dividend_yield": 3.1,
-
         "risk_score": 5.5,
         "reward_potential": 5.0,
         "liquidity": "Medium",
         "volatility": 28.5,
         "beta": 1.25,
-
         "sector": "Construction & Materials",
         "industry": "Building Materials",
         "employees": 850,
         "founded_year": 1951,
         "ceo": "Seddiq Hassani",
         "headquarters": "Mombasa, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 28.5},
             {"year": 2022, "revenue": 27.8},
@@ -609,13 +551,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 1.00},
             {"year": 2024, "dividend": 1.00},
         ],
-
         "market_sentiment": "Bearish",
         "kenya_market_trend": "Construction slowdown impact",
         "global_market_impact": "Low - local infrastructure dependent",
         "analyst_rating": "Sell",
         "price_target": 28.00,
-
         "ai_recommendation": "SELL",
         "ai_confidence": 72,
         "ai_reasoning": "Declining revenue and profitability. Overcapacity in cement sector. High debt levels. Infrastructure projects delayed. Weak outlook.",
@@ -628,7 +568,6 @@ SAMPLE_STOCKS = [
         "change_percent": 1.32,
         "volume": 12543200,
         "market_cap": 32000000000,
-
         "roe": 9.5,
         "roi": 8.2,
         "roa": 5.5,
@@ -638,20 +577,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.68,
         "current_ratio": 1.45,
         "dividend_yield": 5.2,
-
         "risk_score": 3.8,
         "reward_potential": 6.5,
         "liquidity": "High",
         "volatility": 24.5,
         "beta": 0.88,
-
         "sector": "Utilities",
         "industry": "Electricity Generation",
         "employees": 2850,
         "founded_year": 1954,
         "ceo": "Peter Njenga",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 38.5},
             {"year": 2022, "revenue": 40.2},
@@ -670,13 +606,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 0.20},
             {"year": 2024, "dividend": 0.20},
         ],
-
         "market_sentiment": "Neutral",
         "kenya_market_trend": "Renewable energy transition",
         "global_market_impact": "Low - regulated utility",
         "analyst_rating": "Hold",
         "price_target": 4.00,
-
         "ai_recommendation": "HOLD",
         "ai_confidence": 68,
         "ai_reasoning": "Leading geothermal and renewable energy producer. Government ownership provides stability. Limited growth upside. Decent dividend.",
@@ -689,7 +623,6 @@ SAMPLE_STOCKS = [
         "change_percent": -2.63,
         "volume": 8945600,
         "market_cap": 11000000000,
-
         "roe": -5.2,
         "roi": -4.8,
         "roa": -1.5,
@@ -699,20 +632,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 2.15,
         "current_ratio": 0.65,
         "dividend_yield": 0.0,
-
         "risk_score": 8.5,
         "reward_potential": 4.0,
         "liquidity": "High",
         "volatility": 35.5,
         "beta": 1.35,
-
         "sector": "Utilities",
         "industry": "Electricity Distribution",
         "employees": 11200,
         "founded_year": 1922,
         "ceo": "Joseph Siror",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 185.2},
             {"year": 2022, "revenue": 188.5},
@@ -731,13 +661,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 0.00},
             {"year": 2024, "dividend": 0.00},
         ],
-
         "market_sentiment": "Bearish",
         "kenya_market_trend": "Turnaround plan uncertain",
         "global_market_impact": "Low - domestic utility",
         "analyst_rating": "Sell",
         "price_target": 1.50,
-
         "ai_recommendation": "SELL",
         "ai_confidence": 85,
         "ai_reasoning": "Persistent losses and high debt. Operational inefficiencies. Transmission losses issue. Government bailout dependency. High risk.",
@@ -750,7 +678,6 @@ SAMPLE_STOCKS = [
         "change_percent": 1.16,
         "volume": 1234500,
         "market_cap": 6500000000,
-
         "roe": 22.5,
         "roi": 19.8,
         "roa": 12.5,
@@ -760,20 +687,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.32,
         "current_ratio": 1.55,
         "dividend_yield": 8.5,
-
         "risk_score": 4.0,
         "reward_potential": 6.5,
         "liquidity": "Low",
         "volatility": 26.5,
         "beta": 1.18,
-
         "sector": "Energy",
         "industry": "Oil & Gas Marketing",
         "employees": 320,
         "founded_year": 1955,
         "ceo": "Jean-Christian Bergeron",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 85.2},
             {"year": 2022, "revenue": 98.5},
@@ -792,13 +716,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 0.70},
             {"year": 2024, "dividend": 0.75},
         ],
-
         "market_sentiment": "Neutral",
         "kenya_market_trend": "Energy transition challenges",
         "global_market_impact": "High - oil price sensitivity",
         "analyst_rating": "Hold",
         "price_target": 9.00,
-
         "ai_recommendation": "HOLD",
         "ai_confidence": 65,
         "ai_reasoning": "High dividend yield attractive. Oil price volatility risk. EV transition threat long-term. Parent company support. Fairly valued.",
@@ -811,7 +733,6 @@ SAMPLE_STOCKS = [
         "change_percent": 2.04,
         "volume": 156700,
         "market_cap": 5200000000,
-
         "roe": 12.5,
         "roi": 10.8,
         "roa": 6.5,
@@ -821,20 +742,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.48,
         "current_ratio": 1.28,
         "dividend_yield": 2.8,
-
         "risk_score": 5.0,
         "reward_potential": 7.5,
         "liquidity": "Very Low",
         "volatility": 22.5,
         "beta": 1.45,
-
         "sector": "Consumer Services",
         "industry": "Hotels & Tourism",
         "employees": 1850,
         "founded_year": 1971,
         "ceo": "Mahmud Janmohamed",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 8.5},
             {"year": 2022, "revenue": 12.2},
@@ -853,13 +771,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 0.30},
             {"year": 2024, "dividend": 0.35},
         ],
-
         "market_sentiment": "Bullish",
         "kenya_market_trend": "Tourism recovery strong",
         "global_market_impact": "High - global travel trends",
         "analyst_rating": "Buy",
         "price_target": 14.50,
-
         "ai_recommendation": "BUY",
         "ai_confidence": 76,
         "ai_reasoning": "Strong tourism recovery post-COVID. Premium Serena brand. Regional expansion. Capacity utilization improving. Growth momentum.",
@@ -872,7 +788,6 @@ SAMPLE_STOCKS = [
         "change_percent": -1.33,
         "volume": 234500,
         "market_cap": 4800000000,
-
         "roe": 10.5,
         "roi": 8.8,
         "roa": 5.2,
@@ -882,20 +797,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.38,
         "current_ratio": 1.62,
         "dividend_yield": 3.2,
-
         "risk_score": 5.5,
         "reward_potential": 5.5,
         "liquidity": "Very Low",
         "volatility": 30.5,
         "beta": 0.95,
-
         "sector": "Consumer Goods",
         "industry": "Agriculture - Tea & Coffee",
         "employees": 8500,
         "founded_year": 1952,
         "ceo": "Martin Williamson",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 12.5},
             {"year": 2022, "revenue": 12.8},
@@ -914,13 +826,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 0.58},
             {"year": 2024, "dividend": 0.60},
         ],
-
         "market_sentiment": "Neutral",
         "kenya_market_trend": "Agricultural commodity exposure",
         "global_market_impact": "High - tea/coffee prices volatile",
         "analyst_rating": "Hold",
         "price_target": 19.00,
-
         "ai_recommendation": "HOLD",
         "ai_confidence": 62,
         "ai_reasoning": "Commodity price exposure creates volatility. Diversification into avocados positive. Climate risks. Moderate dividend. Limited upside.",
@@ -933,7 +843,6 @@ SAMPLE_STOCKS = [
         "change_percent": 1.79,
         "volume": 12300,
         "market_cap": 5700000000,
-
         "roe": 14.5,
         "roi": 12.2,
         "roa": 8.5,
@@ -943,20 +852,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.22,
         "current_ratio": 2.15,
         "dividend_yield": 3.5,
-
         "risk_score": 4.5,
         "reward_potential": 6.5,
         "liquidity": "Very Low",
         "volatility": 28.5,
         "beta": 0.85,
-
         "sector": "Consumer Goods",
         "industry": "Agriculture - Horticulture",
         "employees": 4200,
         "founded_year": 1906,
         "ceo": "Chris Flowers",
         "headquarters": "Murang'a, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 8.2},
             {"year": 2022, "revenue": 8.8},
@@ -975,13 +881,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 9.50},
             {"year": 2024, "dividend": 10.00},
         ],
-
         "market_sentiment": "Bullish",
         "kenya_market_trend": "Avocado export boom",
         "global_market_impact": "Moderate - export market dependent",
         "analyst_rating": "Buy",
         "price_target": 310.00,
-
         "ai_recommendation": "BUY",
         "ai_confidence": 74,
         "ai_reasoning": "Strong avocado and macadamia export growth. ESG certifications attract premium. Growing Asian demand. Diversified crop portfolio.",
@@ -994,7 +898,6 @@ SAMPLE_STOCKS = [
         "change_percent": 0.00,
         "volume": 2300,
         "market_cap": 3900000000,
-
         "roe": 11.5,
         "roi": 9.8,
         "roa": 7.2,
@@ -1004,20 +907,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.15,
         "current_ratio": 1.85,
         "dividend_yield": 4.6,
-
         "risk_score": 5.0,
         "reward_potential": 5.0,
         "liquidity": "Very Low",
         "volatility": 32.5,
         "beta": 0.72,
-
         "sector": "Consumer Goods",
         "industry": "Agriculture - Tea",
         "employees": 2100,
         "founded_year": 1925,
         "ceo": "Polycarp Ngeno",
         "headquarters": "Limuru, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 4.2},
             {"year": 2022, "revenue": 4.3},
@@ -1036,13 +936,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 15.00},
             {"year": 2024, "dividend": 15.00},
         ],
-
         "market_sentiment": "Neutral",
         "kenya_market_trend": "Niche premium tea producer",
         "global_market_impact": "Moderate - global tea prices",
         "analyst_rating": "Hold",
         "price_target": 330.00,
-
         "ai_recommendation": "HOLD",
         "ai_confidence": 60,
         "ai_reasoning": "Small cap with limited liquidity. Stable dividend payer. Premium tea positioning. Weather-dependent. Fairly valued for size.",
@@ -1055,7 +953,6 @@ SAMPLE_STOCKS = [
         "change_percent": 1.19,
         "volume": 2345600,
         "market_cap": 48000000000,
-
         "roe": 19.5,
         "roi": 17.2,
         "roa": 3.1,
@@ -1065,20 +962,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.16,
         "current_ratio": 0.91,
         "dividend_yield": 5.9,
-
         "risk_score": 3.2,
         "reward_potential": 7.8,
         "liquidity": "Medium",
         "volatility": 23.5,
         "beta": 1.12,
-
         "sector": "Financial Services",
         "industry": "Banking",
         "employees": 4200,
         "founded_year": 2019,
         "ceo": "John Gachora",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 32.5},
             {"year": 2022, "revenue": 36.8},
@@ -1097,13 +991,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 2.50},
             {"year": 2024, "dividend": 2.50},
         ],
-
         "market_sentiment": "Bullish",
         "kenya_market_trend": "Post-merger synergies realized",
         "global_market_impact": "Moderate - regional expansion",
         "analyst_rating": "Buy",
         "price_target": 48.00,
-
         "ai_recommendation": "BUY",
         "ai_confidence": 83,
         "ai_reasoning": "NIC-CBA merger synergies delivering. Strong digital banking platform. Undervalued P/E ratio. Growing regional presence. Momentum building.",
@@ -1116,7 +1008,6 @@ SAMPLE_STOCKS = [
         "change_percent": -0.80,
         "volume": 456700,
         "market_cap": 24000000000,
-
         "roe": 14.2,
         "roi": 12.5,
         "roa": 2.5,
@@ -1126,20 +1017,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.13,
         "current_ratio": 0.88,
         "dividend_yield": 4.8,
-
         "risk_score": 3.8,
         "reward_potential": 6.2,
         "liquidity": "Low",
         "volatility": 24.5,
         "beta": 1.05,
-
         "sector": "Financial Services",
         "industry": "Banking",
         "employees": 1850,
         "founded_year": 1945,
         "ceo": "Nasim Devji",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 18.5},
             {"year": 2022, "revenue": 19.8},
@@ -1158,13 +1046,11 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 2.95},
             {"year": 2024, "dividend": 3.00},
         ],
-
         "market_sentiment": "Neutral",
         "kenya_market_trend": "Regional network strength",
         "global_market_impact": "Moderate - East Africa focused",
         "analyst_rating": "Hold",
         "price_target": 64.00,
-
         "ai_recommendation": "HOLD",
         "ai_confidence": 66,
         "ai_reasoning": "Regional East Africa presence. SME and corporate focus. Decent fundamentals. Limited growth catalysts. Fairly priced.",
@@ -1177,7 +1063,6 @@ SAMPLE_STOCKS = [
         "change_percent": 1.92,
         "volume": 3456700,
         "market_cap": 10500000000,
-
         "roe": 12.5,
         "roi": 10.8,
         "roa": 4.2,
@@ -1187,20 +1072,17 @@ SAMPLE_STOCKS = [
         "debt_to_equity": 0.28,
         "current_ratio": 1.95,
         "dividend_yield": 7.5,
-
         "risk_score": 4.2,
         "reward_potential": 6.0,
         "liquidity": "Medium",
         "volatility": 27.5,
         "beta": 0.92,
-
         "sector": "Financial Services",
         "industry": "Reinsurance",
         "employees": 320,
         "founded_year": 1970,
         "ceo": "Jadiah Mwarania",
         "headquarters": "Nairobi, Kenya",
-
         "yearly_revenue": [
             {"year": 2021, "revenue": 18.2},
             {"year": 2022, "revenue": 19.1},
@@ -1219,18 +1101,17 @@ SAMPLE_STOCKS = [
             {"year": 2023, "dividend": 0.20},
             {"year": 2024, "dividend": 0.20},
         ],
-
         "market_sentiment": "Neutral",
         "kenya_market_trend": "Insurance sector growth",
         "global_market_impact": "Moderate - catastrophe risk exposure",
         "analyst_rating": "Hold",
         "price_target": 2.80,
-
         "ai_recommendation": "HOLD",
         "ai_confidence": 70,
         "ai_reasoning": "Leading reinsurer in region. High dividend yield. Growing insurance penetration. Climate risk concerns. Government ownership limits upside.",
     },
 ]
+
 
 def get_stock_by_symbol(symbol: str):
     """Get stock data by symbol"""
@@ -1239,23 +1120,30 @@ def get_stock_by_symbol(symbol: str):
             return stock
     return None
 
+
 def get_all_stocks():
     """Get all sample stocks"""
     return SAMPLE_STOCKS
+
 
 def get_stocks_by_sector(sector: str):
     """Get stocks filtered by sector"""
     return [s for s in SAMPLE_STOCKS if s["sector"] == sector]
 
+
 def get_top_gainers(limit: int = 5):
     """Get top gaining stocks"""
-    sorted_stocks = sorted(SAMPLE_STOCKS, key=lambda x: x["change_percent"], reverse=True)
+    sorted_stocks = sorted(
+        SAMPLE_STOCKS, key=lambda x: x["change_percent"], reverse=True
+    )
     return sorted_stocks[:limit]
+
 
 def get_top_losers(limit: int = 5):
     """Get top losing stocks"""
     sorted_stocks = sorted(SAMPLE_STOCKS, key=lambda x: x["change_percent"])
     return sorted_stocks[:limit]
+
 
 def get_ai_buy_recommendations(limit: int = 5):
     """Get AI BUY recommendations sorted by confidence"""
@@ -1263,10 +1151,14 @@ def get_ai_buy_recommendations(limit: int = 5):
     sorted_buy = sorted(buy_stocks, key=lambda x: x["ai_confidence"], reverse=True)
     return sorted_buy[:limit]
 
+
 def get_high_dividend_stocks(limit: int = 5):
     """Get stocks with highest dividend yields"""
-    sorted_stocks = sorted(SAMPLE_STOCKS, key=lambda x: x["dividend_yield"], reverse=True)
+    sorted_stocks = sorted(
+        SAMPLE_STOCKS, key=lambda x: x["dividend_yield"], reverse=True
+    )
     return sorted_stocks[:limit]
+
 
 def get_low_risk_stocks(limit: int = 5):
     """Get stocks with lowest risk scores"""

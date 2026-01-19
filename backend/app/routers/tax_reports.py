@@ -3,14 +3,16 @@ Tax Reports Router
 Generate tax reports for trading activity
 """
 
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
+
 from ..database import get_db
 from ..database.models import User
 from ..routers.auth import current_user_email
 from ..services.tax_report_service import tax_report_service
 from ..utils.logging import get_logger
-from datetime import datetime
 
 logger = get_logger("tax_reports_router")
 

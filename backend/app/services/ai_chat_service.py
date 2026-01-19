@@ -2,10 +2,10 @@
 AI Chat Service - Provides conversational AI assistance for stock trading
 """
 
+import random
+import uuid
 from datetime import datetime
 from typing import List, Optional
-import uuid
-import random
 
 
 class AIChatService:

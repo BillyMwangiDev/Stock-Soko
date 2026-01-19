@@ -3,13 +3,15 @@ Dividend Tracking Service for Demo Mode
 Manages dividend announcements, payments, and history
 """
 
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timezone, timedelta
-from decimal import Decimal
-from sqlalchemy.orm import Session
-from ..database.models import User, Holding, Transaction
-from ..utils.logging import get_logger
 import uuid
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy.orm import Session
+
+from ..database.models import Holding, Transaction, User
+from ..utils.logging import get_logger
 
 logger = get_logger("dividend_service")
 

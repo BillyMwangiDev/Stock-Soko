@@ -3,13 +3,15 @@ Virtual Wallet Service for Demo Mode
 Manages virtual balances for paper trading
 """
 
-from typing import Dict, Any, Optional
-from decimal import Decimal
-from datetime import datetime, timezone
-from sqlalchemy.orm import Session
-from ..database.models import Portfolio, User, Transaction
-from ..utils.logging import get_logger
 import uuid
+from datetime import datetime, timezone
+from decimal import Decimal
+from typing import Any, Dict, Optional
+
+from sqlalchemy.orm import Session
+
+from ..database.models import Portfolio, Transaction, User
+from ..utils.logging import get_logger
 
 logger = get_logger("virtual_wallet_service")
 

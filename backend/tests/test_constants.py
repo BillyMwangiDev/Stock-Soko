@@ -1,13 +1,14 @@
 """
 Unit Tests for Constants
 """
+
 import pytest
 from app.constants import (
+    ALPHA_VANTAGE_DAILY_LIMIT,
     BCRYPT_MAX_PASSWORD_LENGTH,
-    SECONDS_PER_DAY,
     DEFAULT_CACHE_TTL,
+    SECONDS_PER_DAY,
     TWELVE_DATA_DAILY_LIMIT,
-    ALPHA_VANTAGE_DAILY_LIMIT
 )
 
 
@@ -28,4 +29,3 @@ def test_api_rate_limits():
     assert ALPHA_VANTAGE_DAILY_LIMIT == 500
     assert TWELVE_DATA_DAILY_LIMIT < 1000
     assert ALPHA_VANTAGE_DAILY_LIMIT < 1000
-

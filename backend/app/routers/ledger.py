@@ -7,8 +7,7 @@ from ..database import get_db
 from ..database.models import Order, User
 from ..routers.auth import current_user_email
 from ..schemas.ledger import OrdersResponse, PositionsResponse
-from ..services.ledger_service import (get_account_balance, list_orders,
-                                       list_positions)
+from ..services.ledger_service import get_account_balance, list_orders, list_positions
 from ..services.portfolio_service import get_portfolio_service
 from ..utils.logging import get_logger
 

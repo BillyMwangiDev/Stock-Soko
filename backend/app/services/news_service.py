@@ -2,11 +2,13 @@
 News Service - Provides market news and sentiment analysis
 """
 
-from datetime import datetime, timedelta
-from typing import List, Optional, Dict, Any
 import random
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
 import httpx
-from ..config import NEWS_API_KEY, FINNHUB_API_KEY, ENABLE_REAL_TIME_PRICES
+
+from ..config import ENABLE_REAL_TIME_PRICES, FINNHUB_API_KEY, NEWS_API_KEY
 from ..utils.logging import get_logger
 
 logger = get_logger("news_service")
