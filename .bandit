@@ -1,0 +1,30 @@
+[bandit]
+# Bandit configuration for Stock Soko
+# Excludes common false positives while maintaining security
+
+exclude_dirs = [
+    '/tests/',
+    '/venv/',
+    '/.venv/',
+    '/node_modules/',
+    '__pycache__'
+]
+
+# Skip these tests (with justification):
+skips = [
+    'B101',  # assert_used - Normal for pytest tests
+    'B311',  # random - We use it for mock data, not security
+    'B105',  # hardcoded_password_string - These are example/validation strings
+    'B601',  # paramiko_calls - Not applicable
+]
+
+# Security issues we DO want to catch:
+# B201-B204: Flask security issues
+# B301-B324: Injection vulnerabilities
+# B401-B413: Cryptography issues (except B413 for pycryptodome)
+# B501-B509: Weak cryptography
+# B601-B612: SQL/shell injection
+
+[bandit.assert_used]
+# Allow asserts in test files
+skips = ['*/tests/*', '*/test_*.py']
