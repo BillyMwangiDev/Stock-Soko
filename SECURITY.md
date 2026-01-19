@@ -78,7 +78,7 @@ We will respond within 48 hours and provide updates every 72 hours until resolve
 Critical secrets that must NEVER be committed:
 
 - `JWT_SECRET` - Token signing key
-- `***REMOVED***` - Email service password
+- `SMTP_PASSWORD` - Email service password
 - `DATABASE_URL` - Database credentials (production)
 - `MPESA_CONSUMER_SECRET` - M-Pesa API secret
 - `AWS_SECRET_ACCESS_KEY` - AWS credentials

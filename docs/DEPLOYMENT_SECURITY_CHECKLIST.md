@@ -17,7 +17,7 @@ Use this checklist before every production deployment.
 - [ ] `JWT_SECRET` is different from development/staging
 - [ ] `DATABASE_URL` uses PostgreSQL (not SQLite) in production
 - [ ] Database credentials are strong and unique
-- [ ] `***REMOVED***` is secure and not the default
+- [ ] `SMTP_PASSWORD` is secure and not the default
 - [ ] All API keys are production keys (not sandbox/test)
 - [ ] `MPESA_CONSUMER_SECRET` is production secret
 - [ ] AWS credentials are scoped with least privilege

@@ -111,7 +111,7 @@ HISTORICAL_CACHE_TTL: int = config("HISTORICAL_CACHE_TTL", default=300, cast=int
 SMTP_HOST: str = config("SMTP_HOST", default="")
 SMTP_PORT: int = config("SMTP_PORT", default=587, cast=int)
 SMTP_USER: str = config("SMTP_USER", default="")
-***REMOVED***: str = config("***REMOVED***", default="")
+SMTP_PASSWORD: str = config("SMTP_PASSWORD", default="")
 SMTP_FROM_EMAIL: str = config("SMTP_FROM_EMAIL", default="noreply@stocksoko.com")
 
 # ===============================================

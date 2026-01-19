@@ -35,9 +35,9 @@ BFG is faster and easier than git filter-branch.
 ```bash
 # Create passwords.txt with patterns to replace
 cat > passwords.txt << EOF
-***REMOVED***=actual_exposed_password
+SMTP_PASSWORD=actual_exposed_password
 regex:password\s*=\s*["\'][^"\']{8,}["\']
-regex:(***REMOVED***
+regex:(smtp|email).*password.*=.*["\'][^"\']+["\']
 EOF
 ```
 
@@ -96,7 +96,7 @@ git filter-branch --force --index-filter \
 
 ```bash
 git filter-branch --force --tree-filter \
-  "find . -type f -name '*.py' -exec sed -i 's/***REMOVED***=.*/***REMOVED***=REDACTED/g' {} \;" \
+  "find . -type f -name '*.py' -exec sed -i 's/SMTP_PASSWORD=.*/SMTP_PASSWORD=REDACTED/g' {} \;" \
   --prune-empty --tag-name-filter cat -- --all
 ```
 
@@ -137,7 +137,7 @@ If you're using GitHub and the secret is still active:
 
 ```bash
 # Search for the exposed secret
-git log --all --full-history -S "***REMOVED***" --source
+git log --all --full-history -S "SMTP_PASSWORD" --source
 
 # Check for any remaining references
 git grep -i "smtp_password"

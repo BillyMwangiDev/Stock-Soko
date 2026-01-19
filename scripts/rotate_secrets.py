@@ -58,8 +58,8 @@ def main():
     
     print("3. SMTP Password (if using email)")
     print("-" * 60)
-    ***REMOVED***
-    print(f"***REMOVED***={smtp_password}")
+    smtp_password = generate_password(24)
+    print(f"SMTP_PASSWORD={smtp_password}")
     print()
     
     print("4. AWS Secret Access Key (if using S3)")

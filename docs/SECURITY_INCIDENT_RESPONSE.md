@@ -79,7 +79,7 @@
 
 #### Containment Checklist
 
-Critical Credential Exposure (e.g., ***REMOVED***):
+Critical Credential Exposure (e.g., SMTP_PASSWORD):
 - [ ] Identify all exposed credentials
 - [ ] Determine exposure duration
 - [ ] Check Git history for other exposures
@@ -203,7 +203,7 @@ curl http://localhost:8000/metrics | grep http_requests_total
 
 ## Specific Incident Playbooks
 
-### Exposed Email Password (***REMOVED***)
+### Exposed Email Password (SMTP_PASSWORD)
 
 **Immediate Actions:**
 1. Access email service provider dashboard
@@ -215,10 +215,10 @@ curl http://localhost:8000/metrics | grep http_requests_total
 **Investigation:**
 ```bash
 # Find when exposed
-git log --all --full-history -S "***REMOVED***" --source
+git log --all --full-history -S "SMTP_PASSWORD" --source
 
 # Check for usage in code
-grep -r "***REMOVED***" backend/ --exclude-dir=venv
+grep -r "SMTP_PASSWORD" backend/ --exclude-dir=venv
 
 # Review email service logs (provider-specific)
 ```
@@ -238,7 +238,7 @@ grep -r "***REMOVED***" backend/ --exclude-dir=venv
 6. Add to pre-commit hooks
 
 **Prevention:**
-- Add ***REMOVED*** to secret detection patterns
+- Add SMTP_PASSWORD to secret detection patterns
 - Implement pre-commit hooks for secret detection
 - Regular secret audits
 - Security awareness training

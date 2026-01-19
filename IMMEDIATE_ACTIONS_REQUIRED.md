@@ -33,7 +33,7 @@ python scripts/rotate_secrets.py
 # Example for different platforms:
 
 # Heroku
-heroku config:set ***REMOVED***=new_secure_password
+heroku config:set SMTP_PASSWORD=new_secure_password
 
 # AWS
 aws ssm put-parameter --name /stocksoko/smtp_password --value new_secure_password --overwrite
@@ -98,7 +98,7 @@ git clone --mirror https://github.com/BillyMwangiDev/Stock-Soko.git
 cd Stock-Soko.git
 
 # Create replacement file
-echo "***REMOVED***=***REMOVED***" > passwords.txt
+echo "SMTP_PASSWORD=***REMOVED***" > passwords.txt
 
 # Run BFG
 java -jar bfg.jar --replace-text passwords.txt
@@ -184,7 +184,7 @@ ENVIRONMENT=production
 DEBUG=false
 JWT_SECRET=<strong-64-char-random-string>
 DATABASE_URL=postgresql://...  # NOT sqlite
-***REMOVED***=<new-rotated-password>
+SMTP_PASSWORD=<new-rotated-password>
 ```
 
 **Generate new JWT secret:**
@@ -340,7 +340,7 @@ Before considering this incident resolved:
 ## Summary
 
 **What happened:** 
-GitGuardian detected ***REMOVED*** exposed in your GitHub repository.
+GitGuardian detected SMTP_PASSWORD exposed in your GitHub repository.
 
 **What we did:**
 - Implemented comprehensive security hardening

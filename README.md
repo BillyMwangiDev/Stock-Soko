@@ -554,7 +554,7 @@ pytest --cov=backend/app --cov-report=html
 
 Protected secrets:
 - `JWT_SECRET` - Token signing key
-- `***REMOVED***` - Email service credentials
+- `SMTP_PASSWORD` - Email service credentials
 - `DATABASE_URL` - Production database connection
 - `MPESA_CONSUMER_SECRET` - Payment API credentials
 - `AWS_SECRET_ACCESS_KEY` - Cloud storage credentials

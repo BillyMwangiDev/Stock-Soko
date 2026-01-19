@@ -5,14 +5,14 @@
 **Date**: 2026-01-19
 **Alert Source**: GitGuardian
 **Severity**: Critical
-**Issue**: Company Email Password (***REMOVED***) exposed in GitHub repository
+**Issue**: Company Email Password (SMTP_PASSWORD) exposed in GitHub repository
 **Repository**: BillyMwangiDev/Stock-Soko
 **Pushed Date**: October 8, 2025, 05:54:45 UTC
 
 ## Immediate Actions Taken
 
 ### 1. Credential Revocation & Rotation
-- [ ] Identified exposed credential: ***REMOVED***
+- [ ] Identified exposed credential: SMTP_PASSWORD
 - [ ] Changed password at email service provider
 - [ ] Generated new secure password (24+ characters)
 - [ ] Updated production environment variables
@@ -162,7 +162,7 @@ git clone --mirror https://github.com/BillyMwangiDev/Stock-Soko.git
 cd Stock-Soko.git
 
 # Create replacement file
-echo "***REMOVED***=***REMOVED***" > passwords.txt
+echo "SMTP_PASSWORD=***REMOVED***" > passwords.txt
 
 # Run BFG
 java -jar bfg.jar --replace-text passwords.txt
@@ -178,7 +178,7 @@ git push --force
 #### Option 2: Git Filter-Branch
 ```bash
 git filter-branch --force --tree-filter \
-  "find . -type f -name '*.py' -o -name '.env*' -exec sed -i 's/***REMOVED***=.*/***REMOVED***=REDACTED/g' {} \;" \
+  "find . -type f -name '*.py' -o -name '.env*' -exec sed -i 's/SMTP_PASSWORD=.*/SMTP_PASSWORD=REDACTED/g' {} \;" \
   --prune-empty --tag-name-filter cat -- --all
 
 rm -rf .git/refs/original/
@@ -191,8 +191,8 @@ git push origin --force --all
 
 ```bash
 # Search for any remaining references
-git log --all --full-history -S "***REMOVED***" --source
-git grep -i "***REMOVED***
+git log --all --full-history -S "SMTP_PASSWORD" --source
+git grep -i "smtp.*password.*="
 
 # Verify repository size reduced
 git count-objects -vH
