@@ -283,60 +283,210 @@ DELETE /api/v1/alerts/{id}           Delete alert
 
 ---
 
-## 🔒 Security
+## Security
 
-### Production Security Checklist
+### Overview
 
-#### Implemented
-- JWT authentication with secure tokens
-- Password hashing with bcrypt
+Stock Soko implements enterprise-grade security measures following OWASP best practices. For comprehensive security information, see [SECURITY.md](./SECURITY.md).
+
+### Core Security Features
+
+#### Authentication & Authorization
+- JWT-based authentication with secure token management
+- Password hashing using bcrypt (cost factor 12)
+- TOTP-based two-factor authentication (2FA)
+- Session management with configurable timeout
+- Password requirements: minimum 8 characters, mixed case, numbers, special characters
+
+#### API Security
+- Multi-layered rate limiting per IP and endpoint
+- Enhanced rate limits for sensitive endpoints:
+  - Login: 10 attempts per minute
+  - Registration: 5 per minute
+  - Password reset: 3 per minute
+  - Payments: 20 per minute
+  - Trading: 30 per minute
+- Comprehensive security headers (CSP, HSTS, X-Frame-Options)
+- CORS configuration with allowed origins whitelist
+- Request size limits and input validation
+
+#### Data Protection
 - HTTPS enforcement in production
-- Security headers (CSP, HSTS, X-Frame-Options)
-- Rate limiting (100 req/min per IP)
-- Input validation with Pydantic
-- SQL injection prevention (ORM parameter binding)
-- CORS configuration
-- File upload validation
-- Environment variable secrets
+- SQL injection prevention via ORM parameter binding
+- XSS protection through input sanitization
+- Sensitive data encryption at rest
+- Secure file upload validation
+- No PII in application logs
 
-#### 🔧 Configuration Required
+### Production Security Configuration
 
-**1. Change Default Secrets**
+#### Required Environment Variables
+
 ```env
-# .env file
-JWT_SECRET=<generate-secure-64-char-random-string>
-DATABASE_URL=postgresql://user:pass@host/db  # Use PostgreSQL in production
-```
-
-**2. Enable HTTPS**
-```python
-# backend/app/config.py
-ENABLE_HTTPS=true
-SECURE_COOKIES=true
-```
-
-**3. Production Mode**
-```env
+# Critical: Change these before deployment
 ENVIRONMENT=production
 DEBUG=false
+JWT_SECRET=<generate-64-character-random-string>
+DATABASE_URL=postgresql://user:password@host:port/database
+
+# Generate secure JWT secret:
+# python -c "import secrets; print(secrets.token_urlsafe(64))"
 ```
 
-**4. Configure Rate Limiting**
+#### Security Headers
+
+Automatically applied to all responses:
+- Content-Security-Policy (strict)
+- Strict-Transport-Security (HSTS)
+- X-Frame-Options: DENY
+- X-Content-Type-Options: nosniff
+- X-XSS-Protection: 1; mode=block
+- Referrer-Policy: strict-origin-when-cross-origin
+
+#### Rate Limiting
+
+Configure in `.env`:
 ```env
-RATE_LIMIT_PER_MINUTE=60
-RATE_LIMIT_PER_HOUR=1000
+RATE_LIMIT_PER_MINUTE=100
+RATE_LIMIT_PER_HOUR=5000
 ```
+
+### Security Scanning & Monitoring
+
+#### Automated Security Checks
+
+CI/CD pipeline includes:
+- Dependency vulnerability scanning (pip-audit, safety)
+- Static code analysis (bandit, flake8)
+- Secret detection (gitleaks, trufflehog)
+- Container security scanning (trivy)
+- SAST analysis (CodeQL)
+
+#### Manual Security Audits
+
+```bash
+# Check for dependency vulnerabilities
+pip-audit
+
+# Security linting
+bandit -r backend/
+
+# Secret detection
+gitleaks detect --source . --verbose
+
+# Run all tests with coverage
+pytest --cov=backend/app --cov-report=html
+```
+
+### Secrets Management
+
+#### Critical: Never Commit Secrets
+
+Protected secrets:
+- `JWT_SECRET` - Token signing key
+- `***REMOVED***` - Email service credentials
+- `DATABASE_URL` - Production database connection
+- `MPESA_CONSUMER_SECRET` - Payment API credentials
+- `AWS_SECRET_ACCESS_KEY` - Cloud storage credentials
+- All third-party API keys
+
+#### Setup Process
+
+1. Copy template:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Generate secure secrets:
+   ```bash
+   python -c "import secrets; print(secrets.token_urlsafe(64))"
+   ```
+
+3. Fill in `.env` with actual values
+
+4. Verify `.env` is gitignored:
+   ```bash
+   git status  # Should not show .env
+   ```
+
+#### Secret Rotation
+
+Rotate secrets every 90 days minimum:
+- Generate new secret
+- Update production environment
+- Deploy application
+- Verify functionality
+- Revoke old secret
 
 ### Security Best Practices
 
-1. **Never commit `.env` files** - Use `.env.example` as template
-2. **Rotate secrets regularly** - JWT keys, API keys, database passwords
-3. **Use strong passwords** - Minimum 12 characters, mixed case, numbers, symbols
-4. **Enable 2FA** - TOTP for admin and high-value accounts
-5. **Monitor logs** - Check for suspicious activity
-6. **Keep dependencies updated** - Run `pip install -U -r requirements.txt`
-7. **Backup database regularly** - Automated daily backups
-8. **Use PostgreSQL in production** - Not SQLite
+1. **Environment Configuration**
+   - Use `.env.example` as template only
+   - Never commit `.env` to version control
+   - Use environment variables in production
+   - Separate dev/staging/production configurations
+
+2. **Authentication**
+   - Enforce strong password requirements
+   - Enable 2FA for admin accounts
+   - Monitor failed login attempts
+   - Implement account lockout after 10 failed attempts
+
+3. **Database Security**
+   - Use PostgreSQL in production (not SQLite)
+   - Encrypt database backups
+   - Implement connection pooling
+   - Regular security patches
+
+4. **API Security**
+   - Validate all inputs with Pydantic
+   - Sanitize error messages
+   - Log security events
+   - Monitor rate limit violations
+
+5. **Dependency Management**
+   - Run security scans before deployment
+   - Update dependencies monthly
+   - Review CVE disclosures
+   - Use pinned versions
+
+6. **Monitoring & Logging**
+   - No sensitive data in logs
+   - Anonymize IP addresses
+   - Set up security alerts
+   - Regular log analysis
+
+### Incident Response
+
+If you discover a security vulnerability:
+
+1. **Do NOT** create a public GitHub issue
+2. Email: security@stocksoko.com
+3. Include: description, reproduction steps, impact
+4. Response time: within 48 hours
+
+### Pre-Deployment Checklist
+
+- [ ] All secrets in environment variables
+- [ ] No `.env` files in repository
+- [ ] `.env.example` up to date
+- [ ] `DEBUG=false` in production
+- [ ] Strong `JWT_SECRET` (64+ characters)
+- [ ] PostgreSQL database configured
+- [ ] HTTPS enabled
+- [ ] Security headers active
+- [ ] Rate limiting configured
+- [ ] CORS properly restricted
+- [ ] Security scans passing
+- [ ] Dependencies updated
+- [ ] Backup system configured
+
+### Additional Resources
+
+- [SECURITY.md](./SECURITY.md) - Comprehensive security documentation
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [FastAPI Security](https://fastapi.tiangolo.com/tutorial/security/)
+- [Python Security Best Practices](https://python.org/dev/security/)
 
 ---
 
