@@ -10,18 +10,175 @@
 
 ---
 
-## Table of Contents
+## What is Stock Soko?
 
-- [Quick Start](#quick-start)
-- [Features](#features)
-- [Installation](#installation)
-- [Architecture](#architecture)
-- [API Documentation](#api-documentation)
-- [Security](#security)
-- [Testing](#testing)
-- [Deployment](#deployment)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
+Stock Soko is a comprehensive mobile trading platform that democratizes access to the Nairobi Securities Exchange (NSE) for retail investors in Kenya. The platform combines real-time market data, AI-powered recommendations, and integrated M-Pesa payments to provide a seamless stock trading experience on mobile devices.
+
+### Core Purpose
+
+- Enable Kenyan investors to trade NSE stocks directly from their mobile phones
+- Provide educational resources to help beginners learn stock market investing
+- Offer AI-driven insights and recommendations for informed trading decisions
+- Integrate M-Pesa for seamless deposits and withdrawals
+- Support real-time price tracking, portfolio management, and trade execution
+
+---
+
+## Key Features
+
+### Trading & Market Data
+- **Real-time Stock Quotes** - Live price updates for all NSE-listed stocks
+- **Order Execution** - Place market and limit orders instantly
+- **Portfolio Tracking** - Real-time portfolio valuation with profit/loss calculations
+- **Watchlists** - Track your favorite stocks and set price alerts
+- **Technical Indicators** - RSI, MACD, SMA, Bollinger Bands, and more
+- **Interactive Charts** - Candlestick, line, and area charts with historical data
+- **WebSocket Streaming** - Real-time price updates via WebSocket connections
+
+### AI-Powered Features
+- **AI Stock Recommendations** - Buy/sell/hold signals with confidence scores
+- **Intelligent Chat Assistant** - Context-aware trading queries and market insights
+- **Technical Analysis** - Automated pattern recognition and trend analysis
+- **Risk Assessment** - Portfolio risk analysis and diversification suggestions
+
+### Payment & Wallet
+- **M-Pesa Integration** - Instant deposits and withdrawals via Daraja API
+- **Virtual Wallet** - Track your trading balance and transaction history
+- **Transaction History** - Detailed records of all deposits, withdrawals, and trades
+- **Fee Calculator** - Transparent fee breakdown before trade execution
+
+### Learning & Education
+- **Comprehensive Learning Center** - 24 modules across 4 learning paths
+  - Complete Beginner Track (8 modules)
+  - Value Investing Mastery (12 modules)
+  - Technical Trading Specialist (9 modules)
+  - Fundamental Analysis Pro (10 modules)
+- **Interactive Lessons** - Formulas, examples, key points, and quizzes
+- **Progress Tracking** - Monitor your learning journey with achievements
+
+### Security & Compliance
+- **Bank-Grade Security** - JWT authentication with bcrypt password hashing
+- **Two-Factor Authentication (2FA)** - TOTP-based additional security layer
+- **Rate Limiting** - Comprehensive endpoint protection against abuse
+- **KYC Management** - Document upload and verification system
+- **Security Headers** - OWASP-compliant security headers on all requests
+- **Automated Security Scanning** - CI/CD pipeline with vulnerability detection
+
+### Additional Features
+- **Price Alerts** - Push notifications when stocks reach target prices
+- **Market News** - Real-time news aggregation from multiple sources
+- **PDF Reports** - Generate portfolio statements and trade confirmations
+- **CDSC Integration** - Link broker accounts for seamless trading
+- **Dark Theme** - Optimized for low-light viewing
+- **Offline Support** - View cached data without internet connection
+
+---
+
+## Technology Stack
+
+### Backend Technologies
+
+**Core Framework**
+- **FastAPI 0.115.6** - Modern, high-performance Python web framework
+- **Python 3.13** - Latest Python with enhanced performance
+- **Uvicorn** - Lightning-fast ASGI server
+
+**Database & ORM**
+- **SQLAlchemy 2.0** - Powerful SQL toolkit and ORM
+- **PostgreSQL** - Production database (SQLite for development)
+- **Alembic** - Database migration management
+
+**Authentication & Security**
+- **JWT** - JSON Web Tokens for stateless authentication
+- **bcrypt** - Industry-standard password hashing
+- **PyOTP** - TOTP implementation for 2FA
+- **python-jose** - Cryptographic signing and verification
+
+**Background Processing**
+- **Celery 5.4** - Distributed task queue
+- **Redis 5.2** - In-memory data store for caching and message broker
+- **Flower** - Real-time Celery monitoring
+
+**Market Data APIs**
+- **Twelve Data** - Financial market data and analytics
+- **Alpha Vantage** - Stock market data and technical indicators
+- **Finnhub** - Real-time stock market data
+- **MarketStack** - Real-time and historical market data
+- **yfinance** - Yahoo Finance data retrieval
+- **Custom NSE Provider** - Direct NSE data integration
+
+**Payment Integration**
+- **M-Pesa Daraja API** - Mobile money integration for Kenya
+- **pycryptodome** - Cryptographic operations for payment security
+
+**Monitoring & Observability**
+- **Prometheus** - Metrics collection and monitoring
+- **Logging** - Structured application logging
+- **Sentry Integration Ready** - Error tracking and performance monitoring
+
+**Testing & Quality**
+- **pytest** - Testing framework with fixtures
+- **pytest-asyncio** - Async test support
+- **pytest-cov** - Code coverage reporting
+- **bandit** - Security linting for Python
+- **flake8** - Code style enforcement
+- **black** - Code formatting
+
+### Frontend Technologies
+
+**Core Framework**
+- **React Native 0.76.3** - Cross-platform mobile development
+- **Expo** - Development platform and toolchain
+- **TypeScript** - Type-safe JavaScript for better reliability
+
+**Navigation & UI**
+- **React Navigation** - Routing and navigation for React Native
+- **AsyncStorage** - Persistent local data storage
+- **React Native Charts** - Beautiful, interactive data visualizations
+
+**HTTP & State Management**
+- **Axios** - Promise-based HTTP client
+- **React Context API** - Global state management
+- **React Hooks** - Modern state and lifecycle management
+
+### DevOps & Infrastructure
+
+**Version Control & CI/CD**
+- **Git** - Version control
+- **GitHub Actions** - Automated CI/CD pipelines
+- **Pre-commit Hooks** - Automated code quality checks
+
+**Security Scanning**
+- **GitLeaks** - Secret detection in repositories
+- **Trufflehog** - High-entropy string detection
+- **pip-audit** - Python dependency vulnerability scanning
+- **Safety** - Security vulnerability database
+- **CodeQL** - Static application security testing (SAST)
+- **Trivy** - Container security scanning
+
+**Containerization**
+- **Docker** - Container platform
+- **Docker Compose** - Multi-container orchestration
+
+**Cloud Services (Optional)**
+- **AWS S3** - File storage for KYC documents
+- **Firebase Cloud Messaging** - Push notifications
+- **PostgreSQL Cloud** - Managed database hosting
+
+### External Services Integration
+
+**Market Data**
+- Multiple provider fallback system for high availability
+- Automatic rotation when rate limits are reached
+- Caching layer to optimize API usage
+
+**News Aggregation**
+- **NewsAPI** - Global news aggregation
+- **Marketaux** - Financial market news
+
+**Document Management**
+- **ReportLab** - PDF generation for statements
+- **Pillow** - Image processing for KYC documents
 
 ---
 
@@ -47,7 +204,20 @@ This will:
 
 ---
 
-## Features
+## Table of Contents
+
+- [Installation](#installation)
+- [Architecture](#architecture)
+- [API Documentation](#api-documentation)
+- [Security](#security)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Configuration](#configuration)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## Features (Detailed)
 
 ### Core Trading
 - **Real-time stock quotes** - Multi-provider fallback (Twelve Data, Alpha Vantage, Finnhub, MarketStack)
