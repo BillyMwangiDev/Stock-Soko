@@ -5,14 +5,17 @@ Provides endpoints for order placement, trade history, order cancellation,
 and order status tracking for NSE stocks.
 """
 
+import uuid
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
-from typing import Optional
+
+from ..database import get_db
+from ..database.models import Order, Stock, User
+from ..routers.auth import current_user_email
 from ..schemas.trades import OrderRequest, OrderResponse
 from ..services.trades_service import place_order
-from ..database import get_db
-from ..database.models import User, Order, Stock
-from ..routers.auth import current_user_email
 from ..utils.logging import get_logger
 
 logger = get_logger("trades_router")
