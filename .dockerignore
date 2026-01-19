@@ -1,0 +1,75 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs/
+SECURITY.md
+IMMEDIATE_ACTIONS_REQUIRED.md
+GIT_CLEANUP_COMPLETE.md
+
+# Frontend
+frontend/
+node_modules/
+
+# Test files
+tests/
+backend/tests/
+pytest.ini
+
+# CI/CD
+.github/
+.pre-commit-config.yaml
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+uploads/
+
+# Development files
+startup.bat
+manage.py
+scripts/
+bfg-report/
